@@ -7,15 +7,17 @@
 <br />
 <p align="center">
 
-  <h3 align="center">LumaSMS JS</h3>
+  <h3 align="center">LumaSMS.JS / MFGG 3.0</h3>
 
   <p align="center">
-    This is an open source project for LumaSMS JS.
+    An open source site management system, built specifically to power MFGG 3.0.
     <br />
     <br />
     <a href="https://mfgg.net/">View Site</a>
     ·
-    <a href="https://github.com/othneildrew/HypernovaTX/LumaSMSJS/issues">Report Bug</a>
+    <a href="https://github.com/HypernovaTX/LumaSMSJS/issues">Report Bug</a>
+    ·
+    <a href="https://docs.google.com/document/d/1OFXkA5pYtG-OSKAqM4yAJINbLe1bGDlrKfl32T7Pudc/edit?usp=sharing">Design Doc</a>
   </p>
 </p>
 
