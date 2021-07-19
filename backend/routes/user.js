@@ -1,6 +1,6 @@
 import express from 'express';
 import User from '../components/user.js';
-import { checkLogin } from '../lib/userlib.js';
+import { checkLogin, checkPermission } from '../lib/userlib.js';
 
 
 export const router = express.Router();
@@ -29,6 +29,12 @@ router.get('/login', async (req, res) => {
 // "/verifylogin" - check if login is valid
 router.get('/verifylogin', async (req, res) => {
   const result = await checkLogin(req);
+  res.send(result);
+});
+
+// "/checkpermission" - check if login is valid
+router.get('/checkpermission', async (req, res) => {
+  const result = await checkPermission(req);
   res.send(result);
 });
 

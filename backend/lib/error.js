@@ -39,7 +39,7 @@ export default class ERR {
       case('us2'): output += `US2 - Error while processing bcrypt.match in login!`; break;
       case('us3'): output += `US3 - Please check the parameters in "doRegister()"!`; break;
       case('us4'): output += `US4 - Error while processing bcrypt.hash in register!`; break;
-      
+      case('us5'): output += `US5 - User is not logged in to perform this action!`; break;
       
       
       case('us7'): output += `US7 - Please check the parameters in "passwordChangeRequest()"!`; break;

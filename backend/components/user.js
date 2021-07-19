@@ -1,7 +1,7 @@
 // ==================== MAIN USER OBJ ====================
 import SQL from '../lib/sql.js';
 import { placeholderPromise, handleError } from '../lib/globallib.js';
-import { checkLogin } from '../lib/userlib.js';
+import { checkPermission } from '../lib/userlib.js';
 import express from 'express';
 import cookieParser from 'cookie-parser';
 import dotenv from 'dotenv';
@@ -162,9 +162,9 @@ export default class User {
       bcrypt.hash(password, 8, (err_bcrypt, hash) => {
         if (err_bcrypt) { this.handleError('us4'); reject(err_bcrypt); }
 
-        const columnNames = ['username', 'email', 'password', 'join_date', 'items_per_page'];
+        const columnNames = ['username', 'email', 'password', 'join_date', 'items_per_page', 'gid'];
         const timestamp = Math.ceil(Date.now() / 1000);
-        const columnValues = [username, email, hash, timestamp, process.env.DEFAULT_ROWS];
+        const columnValues = [username, email, hash, timestamp, process.env.DEFAULT_ROWS, 5];
 
         // Build and run
         this.DB.buildInsert(this.userTable, columnNames, columnValues);
@@ -174,5 +174,14 @@ export default class User {
       });
     });
   };
+
+  /**
+   ********************************** LOGIN *************************************
+   */
+
+  async updateUserProfile(uid = 0, inputs = {}) {
+    const getPermPermission = await checkPermission();
+    
+  }
   
 }

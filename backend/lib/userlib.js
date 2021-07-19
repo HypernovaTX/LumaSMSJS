@@ -5,10 +5,12 @@ import cookieParser from 'cookie-parser';
 import dotenv from 'dotenv';
 import jwt from 'jsonwebtoken';
 import SqlString from 'sqlstring';
+import { handleError, placeholderPromise } from '../lib/globallib.js';
 
 const app = express();
 const DB = new SQL();
 const userTable = `${process.env.DB_PREFIX}users`;
+const groupTable = `${process.env.DB_PREFIX}groups`;
 app.use(cookieParser());
 dotenv.config({ path: './.env' });
 
@@ -41,7 +43,7 @@ export async function checkLogin(_request) {
             updateLastActivity(cleanDecode, ip);
             if (data[0].hasOwnProperty('password')) { delete data[0].password; } //Remove password
             resolve(data[0]);
-          } else { resolve('Not logged in'); }
+          } else { resolve('LOGGED OUT'); }
         });
       });
     });
@@ -49,3 +51,29 @@ export async function checkLogin(_request) {
   return output; 
 }
 
+export async function checkPermission(_request) {
+  const loginStatus = await checkLogin(_request);
+  if (loginStatus === 'LOGGED OUT') {
+    handleError('us5');
+    return placeholderPromise(loginStatus);
+  }
+
+  const groupID = loginStatus.gid;
+
+  DB.buildSelect(groupTable, [
+    'moderator AS staff_mod',
+    'acp_users AS staff_user',
+    'acp_modq AS staff_qc',
+    'acp_access AS staff_admin',
+    'acp_super AS staff_root',
+    'can_msg_users AS can_msg',
+    'can_submit', 'can_comment'
+  ]);
+  DB.buildWhere(`gid = ${groupID}`);
+
+  return await new Promise((resolve) => {
+    DB.runQuery().then((data) => {
+      resolve(data[0]);
+    });
+  });
+}
