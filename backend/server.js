@@ -7,12 +7,16 @@
 // NOTE: ALL POST REQUESTS (besides file uploads) MUST BE application/x-www-form-urlencoded!
 
 // ==================== Core Components ====================
-const express = require('express');
-const cors = require('cors');
-const cookieParser = require('cookie-parser');
+import express from 'express';
+import cors from 'cors';
+import cookieParser from 'cookie-parser';
 const app = express();
 app.use(cors());
 app.use(cookieParser());
+
+// ==================== User ====================
+import { router as userRouter } from './routes/user.js';
+app.use('/user', userRouter);
 
 // ==================== Server ====================
 let server = app.listen(12026, () => {
