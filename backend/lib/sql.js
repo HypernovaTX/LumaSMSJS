@@ -24,7 +24,6 @@ export default class SQL {
   // ---------- Section A: Connection ---------
   connect() {
     this.connection = mysql.createConnection(this.DBCONFIG);
-    console.log(this.DBCONFIG);
     this.connection.connect((error) => {
       if (error) {
         handleError('db0', error.message);
