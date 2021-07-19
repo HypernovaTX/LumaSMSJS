@@ -6,7 +6,7 @@
 
 <br />
 <p align="center">
-
+  <img src="https://github.com/HypernovaTX/LumaSMSJS/blob/main/LumaSMSLogo.png?raw=true" alt="Logo" width="369" height="96">
   <h3 align="center">LumaSMS.JS / MFGG 3.0</h3>
 
   <p align="center">
@@ -23,26 +23,14 @@
 
 
 ## Built With
-### Main Tools
-> #### Front End
-> * [React](https://reactjs.org/)
-> * [Typescript](https://typescriptlang.org/)
-> * [SCSS](https://sass-lang.com/)
-> #### Back End
-> * [Express](https://expressjs.com/)
-> * [MySQL](https://www.npmjs.com/package/mysql)
-
-### Libraries
-> #### Front End
-> * [React Router](https://reactrouter.com/) - Planned
-> * TBD
-> #### Back End
-> * [dotenv](https://www.npmjs.com/package/dotenv)
-> * [SqlString](https://www.npmjs.com/package/sqlstring)
-> * [bcryptjs](https://www.npmjs.com/package/bcryptjs)
-> * [JWT](https://jwt.io/)
-> * [Cookie-parser](https://www.npmjs.com/package/cookie-parser)
-> * TBD
+Main Tools | Libraries
+-----------|----------
+<a href='https://reactjs.org/'>React</a> (Front End) | <a href='https://reactrouter.com/'>React Router</a> (Front End) - Planned
+<a href='https://typescriptlang.org/'>Typescript</a> (Front End) | <a href='https://www.npmjs.com/package/dotenv'>dotenv</a> (Back End)
+<a href='https://sass-lang.com/'>SCSS</a> (Front End) - Planned | <a href='https://www.npmjs.com/package/sqlstring'>SqlString</a> (Back End)
+<a href='https://expressjs.com/'>Express</a> (Back End) | <a href='https://www.npmjs.com/package/bcryptjs'>bcryptjs</a> (Back End)
+<a href='https://www.npmjs.com/package/mysql'>MySQL</a> (Back End) | <a href='https://jwt.io/'>JWT</a> (Back End)
+--- | <a href='https://www.npmjs.com/package/cookie-parser'>Cookie-parser</a> (Back End)
 
 <!-- MARKDOWN LINKS & IMAGES -->
 <!-- https://www.markdownguide.org/basic-syntax/#reference-style-links -->
