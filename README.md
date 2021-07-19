@@ -41,5 +41,5 @@ Main Tools | Libraries
 [issues-shield]: https://img.shields.io/github/issues/HypernovaTX/LumaSMSJS.svg?style=for-the-badge
 [issues-url]: https://github.com/HypernovaTX/LumaSMSJS/issues
 [license-shield]: https://img.shields.io/github/license/HypernovaTX/LumaSMSJS.svg?style=for-the-badge
-[license-url]: https://github.com/HypernovaTX/LumaSMSJS/blob/master/LICENSE.txt
+[license-url]: https://github.com/HypernovaTX/LumaSMSJS/blob/master/LICENSE
 [product-screenshot]: images/screenshot.png
