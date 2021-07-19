@@ -1,4 +1,4 @@
-// Reuseable function that can be use globally
+// Reuseable utility functions that can be used anywhere
 import ERR from './error.js';
 
 // ERROR CALL FUNCTION

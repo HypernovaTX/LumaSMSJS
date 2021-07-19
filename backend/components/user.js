@@ -1,6 +1,7 @@
 // ==================== MAIN USER OBJ ====================
 import SQL from '../lib/sql.js';
-import { placeholderPromise } from '../lib/globallib.js';
+import { placeholderPromise, handleError } from '../lib/globallib.js';
+import { checkLogin } from '../lib/userlib.js';
 import express from 'express';
 import cookieParser from 'cookie-parser';
 import dotenv from 'dotenv';
@@ -19,7 +20,7 @@ const { MemoryStorage } = require('multer');*/
 
 export default class User {
   constructor() {
-    this.falsePromise = placeholderPromise('ERROR');
+    this.dummyPromise = placeholderPromise('ERROR');
     this.SALT = process.env.PASSWORD_SALT;
     this.imageMIME = /image\/(apng|gif|jpeg|png|svg|webp)$/i;
     this.fileExtension = /\.[0-9a-z]+$/;
@@ -61,59 +62,20 @@ export default class User {
   /**
    ********************************** LOGIN *************************************
    */
-  async checkLogin(_request) {
-    let output = 'No cookie';
-    //If cookie exists
-    if (_request.cookies?.Login) {
-      output = await new Promise((resolve, reject) => {
-        //Use the JWT to verify the cookie with secret code
-        jwt.verify(_request.cookies.Login, process.env.JWT_SECRET, (err, decoded) => {
-          if (err) { reject(err); }
-
-          //Prepare data
-          const DB = new SQL();
-          DB.buildSelect(this.userTable);
-          const cleanDecode = SqlString.escape(decoded.uid);
-          const ip = _request.headers['x-forwarded-for'] || _request.connection.remoteAddress;
-          console.log(decoded);
-
-          //Do the query to check if the ID matches
-          DB.buildWhere(`uid = ${cleanDecode}`);
-          DB.runQuery().then((data) => {
-            if (data.length > 0) { //If matches - confirm
-              this.updateLastActivity(cleanDecode, ip);
-              console.log(data[0]);
-              if (data[0].hasOwnProperty('password')) { delete data[0].password; } //Remove password
-              resolve(data[0]);
-            } else { resolve('Not logged in'); }
-          });
-        });
-      });
-    }
-    return output; 
-  }
-
-  async updateLastActivity(uid = '0', ip = '') {
-    const DB = new SQL();
-    DB.buildUpdate(`users`, [`last_activity`, `last_ip`], [`${Date.now()}`, ip]);
-    DB.buildWhere(`id = ${uid}`);
-    return await DB.runQuery(true);
-  }
-
+  // ---- CHECKS ----
   async checkExistingUser(username, email) {
     if (!username || !email) {
-      this.handleError('us4');
-      return this.falsePromise;
+      handleError('us0');
+      return this.dummyPromise;
     }
     
-    const DB = new SQL();
     const cleanUser = SqlString.escape(username);
     const cleanEmail = SqlString.escape(email);
-    DB.buildSelect(`users`);
-    DB.buildWhere(`username = ${cleanUser} || email = ${cleanEmail}`);
+    this.DB.buildSelect(this.userTable);
+    this.DB.buildWhere(`username = ${cleanUser} || email = ${cleanEmail}`);
 
     return await new Promise((resolve, reject) => {
-      DB.runQuery().then((data, err) => {
+      this.DB.runQuery().then((data, err) => {
         if (err) { reject(err); }
         if (data.length === 0) { resolve('PASS'); } // Nothing matches
         else { // When something matches
@@ -126,36 +88,22 @@ export default class User {
     })
   }
 
-  updateLoginCookie(uid, _response) {
-    const token = jwt.sign({ uid }, process.env.JWT_SECRET, { expiresIn: process.env.JWT_EXPIRES_IN, });
-    const cookieOptions = {
-      expires: new Date(Date.now() + process.env.JWT_COOKIE_EXPIRES * 365 * 24 * 60 * 60 * 1000),
-      httpOnly: true,
-    };
-    _response.cookie('Login', token, cookieOptions);
-  }
-
-  doLogout(_response) {
-    _response.cookie('Login', 'logout', { expires: new Date(Date.now() + 2 * 1000), httpOnly: true, });
-    return 'LOGGED OUT';
-  }
-
-  async loginRequest(username, password, _response = null) {
+  // ---- USE THESE FOR CALLS ----
+  async doLogin(username, password, _response = null) {
     // Ensure param username and password are valid
     if (!username || !password) {
-        this.handleError('us2');
-        return this.falsePromise;
+        handleError('us1');
+        return this.dummyPromise;
     }
 
-    const DB = new SQL();
-    DB.buildSelect(this.userTable);
+    this.DB.buildSelect(this.userTable);
     const cleanName = SqlString.escape(username);
 
     // Run the query to get the username first, then it pulls the data and compare to password with the data
-    DB.buildWhere(`username = ${cleanName}`);
+    this.DB.buildWhere(`username = ${cleanName}`);
 
     const result = await new Promise((resolve, reject) => {
-      DB.runQuery().then((data, err) => {
+      this.DB.runQuery().then((data, err) => {
         if (err) { reject(err); }
 
         // Invalid user (happens if the SQL database found 0 rows based on the username)
@@ -165,7 +113,7 @@ export default class User {
         else {
           if (data[0].password === undefined) { data[0].password = ''; }
           bcrypt.compare(password, data[0].password, (errB, res) => {
-            if (errB) { this.handleError('us3', errB); reject(errB); }
+            if (errB) { handleError('us2', errB); }
             if (res) {
               if (_response) { this.updateLoginCookie(data[0].uid, _response); }
               resolve('SUCCESS!');
@@ -178,6 +126,53 @@ export default class User {
     return result;
   }
 
+  doLogout(_response) {
+    _response.cookie('Login', 'logout', { expires: new Date(Date.now() + 2 * 1000), httpOnly: true, });
+    return 'LOGGED OUT';
+  }
 
+  async doRegister(username, password, email) {
+    // In case if both param are invalid
+    if ((!username || !email || !password) || (username === '' || email === '' || password === '')) {
+      handleError('us3');
+      return this.dummyPromise;
+    }
+
+    const userCheckResult = await this.checkExistingUser(username, email);
+    if (userCheckResult === 'PASS') {
+      return await this.newUserToDatabase(username, email, password);
+    }
+    return userCheckResult;
+  }
+
+  // ---- LOGIN UPDATES ----
+  updateLoginCookie(uid, _response) {
+    const token = jwt.sign({ uid }, process.env.JWT_SECRET, { expiresIn: process.env.JWT_EXPIRES_IN, });
+    const cookieOptions = {
+      expires: new Date(Date.now() + process.env.JWT_COOKIE_EXPIRES * 365 * 24 * 60 * 60 * 1000),
+      httpOnly: true,
+    };
+    _response.cookie('Login', token, cookieOptions);
+  }
+
+  async newUserToDatabase(username, email, password) {
+    // Hash the password
+    console.log('NEW');
+    return await new Promise((resolve, reject) => {
+      bcrypt.hash(password, 8, (err_bcrypt, hash) => {
+        if (err_bcrypt) { this.handleError('us4'); reject(err_bcrypt); }
+
+        const columnNames = ['username', 'email', 'password', 'join_date', 'items_per_page'];
+        const timestamp = Math.ceil(Date.now() / 1000);
+        const columnValues = [username, email, hash, timestamp, process.env.DEFAULT_ROWS];
+
+        // Build and run
+        this.DB.buildInsert(this.userTable, columnNames, columnValues);
+        this.DB.runQuery(true).then((queryResult) => {
+          resolve(queryResult);
+        });
+      });
+    });
+  };
   
 }

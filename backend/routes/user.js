@@ -1,5 +1,7 @@
 import express from 'express';
 import User from '../components/user.js';
+import { checkLogin } from '../lib/userlib.js';
+
 
 export const router = express.Router();
 const user = new User();
@@ -20,19 +22,31 @@ router.get('/', async (req, res) => {
 router.get('/login', async (req, res) => {
   const username = req.headers?.username || '0';
   const password = req.headers?.password || '0';
-  const result = await user.loginRequest(username, password, res);
+  const result = await user.doLogin(username, password, res);
   res.send(result);
 });
 
 // "/verifylogin" - check if login is valid
 router.get('/verifylogin', async (req, res) => {
-  const result = await user.checkLogin(req);
+  const result = await checkLogin(req);
   res.send(result);
 });
 
 // "/logout" 
 router.get('/logout', (req, res) => {
   res.send(user.doLogout(res)); 
+});
+
+// "/register" 
+router.post('/register', async (req, res) => {
+  const _usr = req.headers?.username || '';
+  const _pas = req.headers?.password || '';
+  const _ema = req.headers?.email || '';
+  const getData = await user.doRegister(_usr, _pas, _ema);
+  if (getData === 'DONE') {
+    res.status(201);
+  }
+  res.send(getData);
 });
 
 // "/:id" - Show specific user by ID

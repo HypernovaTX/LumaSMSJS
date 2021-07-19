@@ -10,12 +10,13 @@ export default class SQL {
   // SQL Class based variables
   constructor() {
     this.query = '';
-    this.connection = null;
+    this.pool = null;
     this.DBCONFIG = {
       host: process.env.DB_HOST, 
       user: process.env.DB_USER, 
       password: process.env.DB_PASS, 
       database: process.env.DB_NAME, 
+      connectionLimit: 10, 
     };
     this.clearQuery = () => { this.query = ''; }
   }
@@ -23,42 +24,41 @@ export default class SQL {
 
   // ---------- Section A: Connection ---------
   connect() {
-    this.connection = mysql.createConnection(this.DBCONFIG);
-    this.connection.connect((error) => {
-      if (error) {
-        handleError('db0', error.message);
-        return false;
-      }
-    });
-    return true;
+    this.pool = mysql.createPool(this.DBCONFIG);
   }
-  disconnect() {
-    this.connection.end((error) => { if (error) { handleError('db1', error.message); } });
+  release() {
+    this.pool.release((error) => { if (error) { handleError('db1', error.message); } });
+  }
+
+  checkPool() {
+    if (!this.pool) { return false; }
+    return true;
   }
 
   /** runQuery(callback, noReturn) - Run the query
    * @param { boolean } noReturn - (Optional) - whether to return the rows or just a string of "DONE"
    */
-  runQuery(noReturn = false) {
+  async runQuery(noReturn = false) {
     // Start the connection
-    if (!this.connection || this.connection?.state === 'disconnected') {
-      if (!this.connect()) { return placeholderPromise(); }
+    if (!this.checkPool()) {
+      this.connect();
     }
-    console.log(this.query);
     // Set a promise to run the query
-    const getData = new Promise(
-      (resolve) => {
-        this.connection.query(this.query, (error, rows) => {
+    const getData = await new Promise((resolve) => {
+      this.pool.getConnection((conErr, connection) => {
+        if (conErr) { handleError('db0', conErr.message); }
+        console.log(`\x1b[36m[SQL QUERY] ${this.query}\x1b[0m`);
+
+        connection.query(this.query, (error, rows) => {
           if (error) { handleError('db2', error.message); }
           else if (noReturn) { resolve('DONE'); }
           else { resolve(rows); }
+
+          connection.release();
         });
-      }
-    );
-
-    // End
-    this.disconnect();
-
+      });
+    });
+    //this.connection.release();
     return getData;
   }
 
@@ -142,9 +142,13 @@ export default class SQL {
       handleError('db7'); return;
     }
 
-    table = SqlString.escape(table);
-    const outputColumns = SqlString.escape(columns.join(', '));
-    const outputValues = SqlString.escape(values.join(', '));
+    let outputColumns = columns.join(', ');
+    let outputValues = '';
+    for (let i = 0; i < values.length; i ++) {
+      const comma = (i < values.length - 1) ? ', ' : '';
+      const currentValue = (typeof values[i] === 'string') ? SqlString.escape(values[i]) : values[i];
+      outputValues += currentValue + comma;
+    }
 
     this.query = `INSERT INTO ${table} (${outputColumns}) VALUES (${outputValues}) `;
     return this.query;
@@ -160,12 +164,10 @@ export default class SQL {
     columns.forEach((data, index) => {
       if (typeof data === 'string') {
         const cleanValue = SqlString.escape(values[index]);
-        const cleanColumn = SqlString.escape(data);
-        updateArray.push(`${'`' + cleanColumn + '`'} = ${cleanValue}`);
+        updateArray.push(`${'`' + data + '`'} = ${cleanValue}`);
       }
     });
 
-    table = SqlString.escape(table);
     this.query = `UPDATE ${table} SET ${updateArray.join(', ')} `;
     return this.query;
   }

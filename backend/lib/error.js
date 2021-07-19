@@ -34,13 +34,14 @@ export default class ERR {
       case('db10'): output += `DB10 - "input" for "buildCustomQuery()" is NOT string!`; break;
 
       // us# - related to user
-      case('us0'): output += `US0 - Please check the parameters in "listUsers()"!`; break;
-      case('us1'): output += `US1 - Please check the parameters in "showUser()"!`; break;
-      case('us2'): output += `US2 - Please check the parameters in "loginRequest()"!`; break;
-      case('us3'): output += `US3 - Error while processing bcrypt.match in login!`; break;
-      case('us4'): output += `US4 - Please check the parameters in "checkExistingUser()"!`; break;
-      case('us5'): output += `US5 - Please check the parameters in "doRegister()"!`; break;
-      case('us6'): output += `US6 - Error while processing bcrypt.hash in register!`; break;
+      case('us0'): output += `US0 - Please check the parameters in "checkExistingUser()"!`; break;
+      case('us1'): output += `US1 - Please check the parameters in "loginRequest()"!`; break;
+      case('us2'): output += `US2 - Error while processing bcrypt.match in login!`; break;
+      case('us3'): output += `US3 - Please check the parameters in "doRegister()"!`; break;
+      case('us4'): output += `US4 - Error while processing bcrypt.hash in register!`; break;
+      
+      
+      
       case('us7'): output += `US7 - Please check the parameters in "passwordChangeRequest()"!`; break;
       case('us8'): output += `US8 - Please check the parameters in "changeUser()"!`; break;
       case('us9'): output += `US9 - Please check the parameters in "uploadAvatarBanner()"!`; break;
@@ -56,7 +57,7 @@ export default class ERR {
       case('fi1'): output += `FI1 - Incorrect directory to write file.`; break;
     }
 
-    console.log(`\u001b[1;31m${output}`);
-    if (reason !== '') { console.log(`\u001b[1;33m${reason}\u001b[1;0m`); } //Only calls if it's not blank
+    console.log(`\x1b[41m${output}\x1b[0m`);
+    if (reason !== '') { console.log(`\x1b[33m${reason}\x1b[0m`); } //Only calls if it's not blank
   }
 }
