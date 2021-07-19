@@ -1,5 +1,5 @@
 // ==================== MAIN SQL OBJ ====================
-import { handleError } from './globallib.js';
+import { handleError, placeholderPromise } from './globallib.js';
 import mysql from 'mysql';
 import SqlString from 'sqlstring';
 import dotenv from 'dotenv';
@@ -24,7 +24,14 @@ export default class SQL {
   // ---------- Section A: Connection ---------
   connect() {
     this.connection = mysql.createConnection(this.DBCONFIG);
-    this.connection.connect((error) => { if (error) { handleError('db0', error.message); } });
+    console.log(this.DBCONFIG);
+    this.connection.connect((error) => {
+      if (error) {
+        handleError('db0', error.message);
+        return false;
+      }
+    });
+    return true;
   }
   disconnect() {
     this.connection.end((error) => { if (error) { handleError('db1', error.message); } });
@@ -34,21 +41,23 @@ export default class SQL {
    * @param { boolean } noReturn - (Optional) - whether to return the rows or just a string of "DONE"
    */
   runQuery(noReturn = false) {
-    //Start the connection
-    if (!this.connection) { this.connect(); }
-
-    //Set a promise to run the query
+    // Start the connection
+    if (!this.connection || this.connection?.state === 'disconnected') {
+      if (!this.connect()) { return placeholderPromise(); }
+    }
+    console.log(this.query);
+    // Set a promise to run the query
     const getData = new Promise(
-      (resolve, reject) => {
+      (resolve) => {
         this.connection.query(this.query, (error, rows) => {
-          if (error) { handleError('db2', error.message); reject(error); }
+          if (error) { handleError('db2', error.message); }
           else if (noReturn) { resolve('DONE'); }
           else { resolve(rows); }
         });
       }
     );
 
-    //End
+    // End
     this.disconnect();
 
     return getData;
@@ -73,10 +82,6 @@ export default class SQL {
       }
     } else { output = column; }
 
-    // Sanitize inputs
-    output = SqlString.escape(output);
-    table = SqlString.escape(table);
-
     // Apply this to the query
     this.query = `SELECT ${output} FROM ${table} `;
     return this.query;
@@ -97,8 +102,6 @@ export default class SQL {
     } else {
       handleError('db4'); return;
     }
-
-    output = SelString.escape(output); // Hand sanitizer 
 
     this.query += `WHERE (${output}) `;
     return this.query;
@@ -186,7 +189,7 @@ export default class SQL {
     if (typeof input !== 'string') {
       handleError('db10'); return;
     }
-    this.query += SqlString.escape(input) + ' ';
+    this.query += input + ' ';
     return this.query;
   }
 }

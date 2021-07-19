@@ -15,11 +15,7 @@ export default class ERR {
 
     switch (this.error) {
       default: output += `??? - An unknown error (code: ${this.error}) has occured.`; break;
-        
-
-      // ro# - routing errors
-      case('ro0'): output += `RO0 - Incorrect routing path!`; break;
-      case('ro1'): output += `RO1 - `
+      
 
       // gr# - general errors
         
@@ -50,7 +46,7 @@ export default class ERR {
       case('us9'): output += `US9 - Please check the parameters in "uploadAvatarBanner()"!`; break;
       case('us10'): output += `US10 - Please check the parameters in "updateUserProfile()"!`; break;
 
-      // lv# - related to level
+      // lv# - related to submission
       case('lv0'): output += `US0 - Please check the parameters in "listLevels()"!`; break;
       case('lv1'): output += `US1 - Please check the parameters in "showLevel()"!`; break;
       case('lv2'): output += `US1 - Please check the parameters in "showLevelComments()"!`; break;
@@ -60,7 +56,7 @@ export default class ERR {
       case('fi1'): output += `FI1 - Incorrect directory to write file.`; break;
     }
 
-    console.log(`%c${output}`, 'color: #FFF; background: #cf0a0a;');
-    if (reason !== '') { console.log(reason); } //Only calls if it's not blank
+    console.log(`\u001b[1;31m${output}`);
+    if (reason !== '') { console.log(`\u001b[1;33m${reason}\u001b[1;0m`); } //Only calls if it's not blank
   }
 }

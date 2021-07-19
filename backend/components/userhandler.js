@@ -26,23 +26,31 @@ export default class User {
     this.DB = new SQL();
   }
 
-  listUsers(position = 0, limit = 25) {
-    this.DB.buildSelect(`users`);
-    if (limit) {
-      this.DB.buildCustomQuery(`LIMIT ${position}, ${limit}`);
-    }
+  async listUsers(position = 0, limit = 25, column = '', asc = true, filter = []) {
+    this.DB.buildSelect(`${process.env.DB_PREFIX}users`);
 
-    return new Promise((resolve, reject) => {
-      this.DB.runQuery().then((data, err) => {
-        if (err) { reject(err); }
-
-        // Remove passwords for each of the object in the array
-        for (let i = 0; i < data.length; i ++) {
-          if (data[i].hasOwnProperty('password')) { delete data[i].password; }
-        }
-        
-        resolve(data); // Output
+    if (column) { this.DB.buildOrder([column], [asc]); }
+    if (filter.length > 0) {
+      let statements = [];
+      filter.forEach((data) => {
+        statements.push(`${data.column} = ${data.value}`);
       });
-    });
+      this.DB.buildWhere(statements);
+    }
+    if (limit) { this.DB.buildCustomQuery(`LIMIT ${position}, ${limit}`); }
+
+    const data = await this.DB.runQuery();
+    // Remove passwords for each of the object in the array
+    for (let i = 0; i < data.length; i ++) {
+      if (data[i].hasOwnProperty('password')) { delete data[i].password; }
+    }
+    return data;
+  }
+
+  async showUserByID(id = 0) {
+    this.DB.buildSelect(`${process.env.DB_PREFIX}users`);
+    this.DB.buildWhere(`uid = ${id}`);
+    const data = await this.DB.runQuery();
+    return data;
   }
 }
