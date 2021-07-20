@@ -1,10 +1,14 @@
+// ================================================================================
+// User Router
+// ================================================================================
 import express from 'express';
 import User from '../components/user.js';
 import { checkLogin, checkPermission } from '../lib/userlib.js';
 
-
 export const router = express.Router();
 const user = new User();
+
+// GET -------------------------------------------------------------------------------------------------------
 
 // "/" - list users detailed
 router.get('/', async (req, res) => {
@@ -43,6 +47,8 @@ router.get('/logout', (req, res) => {
   res.send(user.doLogout(res)); 
 });
 
+// POST -------------------------------------------------------------------------------------------------------
+
 // "/register" 
 router.post('/register', async (req, res) => {
   const _usr = req.headers?.username || '';
@@ -54,6 +60,8 @@ router.post('/register', async (req, res) => {
   }
   res.send(getData);
 });
+
+// PUT -------------------------------------------------------------------------------------------------------
 
 // "/update" 
 router.put('/update', async (req, res) => {
@@ -77,6 +85,20 @@ router.put('/password', async (req, res) => {
   }
   res.send(getData);
 });
+
+// "/email" - Used to update email
+router.put('/password', async (req, res) => {
+  const _user = req.headers?.username || '';
+  const _oPass = req.headers?.oldpassword || '';
+  const _nPass = req.headers?.newpassword || '';
+  const getData = await user.updatePassword(req, _user, _oPass, _nPass);
+  if (getData === 'DONE') {
+    res.status(201);
+  }
+  res.send(getData);
+});
+
+// Routes that have param (MUST BE LAST TO THESE TO OVERRIDE ROUTES ABOVE) ------------------------------------
 
 // "/:id" - Show specific user by ID
 router.get('/:id', async (req, res) => {

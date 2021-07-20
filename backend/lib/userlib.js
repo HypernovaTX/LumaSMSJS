@@ -1,11 +1,15 @@
-// Commonly used user functions for multiple purposes
+// ================================================================================
+// Misc user functions
+// ================================================================================
 import SQL from './sql.js';
 import express from 'express';
 import cookieParser from 'cookie-parser';
 import dotenv from 'dotenv';
 import jwt from 'jsonwebtoken';
+import bcrypt from 'bcryptjs';
 import SqlString from 'sqlstring';
 import { handleError, placeholderPromise, clientIP } from '../lib/globallib.js';
+
 
 const app = express();
 const DB = new SQL();
@@ -14,13 +18,9 @@ const groupTable = `${process.env.DB_PREFIX}groups`;
 app.use(cookieParser());
 dotenv.config({ path: './.env' });
 
-export async function updateLastActivity(uid = '0', ip = '') {
-  const timestamp = Math.ceil(Date.now() / 1000);
-  DB.buildUpdate(userTable, [`last_activity`, `last_ip`], [timestamp, ip]);
-  DB.buildWhere(`uid = ${uid}`);
-  return await DB.runQuery(true);
-}
 
+
+// ---- CHECKS ----
 export async function checkLogin(_request) {
   let output = 'LOGGED OUT';
 
@@ -75,6 +75,67 @@ export async function checkPermission(_request) {
     DB.runQuery().then((data) => {
       data[0].id = loginStatus.uid;
       resolve(data[0]);
+    });
+  });
+}
+
+export async function checkExistingUser(username, email) {
+  if (!username || !email) {
+    handleError('us0');
+    return this.dummyPromise;
+  }
+  
+  const cleanUser = SqlString.escape(username);
+  const cleanEmail = SqlString.escape(email);
+  DB.buildSelect(userTable);
+  DB.buildWhere(`username = ${cleanUser} || email = ${cleanEmail}`);
+
+  return await new Promise((resolve, reject) => {
+    DB.runQuery().then((data, err) => {
+      if (err) { reject(err); }
+      if (data.length === 0) { resolve('PASS'); } // Nothing matches
+      else { // When something matches
+        if (data[0].email.toUpperCase() === email.toUpperCase() && data[0].username.toUpperCase() === username.toUpperCase()) { resolve('FAIL, BOTH'); }
+        else if (data[0].email.toUpperCase() === email.toUpperCase()) { resolve('FAIL, EMAIL'); }
+        else if (data[0].username.toUpperCase() === username.toUpperCase()) { resolve('FAIL, USER'); }
+        else { resolve('FAIL, UNKNOWN'); }
+      }
+    });
+  })
+}
+
+// ---- UPDATES ----
+export async function updateLastActivity(uid = '0', ip = '') {
+  const timestamp = Math.ceil(Date.now() / 1000);
+  DB.buildUpdate(userTable, [`last_activity`, `last_ip`], [timestamp, ip]);
+  DB.buildWhere(`uid = ${uid}`);
+  return await DB.runQuery(true);
+}
+
+export async function updateLoginCookie(uid, _response) {
+  const token = jwt.sign({ uid }, process.env.JWT_SECRET, { expiresIn: process.env.JWT_EXPIRES_IN, });
+  const cookieOptions = {
+    expires: new Date(Date.now() + process.env.JWT_COOKIE_EXPIRES * 365 * 24 * 60 * 60 * 1000),
+    httpOnly: true,
+  };
+  _response.cookie('Login', token, cookieOptions);
+}
+
+export async function createUser(_request, username, email, password) {
+  // Hash the password
+  return await new Promise((resolve, reject) => {
+    bcrypt.hash(password, 8, (err_bcrypt, hash) => {
+      if (err_bcrypt) { handleError('us4'); reject(err_bcrypt); }
+
+      const columnNames = ['username', 'email', 'password', 'join_date', 'items_per_page', 'gid', 'registered_ip'];
+      const timestamp = Math.ceil(Date.now() / 1000);
+      const columnValues = [username, email, hash, timestamp, process.env.DEFAULT_ROWS, 5, clientIP(_request)];
+
+      // Build and run
+      DB.buildInsert(userTable, columnNames, columnValues);
+      DB.runQuery(true).then((queryResult) => {
+        resolve(queryResult);
+      });
     });
   });
 }
