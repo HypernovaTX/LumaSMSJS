@@ -48,7 +48,30 @@ router.post('/register', async (req, res) => {
   const _usr = req.headers?.username || '';
   const _pas = req.headers?.password || '';
   const _ema = req.headers?.email || '';
-  const getData = await user.doRegister(_usr, _pas, _ema);
+  const getData = await user.doRegister(req, _usr, _pas, _ema);
+  if (getData === 'DONE') {
+    res.status(201);
+  }
+  res.send(getData);
+});
+
+// "/update" 
+router.put('/update', async (req, res) => {
+  const _uid = req.headers?.id || '';
+  const _dat = JSON.parse(req.headers?.data || '[]'); // { columnName(see DB): string, value: any }[]
+  const getData = await user.updateUserProfile(req, _uid, _dat);
+  if (getData === 'DONE') {
+    res.status(201);
+  }
+  res.send(getData);
+});
+
+// "/password" - Used to update password
+router.put('/password', async (req, res) => {
+  const _user = req.headers?.username || '';
+  const _oPass = req.headers?.oldpassword || '';
+  const _nPass = req.headers?.newpassword || '';
+  const getData = await user.updatePassword(req, _user, _oPass, _nPass);
   if (getData === 'DONE') {
     res.status(201);
   }

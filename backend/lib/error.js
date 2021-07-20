@@ -39,12 +39,11 @@ export default class ERR {
       case('us2'): output += `US2 - Error while processing bcrypt.match in login!`; break;
       case('us3'): output += `US3 - Please check the parameters in "doRegister()"!`; break;
       case('us4'): output += `US4 - Error while processing bcrypt.hash in register!`; break;
-      case('us5'): output += `US5 - User is not logged in to perform this action!`; break;
-      
-      
-      case('us7'): output += `US7 - Please check the parameters in "passwordChangeRequest()"!`; break;
-      case('us8'): output += `US8 - Please check the parameters in "changeUser()"!`; break;
-      case('us9'): output += `US9 - Please check the parameters in "uploadAvatarBanner()"!`; break;
+      case('us5'): output += `US5 - User is not logged in to perform the action!`; break;
+      case('us6'): output += `US6 - User does not have the right permission to perform the action!`; break;
+      case('us7'): output += `US7 - Param 'inputs' is blank for "updateUserProfile()"!`; break;
+      case('us8'): output += `US8 - Wrong password for verification"!`; break;
+      case('us9'): output += `US9 - Old and new passwords are the same!`; break;
       case('us10'): output += `US10 - Please check the parameters in "updateUserProfile()"!`; break;
 
       // lv# - related to submission

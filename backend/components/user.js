@@ -1,7 +1,7 @@
 // ==================== MAIN USER OBJ ====================
 import SQL from '../lib/sql.js';
-import { placeholderPromise, handleError } from '../lib/globallib.js';
-import { checkPermission } from '../lib/userlib.js';
+import { placeholderPromise, handleError, clientIP } from '../lib/globallib.js';
+import { checkPermission, checkLogin } from '../lib/userlib.js';
 import express from 'express';
 import cookieParser from 'cookie-parser';
 import dotenv from 'dotenv';
@@ -22,8 +22,6 @@ export default class User {
   constructor() {
     this.dummyPromise = placeholderPromise('ERROR');
     this.SALT = process.env.PASSWORD_SALT;
-    this.imageMIME = /image\/(apng|gif|jpeg|png|svg|webp)$/i;
-    this.fileExtension = /\.[0-9a-z]+$/;
     this.DB = new SQL();
     this.userTable = `${process.env.DB_PREFIX}users`;
   }
@@ -53,15 +51,19 @@ export default class User {
   }
 
   async showUserByID(id = 0) {
-    this.DB.buildSelect(this.userTable);
-    this.DB.buildWhere(`uid = ${id}`);
+    this.DB.buildSelect(`${this.userTable} u`, [
+      'u.*',
+      '(SELECT COUNT(*) FROM tsms_comments WHERE uid = u.uid) as comments',
+      '(SELECT COUNT(*) FROM tsms_resources WHERE uid = u.uid AND queue_code = 0) as submissions'
+    ]);
+    this.DB.buildWhere(`u.uid = ${id}`);
     const data = await this.DB.runQuery();
-    return data;
+    return data[0];
   }
 
-  /**
-   ********************************** LOGIN *************************************
-   */
+  /*
+  ********************************** LOGIN *************************************
+  */
   // ---- CHECKS ----
   async checkExistingUser(username, email) {
     if (!username || !email) {
@@ -89,6 +91,7 @@ export default class User {
   }
 
   // ---- USE THESE FOR CALLS ----
+  // When param '_response' is null, the function will NOT run "updateLoginCookie()"
   async doLogin(username, password, _response = null) {
     // Ensure param username and password are valid
     if (!username || !password) {
@@ -116,7 +119,7 @@ export default class User {
             if (errB) { handleError('us2', errB); }
             if (res) {
               if (_response) { this.updateLoginCookie(data[0].uid, _response); }
-              resolve('SUCCESS!');
+              resolve('SUCCESS');
             }
             else { resolve('FAIL'); }
           });
@@ -131,7 +134,7 @@ export default class User {
     return 'LOGGED OUT';
   }
 
-  async doRegister(username, password, email) {
+  async doRegister(_request, username, password, email) {
     // In case if both param are invalid
     if ((!username || !email || !password) || (username === '' || email === '' || password === '')) {
       handleError('us3');
@@ -140,7 +143,7 @@ export default class User {
 
     const userCheckResult = await this.checkExistingUser(username, email);
     if (userCheckResult === 'PASS') {
-      return await this.newUserToDatabase(username, email, password);
+      return await this.newUserToDatabase(_request, username, email, password);
     }
     return userCheckResult;
   }
@@ -155,16 +158,15 @@ export default class User {
     _response.cookie('Login', token, cookieOptions);
   }
 
-  async newUserToDatabase(username, email, password) {
+  async newUserToDatabase(_request, username, email, password) {
     // Hash the password
-    console.log('NEW');
     return await new Promise((resolve, reject) => {
       bcrypt.hash(password, 8, (err_bcrypt, hash) => {
-        if (err_bcrypt) { this.handleError('us4'); reject(err_bcrypt); }
+        if (err_bcrypt) { handleError('us4'); reject(err_bcrypt); }
 
-        const columnNames = ['username', 'email', 'password', 'join_date', 'items_per_page', 'gid'];
+        const columnNames = ['username', 'email', 'password', 'join_date', 'items_per_page', 'gid', 'registered_ip'];
         const timestamp = Math.ceil(Date.now() / 1000);
-        const columnValues = [username, email, hash, timestamp, process.env.DEFAULT_ROWS, 5];
+        const columnValues = [username, email, hash, timestamp, process.env.DEFAULT_ROWS, 5, clientIP(_request)];
 
         // Build and run
         this.DB.buildInsert(this.userTable, columnNames, columnValues);
@@ -173,15 +175,85 @@ export default class User {
         });
       });
     });
-  };
+  }
 
-  /**
-   ********************************** LOGIN *************************************
-   */
+  /*
+  ********************************** EDITING *************************************
+  */
 
-  async updateUserProfile(uid = 0, inputs = {}) {
-    const getPermPermission = await checkPermission();
-    
+  async updateUserProfile(_request, uid = 0, inputs = [], sensitive = false) {
+    const getPermPermission = await checkPermission(_request);
+    if (getPermPermission === 'LOGGED OUT') { 
+      handleError('us5'); return placeholderPromise(getPermPermission);
+    }
+    if ((parseInt(uid) !== parseInt(getPermPermission.id) && !getPermPermission.staff_user)
+    || (!getPermPermission.can_msg || !getPermPermission.can_submit || !getPermPermission.can_comment)) { 
+      handleError('us6'); return placeholderPromise('BAD PERMISSION'); 
+    }
+    if (inputs.length === 0) {
+      handleError('us7'); return placeholderPromise('NOTHING');
+    }
+
+    const checkSpecialPermission = (column = '', value = '') => {
+      const readOnlyKey = ['registered_ip', 'join_date', 'last_visit', 'last_active', 'last_ip']
+      const staffKey = ['gid', 'username'];
+      const sensitiveKey = ['password', 'email'];
+      if (readOnlyKey.find(eachRO => eachRO === column)) { return 'READ ONLY'; }
+      if (sensitiveKey.find(eachSS => eachSS === column) && !sensitive && !getPermPermission.staff_user) { return 'SENSITIVE'; }
+      if (staffKey.find(eachST => eachST === column) && !getPermPermission.staff_user) { return 'STAFF ONLY'; }
+      if (column === 'gid' && value === '1' && !getPermPermission.staff_root) { return 'ROOT ONLY'; }
+      return 'PASS';
+    }
+
+    let [updateColumns, updateValues] = [[], []];
+    for (let eachObj of inputs) {
+      const [entry] = Object.entries(eachObj);
+      const specialPermissionResult = checkSpecialPermission(entry[0], entry[1]);
+      if (specialPermissionResult !== 'PASS') {
+        handleError('us6');
+        return placeholderPromise(specialPermissionResult); 
+      }
+      updateColumns.push(entry[0]);
+      updateValues.push(entry[1]);
+    }
+    this.DB.buildUpdate(this.userTable, updateColumns, updateValues);
+    this.DB.buildWhere(`uid = ${uid}`);
+    let output = await this.DB.runQuery(true);
+    return output;
+  }
+
+  async updatePassword(_request, username, oldPassword, newPassword) {
+    const loginVerify = await checkLogin(_request);
+    if (loginVerify === 'LOGGED OUT') {
+      handleError('us5'); return placeholderPromise(loginVerify);
+    }
+    const uid = loginVerify.uid;
+    const passwordVerify = await this.doLogin(username, oldPassword, null);
+    if (passwordVerify !== 'SUCCESS') {
+      handleError('us8'); return placeholderPromise(passwordVerify);
+    }
+
+    const hashedNewPassword = await new Promise((resolve, reject) => {
+      bcrypt.hash(newPassword, 8, (err_bcrypt, hash) => {
+        if (err_bcrypt) { handleError('us4'); reject(err_bcrypt); }
+        resolve(hash);
+      });
+    });
+    return await this.updateUserProfile(_request, uid, [{ password: hashedNewPassword }], true);
+  }
+
+  async updateEmail(_request, username, password, newEmail) {
+    const loginVerify = await checkLogin(_request);
+    if (loginVerify === 'LOGGED OUT') {
+      handleError('us5'); return placeholderPromise(loginVerify);
+    }
+    const uid = loginVerify.uid;
+    const passwordVerify = await this.doLogin(username, password, null);
+    if (passwordVerify !== 'SUCCESS') {
+      handleError('us8'); return placeholderPromise(passwordVerify);
+    }
+
+    return await this.updateUserProfile(_request, uid, [{ email: newEmail }], true);
   }
   
 }

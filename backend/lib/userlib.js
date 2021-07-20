@@ -5,7 +5,7 @@ import cookieParser from 'cookie-parser';
 import dotenv from 'dotenv';
 import jwt from 'jsonwebtoken';
 import SqlString from 'sqlstring';
-import { handleError, placeholderPromise } from '../lib/globallib.js';
+import { handleError, placeholderPromise, clientIP } from '../lib/globallib.js';
 
 const app = express();
 const DB = new SQL();
@@ -22,7 +22,7 @@ export async function updateLastActivity(uid = '0', ip = '') {
 }
 
 export async function checkLogin(_request) {
-  let output = 'No cookie';
+  let output = 'LOGGED OUT';
 
   //If cookie exists
   if (_request.cookies?.Login) {
@@ -34,7 +34,7 @@ export async function checkLogin(_request) {
         //Prepare data
         DB.buildSelect(userTable);
         const cleanDecode = SqlString.escape(decoded.uid);
-        const ip = _request.headers['x-forwarded-for'] || _request.connection.remoteAddress;
+        const ip = clientIP(_request);
 
         //Do the query to check if the ID matches
         DB.buildWhere(`uid = ${cleanDecode}`);
@@ -73,6 +73,7 @@ export async function checkPermission(_request) {
 
   return await new Promise((resolve) => {
     DB.runQuery().then((data) => {
+      data[0].id = loginStatus.uid;
       resolve(data[0]);
     });
   });

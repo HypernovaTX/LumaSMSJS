@@ -14,3 +14,12 @@ export function placeholderPromise(input = '') {
   })
   return output;
 }
+
+// Get client IP
+export function clientIP(_request) {
+  return _request.headers['x-forwarded-for'] || _request.connection.remoteAddress;
+}
+
+// Regular expressions
+export const imageMIME = /image\/(apng|gif|jpeg|png|svg|webp)$/i;
+export const fileExtension = /\.[0-9a-z]+$/;

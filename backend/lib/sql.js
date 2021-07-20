@@ -65,7 +65,7 @@ export default class SQL {
 
 
   // ---------- Section B: Query Builder ----------
-  // !!! DO NOT USE SqlString.escape as thes methods already did the job !!!
+  // ** !!! DO NOT USE SqlString.escape as thes methods already did the job !!!
   
   // SELECT query
   buildSelect(table, column = '*') {
@@ -106,7 +106,7 @@ export default class SQL {
     return this.query;
   }
 
-  // ORDER BY query
+  // ORDER BY query **
   // Note: both param must have the same number of arrays
   buildOrder(column = [''], ascending = [true]) {
     // Error Handling
@@ -135,7 +135,7 @@ export default class SQL {
     return this.query;
   }
 
-  // INSERT INTO query
+  // INSERT INTO query **
   // Note: both 'columns' and 'values' param must have the same number of arrays
   buildInsert(table, columns = [''], values = ['']) {
     if (table === null || columns === [''] || values === ['']) {
@@ -154,7 +154,7 @@ export default class SQL {
     return this.query;
   }
 
-  // UPDATE query
+  // UPDATE query **
   buildUpdate(table, columns = [''], values = ['']) {
     if (table === null || columns === [''] || values === ['']) {
       handleError('db8'); return;
@@ -171,8 +171,8 @@ export default class SQL {
     this.query = `UPDATE ${table} SET ${updateArray.join(', ')} `;
     return this.query;
   }
-
-  // DELETE FROM query
+ 
+  // DELETE FROM query ** 
   // FOR @param {string | string[]} input - Where statement, you can include multiple with arrays
   buildDelete(table, input) {
     if (table === null) {
