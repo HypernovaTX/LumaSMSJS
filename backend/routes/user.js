@@ -3,8 +3,8 @@
 // ================================================================================
 import express from 'express';
 import User from '../components/user.js';
+import { isStringJSON } from '../lib/globallib.js';
 import { checkLogin, checkPermission } from '../lib/userlib.js';
-
 export const router = express.Router();
 const user = new User();
 
@@ -17,7 +17,10 @@ router.get('/', async (req, res) => {
   const count = req.headers?.count || 25;                     // count - number
   const colSort = req.headers?.column || '';                  // row - string
   const asc = req.headers?.asc || true;                       // asc - boolean
-  const filter = JSON.parse(req.headers?.filter || '[]');     // filter - { column: string, value: string }[]
+  let filter = [];                                            // filter - { column: string, value: string }[]
+  if (isStringJSON(req.headers?.filter)) {
+    filter = JSON.parse(req.headers?.filter);     
+  } 
   const getData = await user.listUsers(page, count, colSort, asc, filter);
   res.send(getData);
 });
@@ -66,7 +69,10 @@ router.post('/register', async (req, res) => {
 // "/update" 
 router.put('/update', async (req, res) => {
   const _uid = req.headers?.id || '';
-  const _dat = JSON.parse(req.headers?.data || '[]'); // { columnName(see DB): string, value: any }[]
+  let _dat = []; // { columnName(see DB): string, value: any }[]
+  if (isStringJSON(req.headers?.data)) {
+    _dat = JSON.parse(req.headers?.data);     
+  }
   const getData = await user.updateUserProfile(req, _uid, _dat);
   if (getData === 'DONE') {
     res.status(201);
@@ -76,9 +82,9 @@ router.put('/update', async (req, res) => {
 
 // "/password" - Used to update password
 router.put('/password', async (req, res) => {
-  const _user = req.headers?.username || '';
-  const _oPass = req.headers?.oldpassword || '';
-  const _nPass = req.headers?.newpassword || '';
+  const _user = req.headers?.username ?? '';
+  const _oPass = req.headers?.oldpassword ?? '';
+  const _nPass = req.headers?.newpassword ?? '';
   const getData = await user.updatePassword(req, _user, _oPass, _nPass);
   if (getData === 'DONE') {
     res.status(201);
@@ -87,11 +93,11 @@ router.put('/password', async (req, res) => {
 });
 
 // "/email" - Used to update email
-router.put('/password', async (req, res) => {
-  const _user = req.headers?.username || '';
-  const _oPass = req.headers?.oldpassword || '';
-  const _nPass = req.headers?.newpassword || '';
-  const getData = await user.updatePassword(req, _user, _oPass, _nPass);
+router.put('/email', async (req, res) => {
+  const _user = req.headers?.username ?? '';
+  const _pass = req.headers?.password ?? '';
+  const _emai = req.headers?.email ?? '';
+  const getData = await user.updateEmail(req, _user, _pass, _emai);
   if (getData === 'DONE') {
     res.status(201);
   }
@@ -102,7 +108,7 @@ router.put('/password', async (req, res) => {
 
 // "/:id" - Show specific user by ID
 router.get('/:id', async (req, res) => {
-  const id = req.params.id || 0;
+  const id = req.params.id ?? 0;
   console.log(req.params);
   const getData = await user.showUserByID(id);
   res.send(getData);

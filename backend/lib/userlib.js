@@ -1,15 +1,14 @@
 // ================================================================================
 // Misc user functions
 // ================================================================================
-import SQL from './sql.js';
 import express from 'express';
 import cookieParser from 'cookie-parser';
 import dotenv from 'dotenv';
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
 import SqlString from 'sqlstring';
+import SQL from './sql.js';
 import { handleError, placeholderPromise, clientIP } from '../lib/globallib.js';
-
 
 const app = express();
 const DB = new SQL();
@@ -17,8 +16,6 @@ const userTable = `${process.env.DB_PREFIX}users`;
 const groupTable = `${process.env.DB_PREFIX}groups`;
 app.use(cookieParser());
 dotenv.config({ path: './.env' });
-
-
 
 // ---- CHECKS ----
 export async function checkLogin(_request) {
@@ -41,7 +38,8 @@ export async function checkLogin(_request) {
         DB.runQuery().then((data) => {
           if (data.length > 0) { //If matches - confirm
             updateLastActivity(cleanDecode, ip);
-            if (data[0].hasOwnProperty('password')) { delete data[0].password; } //Remove password
+            const hasPassword = Object.prototype.hasOwnProperty.call(data[0], 'password');
+            if (hasPassword) { delete data[0].password; }
             resolve(data[0]);
           } else { resolve('LOGGED OUT'); }
         });
@@ -80,31 +78,39 @@ export async function checkPermission(_request) {
 }
 
 export async function checkExistingUser(username, email) {
-  if (!username || !email) {
+  if (!username && !email) {
     handleError('us0');
-    return this.dummyPromise;
+    return placeholderPromise('EMPTY');
   }
-  
+
+  username = username ?? '';
+  email = email ?? '';
   const cleanUser = SqlString.escape(username);
   const cleanEmail = SqlString.escape(email);
+  let whereQuery = `username = ${cleanUser} || email = ${cleanEmail}`
   DB.buildSelect(userTable);
-  DB.buildWhere(`username = ${cleanUser} || email = ${cleanEmail}`);
+  if (!username) { whereQuery = `email = ${cleanEmail}` }
+  if (!email) { whereQuery = `username = ${cleanUser}` }
+  DB.buildWhere(whereQuery);
 
   return await new Promise((resolve, reject) => {
-    DB.runQuery().then((data, err) => {
+    DB.runQuery().then((dbResult, err) => {
       if (err) { reject(err); }
-      if (data.length === 0) { resolve('PASS'); } // Nothing matches
+      if (dbResult.length === 0) { resolve('PASS'); } // Nothing matches
       else { // When something matches
-        if (data[0].email.toUpperCase() === email.toUpperCase() && data[0].username.toUpperCase() === username.toUpperCase()) { resolve('FAIL, BOTH'); }
-        else if (data[0].email.toUpperCase() === email.toUpperCase()) { resolve('FAIL, EMAIL'); }
-        else if (data[0].username.toUpperCase() === username.toUpperCase()) { resolve('FAIL, USER'); }
-        else { resolve('FAIL, UNKNOWN'); }
+        if (dbResult[0].email.toUpperCase() === email.toUpperCase() && dbResult[0].username.toUpperCase() === username.toUpperCase()) {
+          resolve('FAIL, BOTH');
+        } else if (dbResult[0].email.toUpperCase() === email.toUpperCase()) {
+          resolve('FAIL, EMAIL');
+        } else if (dbResult[0].username.toUpperCase() === username.toUpperCase()) {
+          resolve('FAIL, USER');
+        } else { resolve('FAIL, UNKNOWN'); }
       }
     });
   })
 }
 
-// ---- UPDATES ----
+// ---- UPDATES / CREATE ----
 export async function updateLastActivity(uid = '0', ip = '') {
   const timestamp = Math.ceil(Date.now() / 1000);
   DB.buildUpdate(userTable, [`last_activity`, `last_ip`], [timestamp, ip]);

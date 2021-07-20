@@ -41,16 +41,16 @@ export default class ERR {
       case('us4'): output += `US4 - Error while processing bcrypt.hash in register!`; break;
       case('us5'): output += `US5 - User is not logged in to perform the action!`; break;
       case('us6'): output += `US6 - User does not have the right permission to perform the action!`; break;
-      case('us7'): output += `US7 - Param 'inputs' is blank for "updateUserProfile()"!`; break;
+      case('us7'): output += `US7 - Param 'inputs' is blank or invalid for "updateUserProfile()"!`; break;
       case('us8'): output += `US8 - Wrong password for verification"!`; break;
       case('us9'): output += `US9 - Old and new passwords are the same!`; break;
-      case('us10'): output += `US10 - Please check the parameters in "updateUserProfile()"!`; break;
+      case('us10'): output += `US10 - "Email is already taken!`; break;
 
-      // lv# - related to submission
-      case('lv0'): output += `US0 - Please check the parameters in "listLevels()"!`; break;
-      case('lv1'): output += `US1 - Please check the parameters in "showLevel()"!`; break;
-      case('lv2'): output += `US1 - Please check the parameters in "showLevelComments()"!`; break;
-      case('lv3'): output += `US1 - Please check the parameters in "showLevelRatings()"!`; break;
+      // re# - related to submission
+      case('re0'): output += `RE0 - Please check the parameters in "listLevels()"!`; break;
+      case('re1'): output += `RE1 - Please check the parameters in "showLevel()"!`; break;
+      case('re2'): output += `RE1 - Please check the parameters in "showLevelComments()"!`; break;
+      case('re3'): output += `RE1 - Please check the parameters in "showLevelRatings()"!`; break;
 
       // fi# - related to files
       case('fi1'): output += `FI1 - Incorrect directory to write file.`; break;

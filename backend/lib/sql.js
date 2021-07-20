@@ -1,8 +1,8 @@
 // ==================== MAIN SQL OBJ ====================
-import { handleError, placeholderPromise } from './globallib.js';
 import mysql from 'mysql';
 import SqlString from 'sqlstring';
 import dotenv from 'dotenv';
+import { handleError } from './globallib.js';
 dotenv.config({ path: './.env' });
 
 // ==================== Database Class ====================
@@ -29,7 +29,6 @@ export default class SQL {
   release() {
     this.pool.release((error) => { if (error) { handleError('db1', error.message); } });
   }
-
   checkPool() {
     if (!this.pool) { return false; }
     return true;

@@ -9,9 +9,10 @@
         "sourceType": "module"
     },
     "rules": {
-      "globals": {
-        "process": true
-      }
+      
+    },
+    "globals": {
+      "process": true
     }
     
 }

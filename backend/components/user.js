@@ -2,11 +2,11 @@
 // MAIN USER OBJECT
 // (primarily called by /routes/user.js)
 // ================================================================================
+import bcrypt from 'bcryptjs';
+import SqlString from 'sqlstring';
 import SQL from '../lib/sql.js';
 import { placeholderPromise, handleError } from '../lib/globallib.js';
 import { checkPermission, checkLogin, checkExistingUser, updateLoginCookie, createUser } from '../lib/userlib.js';
-import bcrypt from 'bcryptjs';
-import SqlString from 'sqlstring';
 
 export default class User {
   constructor() {
@@ -37,8 +37,8 @@ export default class User {
     const listOfUsers = await this.DB.runQuery();
     
     for (let user of listOfUsers) {
-      // Remove passwords on all of the user list
-      if (user.hasOwnProperty('password')) { delete user.password; }
+      const hasPassword = Object.prototype.hasOwnProperty.call(user, 'password');
+      if (hasPassword) { delete user.password; }
     }
     return listOfUsers;
   }
@@ -163,14 +163,17 @@ export default class User {
 
   // Update current (logged in) user's password
   async updatePassword(_request, username, oldPassword, newPassword) {
+    if (oldPassword === newPassword) {
+      handleError('us9'); return placeholderPromise('SAME');
+    }
     const loginVerify = await checkLogin(_request);
     if (loginVerify === 'LOGGED OUT') {
-      handleError('us5'); return placeholderPromise(loginVerify);
+      handleError('us5'); return placeholderPromise('LOGGED OUT');
     }
     const uid = loginVerify.uid;
     const passwordVerify = await this.doLogin(username, oldPassword, null);
     if (passwordVerify !== 'SUCCESS') {
-      handleError('us8'); return placeholderPromise(passwordVerify);
+      handleError('us8'); return placeholderPromise('PASSWORD FAIL');
     }
 
     // Encrypt the password
@@ -186,13 +189,17 @@ export default class User {
   // Update current (logged in) user's email
   async updateEmail(_request, username, password, newEmail) {
     const loginVerify = await checkLogin(_request);
-    if (loginVerify === 'LOGGED OUT') {
-      handleError('us5'); return placeholderPromise(loginVerify);
+    if (loginVerify === 'LOGGED OUT') { // Verify login
+      handleError('us5'); return placeholderPromise('LOGGED OUT');
     }
     const uid = loginVerify.uid;
     const passwordVerify = await this.doLogin(username, password, null);
     if (passwordVerify !== 'SUCCESS') { // Verify password
-      handleError('us8'); return placeholderPromise(passwordVerify);
+      handleError('us8'); return placeholderPromise('PASSWORD FAIL');
+    }
+    const checkEmailResult = await checkExistingUser(null, newEmail);
+    if (checkEmailResult !== 'PASS') { // Verify email
+      handleError('us10'); return placeholderPromise('EXISTS');
     }
 
     return await this.updateUserProfile(_request, uid, [{ email: newEmail }], true);
