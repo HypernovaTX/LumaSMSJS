@@ -22,17 +22,19 @@ export default class User {
 
   // List of users
   // Param 'column' is used for which column to sort by
-  // Filter must be in { column: string, value: string }[]
+  // Filter must be in { columnName: string }[]
   async listUsers(page = 0, count = 25, column = '', asc = true, filter = []) {
     this.DB.buildSelect(this.userTable);
 
     if (column) { this.DB.buildOrder([column], [asc]); }
     if (filter.length > 0) {
       let statements = [];
-      filter.forEach((filterData) => {
-        
-        statements.push(`${filterData.column} = ${filterData.value}`);
-      });
+      for (let eachObj of filter) {
+        let [entry] = Object.entries(eachObj);
+        entry[0] = (typeof entry[0] === 'string') ? sanitizeInput(entry[0]) : entry[0];
+        entry[1] = (typeof entry[1] === 'string') ? `'${sanitizeInput(entry[1])}'` : entry[1];
+        statements.push(`${entry[0]} = ${entry[1]}`);
+      }
       this.DB.buildWhere(statements);
     }
     if (count) { this.DB.buildCustomQuery(`LIMIT ${page * count}, ${count}`); }
