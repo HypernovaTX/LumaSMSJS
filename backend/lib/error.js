@@ -44,7 +44,8 @@ export default class ERR {
       case('us7'): output += `US7 - Param 'inputs' is blank or invalid for "updateUserProfile()"!`; break;
       case('us8'): output += `US8 - Wrong password for verification"!`; break;
       case('us9'): output += `US9 - Old and new passwords are the same!`; break;
-      case('us10'): output += `US10 - "Email is already taken!`; break;
+      case('us10'): output += `US10 - Email is already taken!`; break;
+      case('us11'): output += `US11 - Only root admins can delete users!`; break;
 
       // re# - related to submission
       case('re0'): output += `RE0 - Please check the parameters in "listLevels()"!`; break;

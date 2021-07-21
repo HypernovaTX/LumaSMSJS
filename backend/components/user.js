@@ -3,10 +3,11 @@
 // (primarily called by /routes/user.js)
 // ================================================================================
 import bcrypt from 'bcryptjs';
-import SqlString from 'sqlstring';
+import dotenv from 'dotenv';
 import SQL from '../lib/sql.js';
-import { placeholderPromise, handleError } from '../lib/globallib.js';
-import { checkPermission, checkLogin, checkExistingUser, updateLoginCookie, createUser } from '../lib/userlib.js';
+import { placeholderPromise, handleError, sanitizeInput } from '../lib/globallib.js';
+import { checkPermission, checkLogin, checkExistingUser, updateLoginCookie, createUser } from './lib/userlib.js';
+dotenv.config({ path: './.env' });
 
 export default class User {
   constructor() {
@@ -29,6 +30,7 @@ export default class User {
     if (filter.length > 0) {
       let statements = [];
       filter.forEach((filterData) => {
+        
         statements.push(`${filterData.column} = ${filterData.value}`);
       });
       this.DB.buildWhere(statements);
@@ -50,7 +52,7 @@ export default class User {
       '(SELECT COUNT(*) FROM tsms_comments WHERE uid = u.uid) as comments', // Count comments
       '(SELECT COUNT(*) FROM tsms_resources WHERE uid = u.uid AND queue_code = 0) as submissions', // Count submissions
     ]);
-    this.DB.buildWhere(`u.uid = ${id}`);
+    this.DB.buildWhere(`u.uid = ${sanitizeInput(id)}`);
     const data = await this.DB.runQuery();
     return data[0];
   }
@@ -64,21 +66,19 @@ export default class User {
         handleError('us1');
         return this.dummyPromise;
     }
-
     this.DB.buildSelect(this.userTable);
-    const cleanName = SqlString.escape(username);
-    this.DB.buildWhere(`username = ${cleanName}`);
+    this.DB.buildWhere(`username = '${sanitizeInput(username)}'`);
 
     const result = await new Promise((resolve, reject) => {
-      this.DB.runQuery().then((data, err) => {
-        if (err) { reject(err); }
+      this.DB.runQuery().then((data, errDB) => {
+        if (errDB) { reject(errDB); }
 
         // Login verification procedures
         if (data.length === 0) { resolve('FAIL'); }
         else {
           if (data[0].password === undefined) { data[0].password = ''; }
-          bcrypt.compare(password, data[0].password, (errB, res) => {
-            if (errB) { handleError('us2', errB); }
+          bcrypt.compare(password, data[0].password, (errBcrypt, res) => {
+            if (errBcrypt) { handleError('us2', errBcrypt); }
             if (res) {
               if (_response) { updateLoginCookie(data[0].uid, _response); }
               resolve('SUCCESS');
@@ -118,12 +118,12 @@ export default class User {
   // Param "inputs" must be in { columnName: value }[]
   // Param "insensitive" can be only called by methods like updatePassword, updateEmail, updateUsername
   async updateUserProfile(_request, uid = 0, inputs = [], insensitive = false) {
-    const getPermPermission = await checkPermission(_request);
-    if (getPermPermission === 'LOGGED OUT') { // Not logged in
-      handleError('us5'); return placeholderPromise(getPermPermission);
+    const getPermission = await checkPermission(_request);
+    if (getPermission === 'LOGGED OUT') { // Not logged in
+      handleError('us5'); return placeholderPromise(getPermission);
     }
-    if ((parseInt(uid) !== parseInt(getPermPermission.id) && !getPermPermission.staff_user) // A non-staff user
-    || (!getPermPermission.can_msg || !getPermPermission.can_submit || !getPermPermission.can_comment)) { // banned user
+    if ((parseInt(uid) !== parseInt(getPermission.id) && !getPermission.staff_user) // A non-staff user
+    || (!getPermission.can_msg || !getPermission.can_submit || !getPermission.can_comment)) { // banned user
       handleError('us6'); return placeholderPromise('BAD PERMISSION'); 
     }
     if (inputs.length === 0) { // Nothing for "inputs"
@@ -137,9 +137,9 @@ export default class User {
       const staffKey = ['gid', 'username'];
       const sensitiveKey = ['password', 'email'];
       if (readOnlyKey.find(eachRO => eachRO === column)) { return 'READ ONLY'; }
-      if (sensitiveKey.find(eachSS => eachSS === column) && !insensitive && !getPermPermission.staff_user) { return 'SENSITIVE'; }
-      if (staffKey.find(eachST => eachST === column) && !getPermPermission.staff_user) { return 'STAFF ONLY'; }
-      if (column === 'gid' && value === '1' && !getPermPermission.staff_root) { return 'ROOT ONLY'; }
+      if (sensitiveKey.find(eachSS => eachSS === column) && !insensitive && !getPermission.staff_user) { return 'SENSITIVE'; }
+      if (staffKey.find(eachST => eachST === column) && !getPermission.staff_user) { return 'STAFF ONLY'; }
+      if (column === 'gid' && value === '1' && !getPermission.staff_root) { return 'ROOT ONLY'; }
       return 'PASS';
     }
 
@@ -162,7 +162,7 @@ export default class User {
   }
 
   // Update current (logged in) user's password
-  async updatePassword(_request, username, oldPassword, newPassword) {
+  async updatePassword(_request, oldPassword, newPassword) {
     if (oldPassword === newPassword) {
       handleError('us9'); return placeholderPromise('SAME');
     }
@@ -170,8 +170,8 @@ export default class User {
     if (loginVerify === 'LOGGED OUT') {
       handleError('us5'); return placeholderPromise('LOGGED OUT');
     }
-    const uid = loginVerify.uid;
-    const passwordVerify = await this.doLogin(username, oldPassword, null);
+    const uid = (typeof loginVerify.uid === 'string') ? sanitizeInput(loginVerify.uid) : loginVerify.uid;
+    const passwordVerify = await this.doLogin(loginVerify.username, oldPassword, null);
     if (passwordVerify !== 'SUCCESS') {
       handleError('us8'); return placeholderPromise('PASSWORD FAIL');
     }
@@ -187,13 +187,13 @@ export default class User {
   }
 
   // Update current (logged in) user's email
-  async updateEmail(_request, username, password, newEmail) {
+  async updateEmail(_request, password, newEmail) {
     const loginVerify = await checkLogin(_request);
     if (loginVerify === 'LOGGED OUT') { // Verify login
       handleError('us5'); return placeholderPromise('LOGGED OUT');
     }
     const uid = loginVerify.uid;
-    const passwordVerify = await this.doLogin(username, password, null);
+    const passwordVerify = await this.doLogin(loginVerify.username, password, null);
     if (passwordVerify !== 'SUCCESS') { // Verify password
       handleError('us8'); return placeholderPromise('PASSWORD FAIL');
     }
@@ -203,6 +203,22 @@ export default class User {
     }
 
     return await this.updateUserProfile(_request, uid, [{ email: newEmail }], true);
+  }
+
+  async deleteUser(_request, uid = 0) {
+    const getPermission = await checkPermission(_request);
+    if (getPermission === 'LOGGED OUT') { // Not logged in
+      handleError('us5'); return placeholderPromise('LOGGED OUT');
+    }
+    if (!getPermission.staff_root) { // Only root admin can delete user
+      handleError('us11'); return placeholderPromise('ROOT ONLY');
+    }
+
+    uid = (typeof uid === 'string') ? `'${sanitizeInput(uid)}'` : uid;
+    this.DB.buildDelete(this.userTable, `uid = ${uid}`);
+    const getResult = await this.DB.runQuery();
+    if (!getResult?.affectedRows) { return placeholderPromise('FAIL'); }
+    return placeholderPromise('DONE'); 
   }
   
 }

@@ -1,6 +1,7 @@
 // ================================================================================
 // Reuseable utility functions that can be used anywhere
 // ================================================================================
+import SqlString from 'sqlstring';
 import ERR from './error.js';
 
 // Common server specific use ----------------------------------------------------
@@ -32,6 +33,13 @@ export function isStringJSON(toCheck = '') {
   try { JSON.parse(toCheck); }
   catch { return false; }
   return true;
+}
+
+// Proper Escape String without '
+export function sanitizeInput(input = '') {
+  let output = SqlString.escape(input);
+  output = output.substring(1, output.length-1);
+  return output;
 }
 
 // Regular expressions

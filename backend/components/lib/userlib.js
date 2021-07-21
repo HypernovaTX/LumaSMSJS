@@ -1,59 +1,54 @@
 // ================================================================================
 // Misc user functions
 // ================================================================================
-import express from 'express';
-import cookieParser from 'cookie-parser';
-import dotenv from 'dotenv';
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
-import SqlString from 'sqlstring';
-import SQL from './sql.js';
-import { handleError, placeholderPromise, clientIP } from '../lib/globallib.js';
+import dotenv from 'dotenv';
+import SQL from '../../lib/sql.js';
+import { handleError, placeholderPromise, clientIP, sanitizeInput } from '../../lib/globallib.js';
 
-const app = express();
+dotenv.config({ path: './.env' });
 const DB = new SQL();
 const userTable = `${process.env.DB_PREFIX}users`;
 const groupTable = `${process.env.DB_PREFIX}groups`;
-app.use(cookieParser());
-dotenv.config({ path: './.env' });
 
 // ---- CHECKS ----
 export async function checkLogin(_request) {
   let output = 'LOGGED OUT';
+  if (!_request.cookies?.Login) { return output; }
 
-  //If cookie exists
-  if (_request.cookies?.Login) {
-    output = await new Promise((resolve, reject) => {
-      //Use the JWT to verify the cookie with secret code
-      jwt.verify(_request.cookies.Login, process.env.JWT_SECRET, (err, decoded) => {
-        if (err) { reject(err); }
+  output = await new Promise((resolve, reject) => {
+    //Use the JWT to verify the cookie with secret code
+    jwt.verify(_request.cookies.Login, process.env.JWT_SECRET, (err, decoded) => {
+      if (err) { reject(err); }
 
-        //Prepare data
-        DB.buildSelect(userTable);
-        const cleanDecode = SqlString.escape(decoded.uid);
-        const ip = clientIP(_request);
+      //Prepare data
+      DB.buildSelect(userTable);
+      const cleanDecode = (typeof decoded.uid === 'string') ? sanitizeInput(decoded.uid) : decoded.uid;
+      const ip = clientIP(_request);
 
-        //Do the query to check if the ID matches
-        DB.buildWhere(`uid = ${cleanDecode}`);
-        DB.runQuery().then((data) => {
-          if (data.length > 0) { //If matches - confirm
-            updateLastActivity(cleanDecode, ip);
-            const hasPassword = Object.prototype.hasOwnProperty.call(data[0], 'password');
-            if (hasPassword) { delete data[0].password; }
-            resolve(data[0]);
-          } else { resolve('LOGGED OUT'); }
-        });
+      //Do the query to check if the ID matches
+      DB.buildWhere(`uid = ${cleanDecode}`);
+      DB.runQuery().then((data) => {
+        if (data.length > 0) { //If matches - confirm
+          updateLastActivity(cleanDecode, ip);
+          const hasPassword = Object.prototype.hasOwnProperty.call(data[0], 'password');
+          if (hasPassword) { delete data[0].password; }
+          resolve(data[0]);
+        } else { resolve('LOGGED OUT'); }
       });
     });
-  }
-  return output; 
+  });
+
+  return output;
 }
 
 export async function checkPermission(_request) {
   const loginStatus = await checkLogin(_request);
   if (loginStatus === 'LOGGED OUT') {
     handleError('us5');
-    return placeholderPromise(loginStatus);
+    const loggedOut = { id: 0, staff_mod: 0, staff_user: 0, staff_qc: 0, staff_admin: 0, staff_root: 0, can_msg: 0, can_comment: 0 };
+    return placeholderPromise(loggedOut);
   }
 
   const groupID = loginStatus.gid;
@@ -68,7 +63,7 @@ export async function checkPermission(_request) {
     'can_submit', 'can_comment'
   ]);
   DB.buildWhere(`gid = ${groupID}`);
-
+  
   return await new Promise((resolve) => {
     DB.runQuery().then((data) => {
       data[0].id = loginStatus.uid;
@@ -82,15 +77,14 @@ export async function checkExistingUser(username, email) {
     handleError('us0');
     return placeholderPromise('EMPTY');
   }
-
   username = username ?? '';
   email = email ?? '';
-  const cleanUser = SqlString.escape(username);
-  const cleanEmail = SqlString.escape(email);
-  let whereQuery = `username = ${cleanUser} || email = ${cleanEmail}`
+  const cleanUser = sanitizeInput(username);
+  const cleanEmail = sanitizeInput(email);
+  let whereQuery = `username = '${cleanUser}' || email = '${cleanEmail}'`
   DB.buildSelect(userTable);
-  if (!username) { whereQuery = `email = ${cleanEmail}` }
-  if (!email) { whereQuery = `username = ${cleanUser}` }
+  if (!username) { whereQuery = `email = '${cleanEmail}'` }
+  if (!email) { whereQuery = `username = '${cleanUser}'` }
   DB.buildWhere(whereQuery);
 
   return await new Promise((resolve, reject) => {

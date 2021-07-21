@@ -4,7 +4,7 @@
 import express from 'express';
 import User from '../components/user.js';
 import { isStringJSON } from '../lib/globallib.js';
-import { checkLogin, checkPermission } from '../lib/userlib.js';
+import { checkLogin, checkPermission } from '../components/lib/userlib.js';
 export const router = express.Router();
 const user = new User();
 
@@ -54,9 +54,9 @@ router.get('/logout', (req, res) => {
 
 // "/register" 
 router.post('/register', async (req, res) => {
-  const _usr = req.headers?.username || '';
-  const _pas = req.headers?.password || '';
-  const _ema = req.headers?.email || '';
+  const _usr = req.body?.username || '';
+  const _pas = req.body?.password || '';
+  const _ema = req.body?.email || '';
   const getData = await user.doRegister(req, _usr, _pas, _ema);
   if (getData === 'DONE') {
     res.status(201);
@@ -68,11 +68,12 @@ router.post('/register', async (req, res) => {
 
 // "/update" 
 router.put('/update', async (req, res) => {
-  const _uid = req.headers?.id || '';
+  const _uid = req.body?.id || '';
   let _dat = []; // { columnName(see DB): string, value: any }[]
-  if (isStringJSON(req.headers?.data)) {
-    _dat = JSON.parse(req.headers?.data);     
+  if (isStringJSON(req.body?.data)) {
+    _dat = JSON.parse(req.body?.data);     
   }
+  console.log(req.body);
   const getData = await user.updateUserProfile(req, _uid, _dat);
   if (getData === 'DONE') {
     res.status(201);
@@ -82,10 +83,9 @@ router.put('/update', async (req, res) => {
 
 // "/password" - Used to update password
 router.put('/password', async (req, res) => {
-  const _user = req.headers?.username ?? '';
-  const _oPass = req.headers?.oldpassword ?? '';
-  const _nPass = req.headers?.newpassword ?? '';
-  const getData = await user.updatePassword(req, _user, _oPass, _nPass);
+  const _oPass = req.body?.oldpassword ?? '';
+  const _nPass = req.body?.newpassword ?? '';
+  const getData = await user.updatePassword(req, _oPass, _nPass);
   if (getData === 'DONE') {
     res.status(201);
   }
@@ -94,10 +94,21 @@ router.put('/password', async (req, res) => {
 
 // "/email" - Used to update email
 router.put('/email', async (req, res) => {
-  const _user = req.headers?.username ?? '';
-  const _pass = req.headers?.password ?? '';
-  const _emai = req.headers?.email ?? '';
-  const getData = await user.updateEmail(req, _user, _pass, _emai);
+  const _pass = req.body?.password ?? '';
+  const _emai = req.body?.email ?? '';
+  const getData = await user.updateEmail(req, _pass, _emai);
+  if (getData === 'DONE') {
+    res.status(201);
+  }
+  res.send(getData);
+});
+
+// DELETE -------------------------------------------------------------------------------------------------------
+
+// "/delete" 
+router.delete('/delete', async (req, res) => {
+  const uid = req.body?.uid || 0;
+  const getData = await user.deleteUser(req, uid);
   if (getData === 'DONE') {
     res.status(201);
   }
