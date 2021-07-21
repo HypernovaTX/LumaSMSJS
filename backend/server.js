@@ -16,8 +16,13 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 
 // ==================== User ====================
-import { router as userRouter } from './routes/user.js';
+import { userRouter } from './routes/user.js';
 app.use('/user', userRouter);
+
+
+// ==================== Submission ====================
+import { submissionRouter } from './routes/submission.js';
+app.use('/submission', submissionRouter);
 
 // ==================== Server ====================
 let server = app.listen(12026, () => {

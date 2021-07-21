@@ -12,7 +12,9 @@
       
     },
     "globals": {
-      "process": true
+      "process": true,
+      "__dirname": true,
+      "require": true
     }
     
 }

@@ -3,14 +3,13 @@
 // ================================================================================
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
-import dotenv from 'dotenv';
+import CF from '../../config.js';
 import SQL from '../../lib/sql.js';
 import { handleError, placeholderPromise, clientIP, sanitizeInput } from '../../lib/globallib.js';
 
-dotenv.config({ path: './.env' });
 const DB = new SQL();
-const userTable = `${process.env.DB_PREFIX}users`;
-const groupTable = `${process.env.DB_PREFIX}groups`;
+const userTable = `${CF.DB_PREFIX}users`;
+const groupTable = `${CF.DB_PREFIX}groups`;
 
 // ---- CHECKS ----
 export async function checkLogin(_request) {
@@ -19,7 +18,7 @@ export async function checkLogin(_request) {
 
   output = await new Promise((resolve, reject) => {
     //Use the JWT to verify the cookie with secret code
-    jwt.verify(_request.cookies.Login, process.env.JWT_SECRET, (err, decoded) => {
+    jwt.verify(_request.cookies.Login, CF.JWT_SECRET, (err, decoded) => {
       if (err) { reject(err); }
 
       //Prepare data
@@ -113,9 +112,9 @@ export async function updateLastActivity(uid = '0', ip = '') {
 }
 
 export async function updateLoginCookie(uid, _response) {
-  const token = jwt.sign({ uid }, process.env.JWT_SECRET, { expiresIn: process.env.JWT_EXPIRES_IN, });
+  const token = jwt.sign({ uid }, CF.JWT_SECRET, { expiresIn: CF.JWT_EXPIRES_IN, });
   const cookieOptions = {
-    expires: new Date(Date.now() + process.env.JWT_COOKIE_EXPIRES * 365 * 24 * 60 * 60 * 1000),
+    expires: new Date(Date.now() + CF.JWT_COOKIE_EXPIRES * 365 * 24 * 60 * 60 * 1000),
     httpOnly: true,
   };
   _response.cookie('Login', token, cookieOptions);
@@ -129,7 +128,7 @@ export async function createUser(_request, username, email, password) {
 
       const columnNames = ['username', 'email', 'password', 'join_date', 'items_per_page', 'gid', 'registered_ip'];
       const timestamp = Math.ceil(Date.now() / 1000);
-      const columnValues = [username, email, hash, timestamp, process.env.DEFAULT_ROWS, 5, clientIP(_request)];
+      const columnValues = [username, email, hash, timestamp, CF.DEFAULT_ROWS, 5, clientIP(_request)];
 
       // Build and run
       DB.buildInsert(userTable, columnNames, columnValues);

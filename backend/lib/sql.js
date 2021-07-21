@@ -1,8 +1,7 @@
 // ==================== MAIN SQL OBJ ====================
 import mysql from 'mysql';
-import dotenv from 'dotenv';
+import CF from '../config.js';
 import { handleError, sanitizeInput } from './globallib.js';
-dotenv.config({ path: './.env' });
 
 // ==================== Database Class ====================
 export default class SQL {
@@ -11,10 +10,10 @@ export default class SQL {
     this.query = '';
     this.pool = null;
     this.DBCONFIG = {
-      host: process.env.DB_HOST, 
-      user: process.env.DB_USER, 
-      password: process.env.DB_PASS, 
-      database: process.env.DB_NAME, 
+      host: CF.DB_HOST, 
+      user: CF.DB_USER, 
+      password: CF.DB_PASS, 
+      database: CF.DB_NAME, 
       connectionLimit: 10, 
     };
     this.clearQuery = () => { this.query = ''; }
@@ -45,13 +44,15 @@ export default class SQL {
         if (conErr) { handleError('db0', conErr.message); }
         console.log(`\x1b[36m[SQL QUERY] ${this.query}\x1b[0m`);
 
-        connection.query(this.query, (error, result) => {
-          if (error) { handleError('db2', error.message); }
-          else if (noReturn) { resolve('DONE'); }
-          else { resolve(result); }
-          // console.log(this.pool._allConnections.length); // Used to test number of connections
-          connection.release();
-        });
+        try {
+          connection.query(this.query, (error, result) => {
+            if (error) { handleError('db2', error.message); }
+            else if (noReturn) { resolve('DONE'); }
+            else { resolve(result); }
+            // console.log(this.pool._allConnections.length); // Used to test number of connections
+            connection.release();
+          });
+        } catch (error) { console.log(error); } // MySQL errors
       });
     });
     

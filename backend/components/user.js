@@ -3,18 +3,15 @@
 // (primarily called by /routes/user.js)
 // ================================================================================
 import bcrypt from 'bcryptjs';
-import dotenv from 'dotenv';
 import SQL from '../lib/sql.js';
 import { placeholderPromise, handleError, sanitizeInput } from '../lib/globallib.js';
 import { checkPermission, checkLogin, checkExistingUser, updateLoginCookie, createUser } from './lib/userlib.js';
-dotenv.config({ path: './.env' });
+import CF from '../config.js';
 
 export default class User {
   constructor() {
-    this.dummyPromise = placeholderPromise('ERROR');
-    this.SALT = process.env.PASSWORD_SALT;
     this.DB = new SQL();
-    this.userTable = `${process.env.DB_PREFIX}users`;
+    this.userTable = `${CF.DB_PREFIX}users`;
   }
   
   // PUBLIC METHODS ------------------------------------------------------------------------------------------------------------
@@ -66,7 +63,7 @@ export default class User {
   async doLogin(username, password, _response = null) {
     if (!username || !password) {
         handleError('us1');
-        return this.dummyPromise;
+        return placeholderPromise('ERROR');
     }
     this.DB.buildSelect(this.userTable);
     this.DB.buildWhere(`username = '${sanitizeInput(username)}'`);
@@ -103,7 +100,7 @@ export default class User {
   async doRegister(_request, username, password, email) {
     if ((!username || !email || !password) || (username === '' || email === '' || password === '')) {
       handleError('us3');
-      return this.dummyPromise;
+      return placeholderPromise('ERROR');
     }
 
     // Need to ensure no other username/email were used
