@@ -116,7 +116,6 @@ userRouter.delete('/delete', async (req, res) => {
 // "/:id" - Show specific user by ID | PARAM: id
 userRouter.get('/:id', async (req, res) => {
   const id = req.params.id ?? 0;
-  console.log(req.params);
   const getData = await user.showUserByID(id);
   res.send(getData);
 });

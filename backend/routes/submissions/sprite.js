@@ -23,3 +23,13 @@ spriteRouter.get('/', async (req, res) => {
   const getData = await sprite.listPublic(page, count, colSort, asc, filter);
   res.send(getData);
 });
+
+
+
+// (MUST BE LAST TO THESE TO OVERRIDE ROUTES ABOVE) ------------------------------------
+// "/:id" - Show specific submission by ID | PARAM: id
+spriteRouter.get('/:id', async (req, res) => {
+  const id = req.params.id ?? 0;
+  const getData = await sprite.showSubmissionDetails(id);
+  res.send(getData);
+});

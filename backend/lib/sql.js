@@ -60,6 +60,9 @@ export default class SQL {
   }
 
   // ---------- Section B: Query Builder ----------
+
+  // Reset all query of the SQL instance
+  clearQuery() { this.query = ''; }
   
   // SELECT query
   buildSelect(table, column = '*') {

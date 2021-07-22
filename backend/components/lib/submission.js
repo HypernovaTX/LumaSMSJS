@@ -12,8 +12,8 @@ export default class Submission {
     this.DB = new SQL();
     this.specificTable = `${CF.DB_PREFIX}res_REPLACE_ME`;
     this.resourceType = 0;
-    this.additionalSelectQueries = {
-      list: ['z.views', 'z.downloads']
+    this.additionalQueries = {
+      listSelect: ['z.views', 'z.downloads'],
     };
   }
 
@@ -22,7 +22,7 @@ export default class Submission {
       'r.rid', 'r.uid', 'r.title', 'r.description', 'r.author_override', 'r.created', 'r.updated',
       'r.accept_date', 'r.catwords', 'u.username', 'g.name_prefix', 'g.name_suffix', 
       `(SELECT COUNT(*) FROM ${CF.DB_PREFIX}comments WHERE rid = r.rid && type = 1) AS comments`,
-      ...this.additionalSelectQueries.list
+      ...this.additionalQueries.listSelect
     ];
     this.DB.buildSelect(`${submissionTable} r`, selects);
     this.DB.buildCustomQuery(`RIGHT JOIN ${this.specificTable} z ON z.eid = r.eid`);
@@ -44,5 +44,28 @@ export default class Submission {
     if (count) { this.DB.buildCustomQuery(`LIMIT ${page * count}, ${count}`); }
     
     return await this.DB.runQuery();
+  }
+
+  async showSubmissionDetails(rid = 0, simple = false) {
+    const selects = [
+      'r.*', 'z.*', 'u.username', 'g.name_prefix', 'g.name_suffix',
+    ];
+    this.DB.buildSelect(`${submissionTable} r`, selects);
+    this.DB.buildCustomQuery(`LEFT JOIN ${this.specificTable} z ON z.eid = r.eid`);
+    this.DB.buildCustomQuery(`LEFT JOIN ${CF.DB_PREFIX}users u ON u.uid = r.uid`);
+    this.DB.buildCustomQuery(`LEFT JOIN ${CF.DB_PREFIX}groups g ON g.gid = u.gid`);
+    this.DB.buildWhere([`r.rid = ${sanitizeInput(rid)}`]);
+
+    const waitResult = await this.DB.runQuery();
+    let result = waitResult[0];
+    
+    // Comment, edit history
+    if (!simple) {
+      this.DB.clearQuery();
+      this.DB.buildSelect(`*`,`${CF.DB_PREFIX}comments`);
+
+    }
+
+    return result;
   }
 }

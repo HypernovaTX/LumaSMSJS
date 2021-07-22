@@ -15,12 +15,16 @@ export default class Sprite extends Submission {
     super();
     this.specificTable = `${CF.DB_PREFIX}res_gfx`;
     this.resourceType = 1;
-    this.additionalSelectQueries = {
-      list: ['z.views', 'z.downloads', 'z.thumbnail']
+    this.additionalQueries = {
+      listSelect: ['z.views', 'z.downloads', 'z.thumbnail']
     };
   }
 
   async listPublic(page = 0, count = 25, column = '', asc = true, filter = []) {
     return await super.listPublic(page, count, column, asc, filter);
+  }
+
+  async showSubmissionDetails(rid = 0) {
+    return await super.showSubmissionDetails(rid);
   }
 }
