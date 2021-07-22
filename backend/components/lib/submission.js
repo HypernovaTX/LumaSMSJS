@@ -46,26 +46,38 @@ export default class Submission {
     return await this.DB.runQuery();
   }
 
-  async showSubmissionDetails(rid = 0, simple = false) {
-    const selects = [
-      'r.*', 'z.*', 'u.username', 'g.name_prefix', 'g.name_suffix',
-    ];
+  async showSubmissionDetails(rid = 0) {
+    const selects = ['r.*', 'z.*', 'u.username', 'g.name_prefix', 'g.name_suffix',];
     this.DB.buildSelect(`${submissionTable} r`, selects);
     this.DB.buildCustomQuery(`LEFT JOIN ${this.specificTable} z ON z.eid = r.eid`);
     this.DB.buildCustomQuery(`LEFT JOIN ${CF.DB_PREFIX}users u ON u.uid = r.uid`);
     this.DB.buildCustomQuery(`LEFT JOIN ${CF.DB_PREFIX}groups g ON g.gid = u.gid`);
     this.DB.buildWhere([`r.rid = ${sanitizeInput(rid)}`]);
 
-    const waitResult = await this.DB.runQuery();
-    let result = waitResult[0];
-    
-    // Comment, edit history
-    if (!simple) {
-      this.DB.clearQuery();
-      this.DB.buildSelect(`*`,`${CF.DB_PREFIX}comments`);
+    const result = await this.DB.runQuery();
+    return result[0];
+  }
 
-    }
+  async showSubmissionHistory(rid = 0) {
+    this.DB.buildSelect(`${CF.DB_PREFIX}version`);
+    this.DB.buildWhere([`rid = ${sanitizeInput(rid)}`]);
 
+    let result = await this.DB.runQuery();
+    return result;
+  }
+
+  async showSubmissionComments(rid = 0) {
+    const selects = ['c.*', 'u.*', 'g.name_prefix', 'g.name_suffix',];
+    this.DB.buildSelect(`${CF.DB_PREFIX}comments c`, selects);
+    this.DB.buildCustomQuery(`LEFT JOIN ${CF.DB_PREFIX}users u ON u.uid = c.uid`);
+    this.DB.buildCustomQuery(`LEFT JOIN ${CF.DB_PREFIX}groups g ON g.gid = u.gid`);
+    this.DB.buildWhere([`c.rid = ${sanitizeInput(rid)}`, `c.type = 1`]);
+
+    let result = await this.DB.runQuery();
+    result.forEach((comment) => {
+      const hasPassword = Object.prototype.hasOwnProperty.call(comment, 'password');
+      if (hasPassword) { delete comment.password; }
+    });
     return result;
   }
 }

@@ -24,7 +24,7 @@ export default class Sprite extends Submission {
     return await super.listPublic(page, count, column, asc, filter);
   }
 
-  async showSubmissionDetails(rid = 0) {
-    return await super.showSubmissionDetails(rid);
-  }
+  async showSubmissionDetails(rid = 0) { return await super.showSubmissionDetails(rid); }
+  async showSubmissionHistory(rid = 0) { return await super.showSubmissionHistory(rid); }
+  async showSubmissionComments(rid = 0) { return await super.showSubmissionComments(rid); }
 }

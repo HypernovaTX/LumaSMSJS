@@ -33,3 +33,10 @@ spriteRouter.get('/:id', async (req, res) => {
   const getData = await sprite.showSubmissionDetails(id);
   res.send(getData);
 });
+
+// "/:id/history" - Show submission's update history | PARAM: id
+spriteRouter.get('/:id/history', async (req, res) => {
+  const id = req.params.id ?? 0;
+  const getData = await sprite.showSubmissionHistory(id);
+  res.send(getData);
+});
