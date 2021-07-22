@@ -40,3 +40,10 @@ spriteRouter.get('/:id/history', async (req, res) => {
   const getData = await sprite.showSubmissionHistory(id);
   res.send(getData);
 });
+
+// "/:id/history" - Show submission's user comments | PARAM: id
+spriteRouter.get('/:id/comment', async (req, res) => {
+  const id = req.params.id ?? 0;
+  const getData = await sprite.showSubmissionComments(id);
+  res.send(getData);
+});
