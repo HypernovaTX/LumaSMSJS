@@ -3,7 +3,8 @@
 // ================================================================================
 import CF from '../../config.js';
 import SQL from '../../lib/sql.js';
-import { sanitizeInput } from '../../lib/globallib.js'; //placeholderPromise, handleError
+import { sanitizeInput, placeholderPromise, handleError, clientIP } from '../../lib/globallib.js'; 
+import { checkPermission } from './userlib.js';
 
 const submissionTable = `${CF.DB_PREFIX}resources`;
 
@@ -17,6 +18,8 @@ export default class Submission {
     };
   }
 
+  // PUBLIC METHODS ------------------------------------------------------------------------------------------------------------
+  // Filter must be in { columnName: string }[]
   async listPublic(page = 0, count = 25, column = '', asc = true, filter = []) {
     const selects = [
       'r.rid', 'r.uid', 'r.title', 'r.description', 'r.author_override', 'r.created', 'r.updated',
@@ -66,6 +69,7 @@ export default class Submission {
     return result;
   }
 
+  // USER-LEVEL METHODS ------------------------------------------------------------------------------------------------------------
   async showSubmissionComments(rid = 0) {
     const selects = ['c.*', 'u.*', 'g.name_prefix', 'g.name_suffix',];
     this.DB.buildSelect(`${CF.DB_PREFIX}comments c`, selects);
@@ -80,4 +84,34 @@ export default class Submission {
     });
     return result;
   }
+
+  async createSubmission(_request, dataMainTable, dataSubTable) {
+    const permission = await checkPermission();
+    if (!permission.can_submit) {
+      handleError('re0');
+      return placeholderPromise('DENIED');
+    }
+    if (dataMainTable.length === 0 || dataSubTable.length === 0) {
+      handleError('re1');
+      return placeholderPromise('EMPTY');
+    }
+
+    // Apply changes to the sub table first and get eid
+    let [columnSub, valueSub] = [['views'], [0]];
+    dataSubTable.forEach((entrySub) => {
+      const [column, value] = Object.entries(entrySub);
+      columnSub.push(column);
+      valueSub.push(value)
+    });
+    this.DB.buildInsert(this.specificTable, columnSub, valueSub);
+    const firstResult = await this.DB.runQuery();
+    console.log(firstResult);
+
+    //const columnNames = [...columns, 'items_per_page', 'gid', 'registered_ip'];
+    ///const timestamp = Math.ceil(Date.now() / 1000);
+    //const columnValues = [...values, timestamp, CF.DEFAULT_ROWS, 5, clientIP(_request)];
+
+  }
+
+  // STAFF METHODS ------------------------------------------------------------------------------------------------------------
 }

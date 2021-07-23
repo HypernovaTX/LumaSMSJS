@@ -24,6 +24,17 @@ spriteRouter.get('/', async (req, res) => {
   res.send(getData);
 });
 
+// POST -------------------------------------------------------------------------------------------------------
+// "/create" - register | BODY: username, password, email
+spriteRouter.post('/create', async (req, res) => {
+  const _data = req.body?.data || '';
+  const getData = await sprite.createSubmission(req, _data);
+  if (getData === 'DONE') {
+    res.status(201);
+  }
+  res.send(getData);
+});
+
 
 
 // (MUST BE LAST TO THESE TO OVERRIDE ROUTES ABOVE) ------------------------------------

@@ -27,4 +27,8 @@ export default class Sprite extends Submission {
   async showSubmissionDetails(rid = 0) { return await super.showSubmissionDetails(rid); }
   async showSubmissionHistory(rid = 0) { return await super.showSubmissionHistory(rid); }
   async showSubmissionComments(rid = 0) { return await super.showSubmissionComments(rid); }
+
+  async createSubmission(_request, dataMainTable, dataSubTable) {
+    return await super.createSubmission(_request, dataMainTable, dataSubTable);
+  }
 }

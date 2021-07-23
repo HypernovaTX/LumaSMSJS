@@ -46,7 +46,7 @@ export async function checkPermission(_request) {
   const loginStatus = await checkLogin(_request);
   if (loginStatus === 'LOGGED OUT') {
     handleError('us5');
-    const loggedOut = { id: 0, staff_mod: 0, staff_user: 0, staff_qc: 0, staff_admin: 0, staff_root: 0, can_msg: 0, can_comment: 0 };
+    const loggedOut = { id: 0, staff_mod: 0, staff_user: 0, staff_qc: 0, staff_admin: 0, staff_root: 0, can_msg: 0, can_submit: 0, can_comment: 0 };
     return placeholderPromise(loggedOut);
   }
 
