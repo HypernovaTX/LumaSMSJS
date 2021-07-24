@@ -23,7 +23,7 @@ export default class User {
   async listUsers(page = 0, count = 25, column = '', asc = true, filter = []) {
     this.DB.buildSelect(this.userTable);
 
-    if (column) { this.DB.buildOrder([column], [asc]); }
+    // Apply filter
     if (filter.length > 0) {
       let statements = [];
       for (let eachObj of filter) {
@@ -34,6 +34,9 @@ export default class User {
       }
       this.DB.buildWhere(statements);
     }
+
+    // Order and limit
+    if (column) { this.DB.buildOrder([column], [asc]); }
     if (count) { this.DB.buildCustomQuery(`LIMIT ${page * count}, ${count}`); }
     const listOfUsers = await this.DB.runQuery();
     

@@ -13,14 +13,14 @@ import CF from '../config.js';
 export default class Sprite extends Submission {
   constructor() {
     super();
-    this.specificTable = `${CF.DB_PREFIX}res_gfx`;
+    this.specificTable = `${CF.DB_PREFIX}submission_sprites`;
     this.resourceType = 1;
     this.additionalQueries = {
       listSelect: ['z.views', 'z.downloads', 'z.thumbnail']
     };
   }
 
-  async listPublic(page = 0, count = 25, column = '', asc = true, filter = []) {
+  async listPublic(page = 0, count = 25, column = '', asc = false, filter = []) {
     return await super.listPublic(page, count, column, asc, filter);
   }
 

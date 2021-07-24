@@ -110,7 +110,9 @@ export default class SQL {
   buildOrder(column = [''], ascending = [true]) {
     // Error Handling
     if (Array.isArray(column) && Array.isArray(ascending)) {
-      if (typeof column !== 'string' || typeof ascending !== 'boolean') {
+      console.log(typeof column[0]);
+      console.log(typeof ascending[0]);
+      if (typeof column[0] !== 'string' || typeof ascending[0] !== 'boolean') {
         handleError('db5'); return;
       }
     } else {
@@ -127,7 +129,7 @@ export default class SQL {
     ascending.forEach((value, index) => {
       const cleanColumn = sanitizeInput(column[index]);
       const orderDirection = (value === true) ? 'ASC' : 'DESC';
-      list.push(`'${cleanColumn}' ${orderDirection}`);
+      list.push(`${cleanColumn} ${orderDirection}`);
     });
 
     this.query += `ORDER BY ${list.join(', ')} `;

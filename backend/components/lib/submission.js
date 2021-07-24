@@ -3,10 +3,8 @@
 // ================================================================================
 import CF from '../../config.js';
 import SQL from '../../lib/sql.js';
-import { sanitizeInput, placeholderPromise, handleError, clientIP } from '../../lib/globallib.js'; 
+import { sanitizeInput, placeholderPromise, handleError } from '../../lib/globallib.js'; 
 import { checkPermission } from './userlib.js';
-
-const submissionTable = `${CF.DB_PREFIX}resources`;
 
 export default class Submission {
   constructor() {
@@ -20,20 +18,19 @@ export default class Submission {
 
   // PUBLIC METHODS ------------------------------------------------------------------------------------------------------------
   // Filter must be in { columnName: string }[]
-  async listPublic(page = 0, count = 25, column = '', asc = true, filter = []) {
+  async listPublic(page = 0, count = 25, column = '', asc = false, filter = []) {
     const selects = [
-      'r.rid', 'r.uid', 'r.title', 'r.description', 'r.author_override', 'r.created', 'r.updated',
-      'r.accept_date', 'r.catwords', 'u.username', 'g.name_prefix', 'g.name_suffix', 
-      `(SELECT COUNT(*) FROM ${CF.DB_PREFIX}comments WHERE rid = r.rid && type = 1) AS comments`,
+      'z.id', 'z.uid', 'z.title', 'z.description', 'z.author_override', 'z.created', 'z.updated',
+      'z.accept_date', 'z.catwords', 'u.username', 'g.name_prefix', 'g.name_suffix', 
+      `(SELECT COUNT(*) FROM ${CF.DB_PREFIX}comments WHERE rid = z.id) AS comments`,
       ...this.additionalQueries.listSelect
     ];
-    this.DB.buildSelect(`${submissionTable} r`, selects);
-    this.DB.buildCustomQuery(`RIGHT JOIN ${this.specificTable} z ON z.eid = r.eid`);
-    this.DB.buildCustomQuery(`LEFT JOIN ${CF.DB_PREFIX}users u ON u.uid = r.uid`);
+    this.DB.buildSelect(`${this.specificTable} z`, selects);
+    this.DB.buildCustomQuery(`LEFT JOIN ${CF.DB_PREFIX}users u ON u.uid = z.uid`);
     this.DB.buildCustomQuery(`LEFT JOIN ${CF.DB_PREFIX}groups g ON g.gid = u.gid`);
-    this.DB.buildWhere([`r.type = ${this.resourceType}`, 'r.queue_code = 0', 'r.ghost = 0']);
+    this.DB.buildWhere(['z.queue_code = 0', 'z.ghost = 0']);
 
-    if (column) { this.DB.buildOrder([column], [asc]); }
+    // Used for filter/sorting
     if (filter.length > 0) {
       let statements = [];
       for (let eachObj of filter) {
@@ -44,38 +41,38 @@ export default class Submission {
       }
       this.DB.buildWhere(statements);
     }
-    if (count) { this.DB.buildCustomQuery(`LIMIT ${page * count}, ${count}`); }
     
+    if (column) { this.DB.buildOrder([column], [asc]); }
+    if (count) { this.DB.buildCustomQuery(`LIMIT ${page * count}, ${count}`); }  
     return await this.DB.runQuery();
   }
 
-  async showSubmissionDetails(rid = 0) {
-    const selects = ['r.*', 'z.*', 'u.username', 'g.name_prefix', 'g.name_suffix',];
-    this.DB.buildSelect(`${submissionTable} r`, selects);
-    this.DB.buildCustomQuery(`LEFT JOIN ${this.specificTable} z ON z.eid = r.eid`);
-    this.DB.buildCustomQuery(`LEFT JOIN ${CF.DB_PREFIX}users u ON u.uid = r.uid`);
+  async showSubmissionDetails(id = 0) {
+    const selects = ['z.*', 'u.username', 'g.name_prefix', 'g.name_suffix',];
+    this.DB.buildSelect(`${this.specificTable} z`, selects);
+    this.DB.buildCustomQuery(`LEFT JOIN ${CF.DB_PREFIX}users u ON u.uid = z.uid`);
     this.DB.buildCustomQuery(`LEFT JOIN ${CF.DB_PREFIX}groups g ON g.gid = u.gid`);
-    this.DB.buildWhere([`r.rid = ${sanitizeInput(rid)}`]);
+    this.DB.buildWhere([`z.id = ${sanitizeInput(id)}`]);
 
     const result = await this.DB.runQuery();
     return result[0];
   }
 
-  async showSubmissionHistory(rid = 0) {
+  async showSubmissionHistory(id = 0) {
     this.DB.buildSelect(`${CF.DB_PREFIX}version`);
-    this.DB.buildWhere([`rid = ${sanitizeInput(rid)}`]);
+    this.DB.buildWhere([`rid = ${sanitizeInput(id)}`]);
 
     let result = await this.DB.runQuery();
     return result;
   }
 
   // USER-LEVEL METHODS ------------------------------------------------------------------------------------------------------------
-  async showSubmissionComments(rid = 0) {
+  async showSubmissionComments(id = 0) {
     const selects = ['c.*', 'u.*', 'g.name_prefix', 'g.name_suffix',];
     this.DB.buildSelect(`${CF.DB_PREFIX}comments c`, selects);
     this.DB.buildCustomQuery(`LEFT JOIN ${CF.DB_PREFIX}users u ON u.uid = c.uid`);
     this.DB.buildCustomQuery(`LEFT JOIN ${CF.DB_PREFIX}groups g ON g.gid = u.gid`);
-    this.DB.buildWhere([`c.rid = ${sanitizeInput(rid)}`, `c.type = 1`]);
+    this.DB.buildWhere([`c.rid = ${sanitizeInput(id)}`, `c.type = 1`]);
 
     let result = await this.DB.runQuery();
     result.forEach((comment) => {

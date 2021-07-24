@@ -14,8 +14,8 @@ spriteRouter.get('/', async (req, res) => {
   // Request parameters
   const page = req.headers?.page || 0;                        // page - number
   const count = req.headers?.count || 25;                     // count - number
-  const colSort = req.headers?.column || '';                  // row - string
-  const asc = req.headers?.asc || true;                       // asc - boolean
+  const colSort = req.headers?.column || 'z.id';              // column - string
+  const asc = (req.headers?.asc) ? true : false;              // asc - string (true if not undefined)
   let filter = [];                                            // filter - { columnName: value }[]
   if (isStringJSON(req.headers?.filter)) {
     filter = JSON.parse(req.headers?.filter);     

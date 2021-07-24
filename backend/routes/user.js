@@ -10,13 +10,13 @@ export const userRouter = express.Router();
 const user = new User();
 
 // GET -------------------------------------------------------------------------------------------------------
-// "/" - list users | HEADER: ?page, ?count, ?row, ?asc, ?filter
+// "/" - list users | HEADER: ?page, ?count, ?row, ?dsc, ?filter
 userRouter.get('/', async (req, res) => {
   // Request parameters
   const page = req.headers?.page || 0;                        // page - number
   const count = req.headers?.count || 25;                     // count - number
   const colSort = req.headers?.column || '';                  // row - string
-  const asc = req.headers?.asc || true;                       // asc - boolean
+  const asc = (req.headers?.dsc) ? false : true;              // dsc - string (true if undefined)
   let filter = [];                                            // filter - { columnName: value }[]
   if (isStringJSON(req.headers?.filter)) {
     filter = JSON.parse(req.headers?.filter);     
