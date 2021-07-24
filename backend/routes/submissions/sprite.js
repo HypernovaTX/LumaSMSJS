@@ -27,7 +27,10 @@ spriteRouter.get('/', async (req, res) => {
 // POST -------------------------------------------------------------------------------------------------------
 // "/create" - register | BODY: data
 spriteRouter.post('/create', async (req, res) => {
-  const _data = req.body?.data || ''; // string of { columnName: value }[] 
+  let _data = [];       // string of { columnName: value }[] 
+  if (isStringJSON(req.body?.data)) {
+    _data = JSON.parse(req.body?.data);     
+  } 
   const getData = await sprite.createSubmission(req, _data);
   if (getData === 'DONE') {
     res.status(201);

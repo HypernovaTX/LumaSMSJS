@@ -4,7 +4,7 @@
 import CF from '../../config.js';
 import SQL from '../../lib/sql.js';
 import { sanitizeInput, placeholderPromise, handleError } from '../../lib/globallib.js'; 
-import { checkPermission } from './userlib.js';
+import { checkLogin, checkPermission } from './userlib.js';
 
 export default class Submission {
   constructor() {
@@ -83,8 +83,9 @@ export default class Submission {
   }
 
   async createSubmission(_request, payload) {
+    const login = await checkLogin(_request);
     const permission = await checkPermission(_request);
-    if (!permission.can_submit) {
+    if (!permission.can_submit || login === 'LOGGED OUT') {
       handleError('re0'); return placeholderPromise('DENIED');
     }
     if (payload.length === 0) {
@@ -92,20 +93,16 @@ export default class Submission {
     }
 
     // Apply changes to the sub table first and get eid
-    let [columnSub, valueSub] = [['views'], [0]];
+    const timestamp = Math.ceil(Date.now() / 1000);
+    let [finalColumn, finalValue] = [['views', 'uid', 'created', 'queue_code'], [0, login.uid, timestamp, 1]];
     payload.forEach((entrySub) => {
-      const [column, value] = Object.entries(entrySub);
-      columnSub.push(column);
-      valueSub.push(value)
+      const [data] = Object.entries(entrySub);
+      finalColumn.push(data[0]);
+      finalValue.push(data[1]);
     });
-    this.DB.buildInsert(this.specificTable, columnSub, valueSub);
+    this.DB.buildInsert(this.specificTable, finalColumn, finalValue);
     const firstResult = await this.DB.runQuery();
-    console.log(firstResult);
-
-    //const columnNames = [...columns, 'items_per_page', 'gid', 'registered_ip'];
-    ///const timestamp = Math.ceil(Date.now() / 1000);
-    //const columnValues = [...values, timestamp, CF.DEFAULT_ROWS, 5, clientIP(_request)];
-
+    return firstResult;
   }
 
   // STAFF METHODS ------------------------------------------------------------------------------------------------------------

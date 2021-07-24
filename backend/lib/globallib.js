@@ -31,7 +31,7 @@ export function placeholderPromise(input = '') {
 export function isStringJSON(toCheck = '') {
   if (typeof toCheck !== 'string') { return false; }
   try { JSON.parse(toCheck); }
-  catch { return false; }
+  catch(e) { console.log(e); return false; }
   return true;
 }
 

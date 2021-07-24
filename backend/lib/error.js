@@ -49,7 +49,7 @@ export default class ERR {
 
       // re# - related to submission
       case('re0'): output += `RE0 - User does not have the right permission to perform the action!`; break;
-      case('re1'): output += `RE1 - Please check the parameters in "showLevel()"!`; break;
+      case('re1'): output += `RE1 - The input data is empty for "createSubmission()"!`; break;
       case('re2'): output += `RE1 - Please check the parameters in "showLevelComments()"!`; break;
       case('re3'): output += `RE1 - Please check the parameters in "showLevelRatings()"!`; break;
 
