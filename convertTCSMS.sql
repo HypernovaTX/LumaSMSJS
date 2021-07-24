@@ -138,3 +138,32 @@ UPDATE `tsms_version` c SET c.rid = (
     END
 ) WHERE c.type > 0;
 UPDATE `tsms_version` SET rid = 0 WHERE type = 0;
+
+ALTER TABLE `tsms_bookmarks` ADD INDEX(`uid`);
+ALTER TABLE `tsms_bookmarks` ADD INDEX(`rid`);
+ALTER TABLE `tsms_bookmarks` ADD INDEX(`type`);
+UPDATE `tsms_bookmarks` c SET c.rid = (
+  CASE /* THREE, take it or leave it. ~ Patrick probably. */
+    WHEN c.type = 1
+    	THEN (SELECT z.id FROM `tsms_submission_sprites` z WHERE z.rid = c.rid)
+    	ELSE CASE WHEN c.type = 2
+    		THEN (SELECT z.id FROM `tsms_submission_games` z WHERE z.rid = c.rid)
+    		ELSE CASE WHEN c.type = 3
+    			THEN (SELECT z.id FROM `tsms_submission_reviews` z WHERE z.rid = c.rid)
+    			ELSE CASE WHEN c.type = 4
+    				THEN (SELECT z.id FROM `tsms_submission_howtos` z WHERE z.rid = c.rid)
+    				ELSE CASE WHEN c.type = 5
+    					THEN (SELECT z.id FROM `tsms_submission_sounds` z WHERE z.rid = c.rid)
+    					ELSE CASE WHEN c.type = 6
+    						THEN (SELECT z.id FROM `tsms_submission_misc` z WHERE z.rid = c.rid)
+    						ELSE CASE WHEN c.type = 7
+    							THEN (SELECT z.id FROM `tsms_submission_hacks` z WHERE z.rid = c.rid)
+    						END
+    					END
+    				END
+    			END
+    		END
+    	END
+    END
+) WHERE c.type > 0;
+DELETE FROM `tsms_bookmarks` WHERE rid = 0;

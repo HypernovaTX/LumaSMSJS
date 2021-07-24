@@ -65,8 +65,7 @@ export default class User {
   // When param '_response' is null, the function will NOT run "updateLoginCookie()"
   async doLogin(username, password, _response = null) {
     if (!username || !password) {
-        handleError('us1');
-        return placeholderPromise('ERROR');
+        handleError('us1'); return placeholderPromise('ERROR');
     }
     this.DB.buildSelect(this.userTable);
     this.DB.buildWhere(`username = '${sanitizeInput(username)}'`);
@@ -102,8 +101,7 @@ export default class User {
   // Main register function
   async doRegister(_request, username, password, email) {
     if ((!username || !email || !password) || (username === '' || email === '' || password === '')) {
-      handleError('us3');
-      return placeholderPromise('ERROR');
+      handleError('us3'); return placeholderPromise('ERROR');
     }
 
     // Need to ensure no other username/email were used

@@ -82,20 +82,18 @@ export default class Submission {
     return result;
   }
 
-  async createSubmission(_request, dataMainTable, dataSubTable) {
-    const permission = await checkPermission();
+  async createSubmission(_request, payload) {
+    const permission = await checkPermission(_request);
     if (!permission.can_submit) {
-      handleError('re0');
-      return placeholderPromise('DENIED');
+      handleError('re0'); return placeholderPromise('DENIED');
     }
-    if (dataMainTable.length === 0 || dataSubTable.length === 0) {
-      handleError('re1');
-      return placeholderPromise('EMPTY');
+    if (payload.length === 0) {
+      handleError('re1'); return placeholderPromise('EMPTY');
     }
 
     // Apply changes to the sub table first and get eid
     let [columnSub, valueSub] = [['views'], [0]];
-    dataSubTable.forEach((entrySub) => {
+    payload.forEach((entrySub) => {
       const [column, value] = Object.entries(entrySub);
       columnSub.push(column);
       valueSub.push(value)

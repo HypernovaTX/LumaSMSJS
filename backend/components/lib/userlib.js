@@ -73,8 +73,7 @@ export async function checkPermission(_request) {
 
 export async function checkExistingUser(username, email) {
   if (!username && !email) {
-    handleError('us0');
-    return placeholderPromise('EMPTY');
+    handleError('us0'); return placeholderPromise('EMPTY');
   }
   username = username ?? '';
   email = email ?? '';
