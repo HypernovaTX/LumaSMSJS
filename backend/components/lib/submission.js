@@ -104,6 +104,30 @@ export default class Submission {
     const firstResult = await this.DB.runQuery();
     return firstResult;
   }
+  
+  async updateSubmission(_request, id, payload) {
+    const login = await checkLogin(_request);
+    const permission = await checkPermission(_request);
+    const getExistingSubmission = await this.showSubmissionDetails(id);
+    if (!permission.can_submit || login === 'LOGGED OUT') {
+      handleError('re0'); return placeholderPromise('DENIED');
+    }
+    if (!id || payload.length === 0) {
+      handleError('re2'); return placeholderPromise('ERROR');
+    }
+
+    // Apply changes to the sub table first and get eid
+    const timestamp = Math.ceil(Date.now() / 1000);
+    let [finalColumn, finalValue] = [['views', 'uid', 'created', 'queue_code', 'ghost'], [0, login.uid, timestamp, 2, id]];
+    payload.forEach((entrySub) => {
+      const [data] = Object.entries(entrySub);
+      finalColumn.push(data[0]);
+      finalValue.push(data[1]);
+    });
+    this.DB.buildInsert(this.specificTable, finalColumn, finalValue);
+    const firstResult = await this.DB.runQuery();
+    return firstResult;
+  }
 
   // STAFF METHODS ------------------------------------------------------------------------------------------------------------
 }
