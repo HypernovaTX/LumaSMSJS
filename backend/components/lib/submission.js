@@ -108,12 +108,15 @@ export default class Submission {
   async updateSubmission(_request, id, payload) {
     const login = await checkLogin(_request);
     const permission = await checkPermission(_request);
-    const getExistingSubmission = await this.showSubmissionDetails(id);
     if (!permission.can_submit || login === 'LOGGED OUT') {
       handleError('re0'); return placeholderPromise('DENIED');
     }
     if (!id || payload.length === 0) {
-      handleError('re2'); return placeholderPromise('ERROR');
+      handleError('re1'); return placeholderPromise('ERROR');
+    }
+    const getExistingSubmission = await this.showSubmissionDetails(id);
+    if (!getExistingSubmission) {
+      handleError('re2'); return placeholderPromise('INVALID');
     }
 
     // Apply changes to the sub table first and get eid

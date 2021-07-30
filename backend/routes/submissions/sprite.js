@@ -38,6 +38,20 @@ spriteRouter.post('/create', async (req, res) => {
   res.send(getData);
 });
 
+// PUT -------------------------------------------------------------------------------------------------------
+// "/update" - register | BODY: data
+spriteRouter.put('/update', async (req, res) => {
+  let _data = [];       // string of { columnName: value }[] 
+  if (isStringJSON(req.body?.data)) {
+    _data = JSON.parse(req.body?.data);     
+  } 
+  const _id = req.body?.id ?? '0';
+  const getData = await sprite.updateSubmission(req, _id, _data);
+  if (getData === 'DONE') {
+    res.status(201);
+  }
+  res.send(getData);
+});
 
 
 // (MUST BE LAST TO THESE TO OVERRIDE ROUTES ABOVE) ------------------------------------
