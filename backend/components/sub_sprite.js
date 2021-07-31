@@ -27,8 +27,18 @@ export default class Sprite extends Submission {
   async showSubmissionDetails(rid = 0) { return await super.showSubmissionDetails(rid); }
   async showSubmissionHistory(rid = 0) { return await super.showSubmissionHistory(rid); }
   async showSubmissionComments(rid = 0) { return await super.showSubmissionComments(rid); }
+  async updateSubmissionViews(_request, id) {}
+  async downloadSubmission(_request, id) {}
 
   async createSubmission(_request, payload) { return await super.createSubmission(_request, payload); }
   async updateSubmission(_request, id, payload) { return await super.updateSubmission(_request, id, payload); }
   async deleteSubmission(_request, id) { return await super.deleteSubmission(_request, id); }
+
+  // TO DO 
+  // 1 - get file upload for createSubmission and updateSubmission working
+  // 2 - npm install node-scheduler and make cron job to delete submission file and DB after 30 days
+  // 3 - download submission and update view/downloads
+  // 4 - Staff vote
+  // 5 - Move on to Reviews, then games, then hacks, then howtos/sounds/misc
+  // 6 - Comment section
 }
