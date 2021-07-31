@@ -30,4 +30,5 @@ export default class Sprite extends Submission {
 
   async createSubmission(_request, payload) { return await super.createSubmission(_request, payload); }
   async updateSubmission(_request, id, payload) { return await super.updateSubmission(_request, id, payload); }
+  async deleteSubmission(_request, id) { return await super.deleteSubmission(_request, id); }
 }

@@ -66,6 +66,9 @@ export default class Submission {
     return result;
   }
 
+  // Update submission view
+  // Download submission
+
   // USER-LEVEL METHODS ------------------------------------------------------------------------------------------------------------
   async showSubmissionComments(id = 0) {
     const selects = ['c.*', 'u.*', 'g.name_prefix', 'g.name_suffix',];
@@ -150,8 +153,11 @@ export default class Submission {
     const getResult = await this.DB.runQuery();
     if (!getResult?.affectedRows) { return placeholderPromise('FAIL'); }
     return placeholderPromise('DONE'); 
-
+    
     // THIS IS A TEMPORARY PLACEHOLDER, IT WOULD BE BETTER IF THE SUBMISSION IS PLACED IN A PENDIng DELETION STATE
+    // npm install node-schedule
+
+
   }
 
   // STAFF METHODS ------------------------------------------------------------------------------------------------------------
@@ -168,8 +174,9 @@ export default class Submission {
     // READ TABLE
     // TURN RESULT INTO ARRAY
     // PUSH ARRAY
+    // CHECK ARRAY FOR SUBMISSION STAT
     // UPDATE TABLE
-    // RETURMN
+    // RETURN
   }
 
 }
