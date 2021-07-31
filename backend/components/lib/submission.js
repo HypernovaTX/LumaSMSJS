@@ -107,8 +107,8 @@ export default class Submission {
   
   async updateSubmission(_request, id, payload) {
     const login = await checkLogin(_request);
-    const permission = await checkPermission(_request);
-    if (!permission.can_submit || login === 'LOGGED OUT') {
+    const getPermission = await checkPermission(_request);
+    if (!getPermission.can_submit || login === 'LOGGED OUT') {
       handleError('re0'); return placeholderPromise('DENIED');
     }
     if (!id || payload.length === 0) {
@@ -132,5 +132,44 @@ export default class Submission {
     return firstResult;
   }
 
+  async deleteSubmission(_request, id) {
+    const getPermission = await checkPermission(_request);
+    if (getPermission === 'LOGGED OUT') { // Not logged in
+      handleError('re0'); return placeholderPromise('DENIED');
+    }
+    if (!id) {
+      handleError('re1'); return placeholderPromise('ERROR');
+    }
+    const getExistingSubmission = await this.showSubmissionDetails(id);
+    if (!getPermission.staff_qc && getExistingSubmission.uid !== getPermission.uid) { // Only root admin can delete other user
+      handleError('re2'); return placeholderPromise('QC ONLY');
+    }
+
+    id = (typeof id === 'string') ? `'${sanitizeInput(id)}'` : id;
+    this.DB.buildDelete(this.specificTable, `id = ${id}`);
+    const getResult = await this.DB.runQuery();
+    if (!getResult?.affectedRows) { return placeholderPromise('FAIL'); }
+    return placeholderPromise('DONE'); 
+
+    // THIS IS A TEMPORARY PLACEHOLDER, IT WOULD BE BETTER IF THE SUBMISSION IS PLACED IN A PENDIng DELETION STATE
+  }
+
   // STAFF METHODS ------------------------------------------------------------------------------------------------------------
+
+  async voteSubmission(_request) {
+    const getPermission = await checkPermission(_request);
+    if (getPermission === 'LOGGED OUT') {
+      handleError('re0'); return placeholderPromise('DENIED');
+    }
+    if (getPermission?.staff_qc) {
+      handleError('re2'); return placeholderPromise('QC ONLY');
+    }
+
+    // READ TABLE
+    // TURN RESULT INTO ARRAY
+    // PUSH ARRAY
+    // UPDATE TABLE
+    // RETURMN
+  }
+
 }
