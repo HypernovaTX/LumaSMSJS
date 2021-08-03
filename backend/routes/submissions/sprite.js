@@ -5,6 +5,7 @@
 import express from 'express';
 import Sprite from '../../components/sub_sprite.js';
 import { isStringJSON } from '../../lib/globallib.js';
+import { multer } from 'multer';
 export const spriteRouter = express.Router();
 const sprite = new Sprite();
 
@@ -26,12 +27,21 @@ spriteRouter.get('/', async (req, res) => {
 
 // POST -------------------------------------------------------------------------------------------------------
 // "/create" - register | BODY: data
-spriteRouter.post('/create', async (req, res) => {
+const upload = multer({ storage: multer.memoryStorage() });
+const uploadFields = [
+  { name: 'avatar', maxCount: 1}, 
+  { name: 'banner', maxCount: 1}, 
+];
+spriteRouter.post('/create', upload.fields(uploadFields), async (req, res) => {
   let _data = [];       // string of { columnName: value }[] 
   if (isStringJSON(req.body?.data)) {
     _data = JSON.parse(req.body?.data);     
-  } 
-  const getData = await sprite.createSubmission(req, _data);
+  }
+  const files = {
+    thumb: req.files.thumb[0] || null,
+    file: req.files.file[0] || null,
+  }
+  const getData = await sprite.createSubmission(req, _data, files);
   if (getData === 'DONE') {
     res.status(201);
   }
