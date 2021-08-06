@@ -51,7 +51,7 @@ export default class ERR {
       case('re0'): output += `RE0 - User does not have the right permission to perform the action!`; break;
       case('re1'): output += `RE1 - One or more input data is empty!`; break;
       case('re2'): output += `RE2 - The selected submission does not exist for updates!`; break;
-      case('re3'): output += `RE3 - Please check the parameters in "showLevelRatings()"!`; break;
+      case('re3'): output += `RE3 - One of more required file is empty!`; break;
 
       // fi# - related to files
       case('fi1'): output += `FI1 - Incorrect directory to write file.`; break;

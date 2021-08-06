@@ -5,7 +5,7 @@
 import express from 'express';
 import Sprite from '../../components/sub_sprite.js';
 import { isStringJSON } from '../../lib/globallib.js';
-import { multer } from 'multer';
+import multer from 'multer';
 export const spriteRouter = express.Router();
 const sprite = new Sprite();
 
@@ -26,11 +26,11 @@ spriteRouter.get('/', async (req, res) => {
 });
 
 // POST -------------------------------------------------------------------------------------------------------
-// "/create" - register | BODY: data
+// "/create" - register | BODY: data, thumb, file
 const upload = multer({ storage: multer.memoryStorage() });
 const uploadFields = [
-  { name: 'avatar', maxCount: 1}, 
-  { name: 'banner', maxCount: 1}, 
+  { name: 'thumb', maxCount: 1}, 
+  { name: 'file', maxCount: 1}, 
 ];
 spriteRouter.post('/create', upload.fields(uploadFields), async (req, res) => {
   let _data = [];       // string of { columnName: value }[] 
@@ -38,8 +38,8 @@ spriteRouter.post('/create', upload.fields(uploadFields), async (req, res) => {
     _data = JSON.parse(req.body?.data);     
   }
   const files = {
-    thumb: req.files.thumb[0] || null,
-    file: req.files.file[0] || null,
+    thumb: req.files.thumb[0] ?? {},
+    file: req.files.file[0] ?? {},
   }
   const getData = await sprite.createSubmission(req, _data, files);
   if (getData === 'DONE') {

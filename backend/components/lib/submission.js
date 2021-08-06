@@ -85,9 +85,10 @@ export default class Submission {
     return result;
   }
 
-  async createSubmission(_request, payload) {
+  async createSubmission(_request, payload, files) {
     const login = await checkLogin(_request);
     const permission = await checkPermission(_request);
+    console.log(files);
     if (!permission.can_submit || login === 'LOGGED OUT') {
       handleError('re0'); return placeholderPromise('DENIED');
     }
