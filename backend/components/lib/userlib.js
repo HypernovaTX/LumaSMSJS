@@ -6,20 +6,21 @@ import bcrypt from 'bcryptjs';
 import CF from '../../config.js';
 import SQL from '../../lib/sql.js';
 import { handleError, placeholderPromise, clientIP, sanitizeInput } from '../../lib/globallib.js';
+import RESULT from '../../lib/result.js';
 
 const DB = new SQL();
 const userTable = `${CF.DB_PREFIX}users`;
 const groupTable = `${CF.DB_PREFIX}groups`;
 
 // ---- CHECKS ----
+/** @returns JSON, RESULT [fail] */
 export async function checkLogin(_request) {
-  let output = 'LOGGED OUT';
-  if (!_request.cookies?.Login) { return output; }
+  if (!_request.cookies?.Login) { return RESULT.fail; } // No cookie found
 
-  output = await new Promise((resolve, reject) => {
+  return new Promise((resolve) => {
     //Use the JWT to verify the cookie with secret code
     jwt.verify(_request.cookies.Login, CF.JWT_SECRET, (err, decoded) => {
-      if (err) { reject(err); }
+      if (err) { resolve(RESULT.fail); }
 
       //Prepare data
       DB.buildSelect(userTable);
@@ -28,23 +29,22 @@ export async function checkLogin(_request) {
 
       //Do the query to check if the ID matches
       DB.buildWhere(`uid = ${cleanDecode}`);
-      DB.runQuery().then((data) => {
-        if (data.length > 0) { //If matches - confirm
+      DB.runQuery().then((queryData) => {
+        if (queryData.length > 0) { //If matches - confirm
           updateLastActivity(cleanDecode, ip);
-          const hasPassword = Object.prototype.hasOwnProperty.call(data[0], 'password');
-          if (hasPassword) { delete data[0].password; }
-          resolve(data[0]);
-        } else { resolve('LOGGED OUT'); }
+          const hasPassword = Object.prototype.hasOwnProperty.call(queryData[0], 'password');
+          if (hasPassword) { delete queryData[0].password; }
+          resolve(queryData[0]);
+        } else { resolve(RESULT.fail); }
       });
     });
   });
-
-  return output;
 }
 
+/** @returns JSON, RESULT [fail] */
 export async function checkPermission(_request) {
   const loginStatus = await checkLogin(_request);
-  if (loginStatus === 'LOGGED OUT') {
+  if (loginStatus === RESULT.fail) {
     handleError('us5');
     const loggedOut = { id: 0, staff_mod: 0, staff_user: 0, staff_qc: 0, staff_admin: 0, staff_root: 0, can_msg: 0, can_submit: 0, can_comment: 0 };
     return placeholderPromise(loggedOut);
@@ -64,16 +64,17 @@ export async function checkPermission(_request) {
   DB.buildWhere(`gid = ${groupID}`);
   
   return await new Promise((resolve) => {
-    DB.runQuery().then((data) => {
-      data[0].id = loginStatus.uid;
-      resolve(data[0]);
+    DB.runQuery().then((queryData) => {
+      queryData[0].id = loginStatus.uid;
+      resolve(queryData[0]);
     });
   });
 }
 
+/** @returns RESULT [badparam | ok | exists] */
 export async function checkExistingUser(username, email) {
   if (!username && !email) {
-    handleError('us0'); return placeholderPromise('EMPTY');
+    handleError('us0'); return placeholderPromise(RESULT.badparam);
   }
   username = username ?? '';
   email = email ?? '';
@@ -85,24 +86,16 @@ export async function checkExistingUser(username, email) {
   if (!email) { whereQuery = `username = '${cleanUser}'` }
   DB.buildWhere(whereQuery);
 
-  return await new Promise((resolve, reject) => {
-    DB.runQuery().then((dbResult, err) => {
-      if (err) { reject(err); }
-      if (dbResult.length === 0) { resolve('PASS'); } // Nothing matches
-      else { // When something matches
-        if (dbResult[0].email.toUpperCase() === email.toUpperCase() && dbResult[0].username.toUpperCase() === username.toUpperCase()) {
-          resolve('FAIL, BOTH');
-        } else if (dbResult[0].email.toUpperCase() === email.toUpperCase()) {
-          resolve('FAIL, EMAIL');
-        } else if (dbResult[0].username.toUpperCase() === username.toUpperCase()) {
-          resolve('FAIL, USER');
-        } else { resolve('FAIL, UNKNOWN'); }
-      }
+  return await new Promise((resolve) => {
+    DB.runQuery().then((queryData) => {
+      if (queryData.length === 0) { resolve(RESULT.ok); } // Nothing matches
+      else { resolve(RESULT.exists); } // When something matches
     });
   })
 }
 
 // ---- UPDATES / CREATE ----
+/** @returns RESULT [done] */
 export async function updateLastActivity(uid = '0', ip = '') {
   const timestamp = Math.ceil(Date.now() / 1000);
   DB.buildUpdate(userTable, [`last_activity`, `last_ip`], [timestamp, ip]);
@@ -110,6 +103,7 @@ export async function updateLastActivity(uid = '0', ip = '') {
   return await DB.runQuery(true);
 }
 
+/** @returns void */
 export async function updateLoginCookie(uid, _response) {
   const token = jwt.sign({ uid }, CF.JWT_SECRET, { expiresIn: CF.JWT_EXPIRES_IN, });
   const cookieOptions = {
@@ -119,11 +113,16 @@ export async function updateLoginCookie(uid, _response) {
   _response.cookie('Login', token, cookieOptions);
 }
 
+/** @returns RESULT [fail | done] */
 export async function createUser(_request, username, email, password) {
   // Hash the password
-  return await new Promise((resolve, reject) => {
+  return await new Promise((resolve) => {
     bcrypt.hash(password, 8, (err_bcrypt, hash) => {
-      if (err_bcrypt) { handleError('us4'); reject(err_bcrypt); }
+      if (err_bcrypt) {
+        handleError('us4');
+        console.log(err_bcrypt);
+        resolve(RESULT.fail);
+      }
 
       const columnNames = ['username', 'email', 'password', 'join_date', 'items_per_page', 'gid', 'registered_ip'];
       const timestamp = Math.ceil(Date.now() / 1000);
@@ -131,9 +130,7 @@ export async function createUser(_request, username, email, password) {
 
       // Build and run
       DB.buildInsert(userTable, columnNames, columnValues);
-      DB.runQuery(true).then((queryResult) => {
-        resolve(queryResult);
-      });
+      DB.runQuery(true).then((queryResult) => { resolve(queryResult); });
     });
   });
 }

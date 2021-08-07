@@ -4,9 +4,10 @@
 // ================================================================================
 import bcrypt from 'bcryptjs';
 import SQL from '../lib/sql.js';
-import { placeholderPromise, handleError, sanitizeInput } from '../lib/globallib.js';
+import { handleError, sanitizeInput } from '../lib/globallib.js';
 import { checkPermission, checkLogin, checkExistingUser, updateLoginCookie, createUser } from './lib/userlib.js';
 import CF from '../config.js';
+import RESULT from '../lib/result.js';
 
 export default class User {
   constructor() {
@@ -14,12 +15,12 @@ export default class User {
     this.userTable = `${CF.DB_PREFIX}users`;
   }
   
-  // PUBLIC METHODS ------------------------------------------------------------------------------------------------------------
-  // No login required
+  // PUBLIC METHODS (no login required) ------------------------------------------------------------------------------------------------------------
 
-  // List of users
-  // Param 'column' is used for which column to sort by
-  // Filter must be in { columnName: string }[]
+  /** List of users
+   @param column - is used for which column to sort by
+   @param filter - must be in { columnName: string }[]
+   @returns JSON, RESULT[fail] */
   async listUsers(page = 0, count = 25, column = '', asc = true, filter = []) {
     this.DB.buildSelect(this.userTable);
 
@@ -40,6 +41,7 @@ export default class User {
     if (count) { this.DB.buildCustomQuery(`LIMIT ${page * count}, ${count}`); }
     const listOfUsers = await this.DB.runQuery();
     
+    // Remove password key
     for (let user of listOfUsers) {
       const hasPassword = Object.prototype.hasOwnProperty.call(user, 'password');
       if (hasPassword) { delete user.password; }
@@ -47,66 +49,90 @@ export default class User {
     return listOfUsers;
   }
 
-  // Show details of a specific user
+  /** Show details of a specific user
+   @returns JSON, RESULT [fail | notfound] */ 
   async showUserByID(id = 0) {
+    const uidWhere = 'WHERE uid = u.uid';
+    const subWhere = `${uidWhere} AND queue_code = 0`;
+    const countQuery = (table, where, as = '') => {
+      return `(SELECT COUNT(*) FROM ${table} ${where}) ${(as) ? `AS ${as}` : ``}`;
+    }
     this.DB.buildSelect(`${this.userTable} u`, [
-      'u.*',
-      '(SELECT COUNT(*) FROM tsms_comments WHERE uid = u.uid) as comments', // Count comments
-      '(SELECT COUNT(*) FROM tsms_resources WHERE uid = u.uid AND queue_code = 0) as submissions', // Count submissions
+      `u.*`, 
+      countQuery(`${CF.DB_PREFIX}comments`, uidWhere, `comments`), // Number of comments made by the user
+      `(SELECT ` + // Count all of the active submissions by this user
+        countQuery(`${CF.DB_PREFIX}submission_games`, subWhere) + `+` +
+        countQuery(`${CF.DB_PREFIX}submission_hacks`, subWhere) + `+` +
+        countQuery(`${CF.DB_PREFIX}submission_howtos`, subWhere) + `+` +
+        countQuery(`${CF.DB_PREFIX}submission_misc`, subWhere) + `+` +
+        countQuery(`${CF.DB_PREFIX}submission_reviews`, subWhere) + `+` +
+        countQuery(`${CF.DB_PREFIX}submission_sounds`, subWhere) + `+` +
+        countQuery(`${CF.DB_PREFIX}submission_sprites`, subWhere) + 
+      `) AS submissions`,
     ]);
     this.DB.buildWhere(`u.uid = ${sanitizeInput(id)}`);
-    const data = await this.DB.runQuery();
-    return data[0];
+    const queryResult = await this.DB.runQuery(); // Only return the 1st result if there's more
+
+    if (!queryResult.length) { return RESULT.notfound; }
+
+    // Delete password
+    const hasPassword = Object.prototype.hasOwnProperty.call(queryResult[0], 'password');
+    if (hasPassword) { delete queryResult[0].password; }
+
+    return queryResult[0]; 
   }
 
   // LOGIN METHODS ------------------------------------------------------------------------------------------------------------
-  
-  // Main login function
-  // When param '_response' is null, the function will NOT run "updateLoginCookie()"
+  /** Main login function
+   @param _response - when it is null, the function will NOT run "updateLoginCookie()"
+   @returns RESULT [badparam | fail | done]
+   */
   async doLogin(username, password, _response = null) {
-    if (!username || !password) {
-        handleError('us1'); return placeholderPromise('ERROR');
-    }
+    // Invalid param
+    if (!username || !password) { handleError('us1'); return RESULT.badparam; }
+
     this.DB.buildSelect(this.userTable);
     this.DB.buildWhere(`username = '${sanitizeInput(username)}'`);
+    const queryData = await this.DB.runQuery();
 
-    const result = await new Promise((resolve, reject) => {
-      this.DB.runQuery().then((data, errDB) => {
-        if (errDB) { reject(errDB); }
+    // Username not found
+    if (queryData.length === 0) { return RESULT.fail; }
 
-        // Login verification procedures
-        if (data.length === 0) { resolve('FAIL'); }
-        else {
-          if (data[0].password === undefined) { data[0].password = ''; }
-          bcrypt.compare(password, data[0].password, (errBcrypt, res) => {
-            if (errBcrypt) { handleError('us2', errBcrypt); }
-            if (res) {
-              if (_response) { updateLoginCookie(data[0].uid, _response); }
-              resolve('SUCCESS');
-            }
-            else { resolve('FAIL'); }
-          });
-        }
+    // Ensure password is a string
+    if (queryData[0].password === undefined) { queryData[0].password = ''; }
+
+    return await new Promise((resolve) => {
+      // Login verification procedures
+      bcrypt.compare(password, queryData[0].password, (errBcrypt, bcryptResult) => {
+        // Login fail
+        if (errBcrypt) { handleError('us2',errBcrypt); resolve(RESULT.fail); return; }
+        if (!bcryptResult) { resolve(RESULT.fail); return; }
+
+        // Login success
+        if (_response) { updateLoginCookie(queryData[0].uid, _response); }
+        resolve(RESULT.done);
       });
     });
-    return result;
   }
 
-  // Main logout function
+  /** Main logout function 
+   @returns - RESULT [done]
+  */ 
   doLogout(_response) {
     _response.cookie('Login', 'logout', { expires: new Date(Date.now() + 2 * 1000), httpOnly: true, });
-    return 'LOGGED OUT';
+    return RESULT.done;
   }
 
-  // Main register function
+  /** Main register function
+   @returns RESULT [badparam | done | fail | exists]
+  */
   async doRegister(_request, username, password, email) {
-    if ((!username || !email || !password) || (username === '' || email === '' || password === '')) {
-      handleError('us3'); return placeholderPromise('ERROR');
-    }
+    // Invalid param
+    if (!username || !password || !email) { handleError('us3'); return RESULT.badparam; }
 
     // Need to ensure no other username/email were used
     const userCheckResult = await checkExistingUser(username, email); 
-    if (userCheckResult === 'PASS') {
+    if (userCheckResult === RESULT.ok) {
       return await createUser(_request, username, email, password);
     }
     return userCheckResult;
@@ -114,21 +140,21 @@ export default class User {
 
   // PROFILE EDITING METHODS ------------------------------------------------------------------------------------------------------------
 
-  // Main function to update settings for updating user profile settings
-  // Param "inputs" must be in { columnName: value }[]
-  // Param "insensitive" can be only called by methods like updatePassword, updateEmail, updateUsername
+  /** Main function to update settings for updating user profile settings
+   @param inputs - must be in `{ columnName: value }[]`
+   @param insensitive - can be only set as `true` by methods like `updatePassword()`, `updateEmail()`, `updateUsername()`
+   @returns RESULT [badparam | denied | fail | done]
+  */
   async updateUserProfile(_request, uid = 0, inputs = [], insensitive = false) {
+    // Not logged in
     const getPermission = await checkPermission(_request);
-    if (getPermission === 'LOGGED OUT') { // Not logged in
-      handleError('us5'); return placeholderPromise(getPermission);
-    }
-    if ((parseInt(uid) !== parseInt(getPermission.id) && !getPermission.staff_user) // A non-staff user
+    if (getPermission === RESULT.fail) { handleError('us5'); return RESULT.fail; } 
+    // Non-staff user cannot modify other user -or- banned user cannot modify their profile
+    if ((parseInt(uid) !== parseInt(getPermission.id) && !getPermission.staff_user) 
     || (!getPermission.can_msg || !getPermission.can_submit || !getPermission.can_comment)) { // banned user
-      handleError('us6'); return placeholderPromise('BAD PERMISSION'); 
+      handleError('us6'); return RESULT.denied; 
     }
-    if (inputs.length === 0) { // Nothing for "inputs"
-      handleError('us7'); return placeholderPromise('NOTHING');
-    }
+    if (inputs.length === 0) { handleError('us7'); return RESULT.badparam; } // Nothing for "inputs"
 
     // A standalone function specified for this method
     // To verify the column (of the user table) is not restricted
@@ -136,11 +162,16 @@ export default class User {
       const readOnlyKey = ['registered_ip', 'join_date', 'last_visit', 'last_active', 'last_ip']
       const staffKey = ['gid', 'username'];
       const sensitiveKey = ['password', 'email'];
-      if (readOnlyKey.find(eachRO => eachRO === column)) { return 'READ ONLY'; }
-      if (sensitiveKey.find(eachSS => eachSS === column) && !insensitive && !getPermission.staff_user) { return 'SENSITIVE'; }
-      if (staffKey.find(eachST => eachST === column) && !getPermission.staff_user) { return 'STAFF ONLY'; }
-      if (column === 'gid' && value === '1' && !getPermission.staff_root) { return 'ROOT ONLY'; }
-      return 'PASS';
+      // Read only
+      if (readOnlyKey.find(eachRO => eachRO === column)) { return RESULT.badparam; }
+      // Can be called by functions that changes password/email
+      if (sensitiveKey.find(eachSS => eachSS === column) && !insensitive && !getPermission.staff_user) { return RESULT.badparam; }
+      // Only staff with "staff_user" permission can modify gid and username
+      if (staffKey.find(eachST => eachST === column) && !getPermission.staff_user) { return RESULT.denied; }
+      // Only root admin can promote other user
+      if (column === 'gid' && value === '1' && !getPermission.staff_root) { return RESULT.denied; } 
+
+      return RESULT.ok;
     }
 
     // Assemble each option then run the query
@@ -148,9 +179,9 @@ export default class User {
     for (let eachObj of inputs) {
       const [entry] = Object.entries(eachObj);
       const specialPermissionResult = checkSpecialPermission(entry[0], entry[1]);
-      if (specialPermissionResult !== 'PASS') {
+      if (specialPermissionResult !== RESULT.ok) {
         handleError('us6');
-        return placeholderPromise(specialPermissionResult); 
+        return specialPermissionResult; 
       }
       updateColumns.push(entry[0]);
       updateValues.push(entry[1]);
@@ -161,64 +192,71 @@ export default class User {
     return output;
   }
 
-  // Update current (logged in) user's password
+  /** Update current (logged in) user's password
+   @returns RESULT [badparam | denied | fail | done | same]
+  */
   async updatePassword(_request, oldPassword, newPassword) {
-    if (oldPassword === newPassword) {
-      handleError('us9'); return placeholderPromise('SAME');
-    }
-    const loginVerify = await checkLogin(_request);
-    if (loginVerify === 'LOGGED OUT') {
-      handleError('us5'); return placeholderPromise('LOGGED OUT');
-    }
+    // Invalid param
+    if (!oldPassword || !newPassword) { return RESULT.badparam; }
+    // Passwords are the same
+    if (oldPassword === newPassword) { handleError('us9'); return RESULT.same; } 
+    // Verify if the current user is logged in
+    const loginVerify = await checkLogin(_request); 
+    if (loginVerify === RESULT.fail) { handleError('us5'); return RESULT.denied; }
+    // Verify old password with the logged in user
     const uid = (typeof loginVerify.uid === 'string') ? sanitizeInput(loginVerify.uid) : loginVerify.uid;
     const passwordVerify = await this.doLogin(loginVerify.username, oldPassword, null);
-    if (passwordVerify !== 'SUCCESS') {
-      handleError('us8'); return placeholderPromise('PASSWORD FAIL');
-    }
+    if (passwordVerify !== RESULT.ok) { handleError('us8'); return RESULT.fail; }
 
     // Encrypt the password
     const hashedNewPassword = await new Promise((resolve, reject) => {
       bcrypt.hash(newPassword, 8, (err_bcrypt, hash) => {
-        if (err_bcrypt) { handleError('us4'); reject(err_bcrypt); }
-        resolve(hash);
+        if (err_bcrypt) { handleError('us4'); reject(RESULT.fail); return; } // Bcrypt fail
+        resolve(hash); // 
       });
     });
     return await this.updateUserProfile(_request, uid, [{ password: hashedNewPassword }], true);
   }
 
-  // Update current (logged in) user's email
+  /** Update current (logged in) user's email
+   @returns RESULT [badparam | denied | fail | done | same]
+  */
   async updateEmail(_request, password, newEmail) {
-    const loginVerify = await checkLogin(_request);
-    if (loginVerify === 'LOGGED OUT') { // Verify login
-      handleError('us5'); return placeholderPromise('LOGGED OUT');
-    }
-    const uid = loginVerify.uid;
+    // Invalid param
+    if (!password || !newEmail) { return RESULT.badparam; }
+    // Verify if the current user is logged in
+    const loginVerify = await checkLogin(_request); 
+    if (loginVerify === RESULT.fail) { handleError('us5'); return RESULT.denied; }
+    // Verify password with the logged in user
+    const uid = (typeof loginVerify.uid === 'string') ? sanitizeInput(loginVerify.uid) : loginVerify.uid;
     const passwordVerify = await this.doLogin(loginVerify.username, password, null);
-    if (passwordVerify !== 'SUCCESS') { // Verify password
-      handleError('us8'); return placeholderPromise('PASSWORD FAIL');
-    }
+    if (passwordVerify !== RESULT.ok) { handleError('us8'); return RESULT.fail; }
+    // Verify if email is taken
     const checkEmailResult = await checkExistingUser(null, newEmail);
-    if (checkEmailResult !== 'PASS') { // Verify email
-      handleError('us10'); return placeholderPromise('EXISTS');
-    }
+    if (checkEmailResult !== RESULT.ok) { handleError('us10'); return RESULT.exists; }
 
     return await this.updateUserProfile(_request, uid, [{ email: newEmail }], true);
   }
 
+  /** Delete user
+   @returns RESULT [denied | fail | done]
+  */
   async deleteUser(_request, uid = 0) {
+    // CHECK LOGIN
     const getPermission = await checkPermission(_request);
-    if (getPermission === 'LOGGED OUT') { // Not logged in
-      handleError('us5'); return placeholderPromise('LOGGED OUT');
-    }
-    if (!getPermission.staff_root) { // Only root admin can delete user
-      handleError('us11'); return placeholderPromise('ROOT ONLY');
-    }
+    if (getPermission === RESULT.fail) { handleError('us5'); RESULT.denied; }
+    // Only root admin can delete user
+    if (!getPermission.staff_root) { handleError('us11'); RESULT.denied; }
 
     uid = (typeof uid === 'string') ? `'${sanitizeInput(uid)}'` : uid;
     this.DB.buildDelete(this.userTable, `uid = ${uid}`);
     const getResult = await this.DB.runQuery();
-    if (!getResult?.affectedRows) { return placeholderPromise('FAIL'); }
-    return placeholderPromise('DONE'); 
+
+    // Nothing deleted
+    if (!getResult?.affectedRows) { return RESULT.fail; }
+
+    // Done
+    return RESULT.done; 
   }
   
 }

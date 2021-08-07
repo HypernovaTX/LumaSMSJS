@@ -8,19 +8,25 @@
 
 // ==================== Core Components ====================
 import express from 'express';
-import cors from 'cors';
 import cookieParser from 'cookie-parser';
+import cors from 'cors';
+import helmet from 'helmet';
+import morgan from 'morgan';
 const app = express();
-app.use(cors());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
+app.use(cors());
+app.use(helmet());
+app.use(morgan('combined', {
+  skip: (req, res) => res.statusCode < 400
+}));
 
-// ==================== User ====================
+// ==================== Routes ====================
+// - User -
 import { userRouter } from './routes/user.js';
 app.use('/user', userRouter);
 
-
-// ==================== Submission ====================
+// - Submission -
 import { submissionRouter } from './routes/submission.js';
 app.use('/submission', submissionRouter);
 

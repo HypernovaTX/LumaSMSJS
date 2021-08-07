@@ -2,6 +2,7 @@
 import mysql from 'mysql';
 import CF from '../config.js';
 import { handleError, sanitizeInput } from './globallib.js';
+import RESULT from './result.js';
 
 // ==================== Database Class ====================
 export default class SQL {
@@ -31,7 +32,7 @@ export default class SQL {
     return true;
   }
   /** runQuery(callback, noReturn) - Run the query
-   * @param { boolean } noReturn - (Optional) - whether to return the rows or just a string of "DONE"
+   * @param { boolean } noReturn - (Optional) - whether to return the rows or just a string of RESULT<done, fail>
    */
   async runQuery(noReturn = false) {
     // Start the connection
@@ -47,12 +48,15 @@ export default class SQL {
         try {
           connection.query(this.query, (error, result) => {
             if (error) { handleError('db2', error.message); }
-            else if (noReturn) { resolve('DONE'); }
+            else if (noReturn) { resolve(RESULT.done); }
             else { resolve(result); }
-            // console.log(this.pool._allConnections.length); // Used to test number of connections
             connection.release();
           });
-        } catch (error) { console.log(error); } // MySQL errors
+        } catch (error) {
+          // MySQL errors
+          console.log(error); 
+          resolve(RESULT.fail);
+        } 
       });
     });
     
