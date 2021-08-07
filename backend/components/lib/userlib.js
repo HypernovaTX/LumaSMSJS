@@ -115,22 +115,13 @@ export async function updateLoginCookie(uid, _response) {
 
 /** @returns RESULT [fail | done] */
 export async function createUser(_request, username, email, password) {
-  // Hash the password
-  return await new Promise((resolve) => {
-    bcrypt.hash(password, 8, (err_bcrypt, hash) => {
-      if (err_bcrypt) {
-        handleError('us4');
-        console.log(err_bcrypt);
-        resolve(RESULT.fail);
-      }
+  const hashedPassword = await bcrypt.hash(password, CF.PASSWORD_SALT);
+  const columnNames = ['username', 'email', 'password', 'join_date', 'items_per_page', 'gid', 'registered_ip'];
+  const timestamp = Math.ceil(Date.now() / 1000);
+  const columnValues = [
+    username, email, hashedPassword, timestamp, CF.ROWS, CF.DEFAULT_GROUP, clientIP(_request)
+  ];
 
-      const columnNames = ['username', 'email', 'password', 'join_date', 'items_per_page', 'gid', 'registered_ip'];
-      const timestamp = Math.ceil(Date.now() / 1000);
-      const columnValues = [username, email, hash, timestamp, CF.DEFAULT_ROWS, 5, clientIP(_request)];
-
-      // Build and run
-      DB.buildInsert(userTable, columnNames, columnValues);
-      DB.runQuery(true).then((queryResult) => { resolve(queryResult); });
-    });
-  });
+  DB.buildInsert(userTable, columnNames, columnValues);
+  return await DB.runQuery(true);
 }

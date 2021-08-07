@@ -8,6 +8,7 @@ import { isStringJSON } from '../../lib/globallib.js';
 import multer from 'multer';
 export const spriteRouter = express.Router();
 const sprite = new Sprite();
+const upload = multer({ storage: multer.memoryStorage() });
 
 // GET -------------------------------------------------------------------------------------------------------
 // "/" - list users | HEADER: ?page, ?count, ?row, ?asc, ?filter
@@ -27,7 +28,6 @@ spriteRouter.get('/', async (req, res) => {
 
 // POST -------------------------------------------------------------------------------------------------------
 // "/create" - register | BODY: data, thumb, file
-const upload = multer({ storage: multer.memoryStorage() });
 const uploadFields = [
   { name: 'thumb', maxCount: 1}, 
   { name: 'file', maxCount: 1}, 

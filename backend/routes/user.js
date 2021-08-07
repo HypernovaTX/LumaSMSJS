@@ -15,36 +15,41 @@ const user = new User();
 // GET "/" - list users (default)
 userRouter.get('/', async (req, res) => {
   const result = await user.listUsers(0, CF.ROWS, '', false, []);
-  if (result === RESULT.fail) { 
-    res.status(400); 
-  } else {
-    res.status(200);
-    res.send(result);
-  }
+
+  // HTTP Status
+  if (result === RESULT.fail) { res.status(401); }
+  else { res.status(200); }
+
+  res.send(result);
 });
 
 // GET "/verify" - verify login
 userRouter.get('/verify', async (req, res) => {
   const result = await checkLogin(req);
-  if (result === RESULT.fail) { 
-    res.status(401); 
-  } else {
-    res.status(200);
-    res.send(result);
-  }
+
+  // HTTP Status
+  if (result === RESULT.fail) { res.status(401); }
+  else { res.status(200); }
+
+  res.send(result);
 });
 
 // GET "/permission" - return current user's permissions
 userRouter.get('/permission', async (req, res) => {
   const result = await checkPermission(req);
   if (result === RESULT.fail) { 
-    res.status(401); }
-  res.send(result);
+    res.status(401);
+  } else {
+    res.status(200);
+    res.send(result);
+  }
 });
 
 // GET "/logout" - logout 
-userRouter.get('/logout', (req, res) => {
-  res.send(user.doLogout(res)); 
+userRouter.get('/logout', async (req, res) => {
+  const result = await user.doLogout(res);
+  res.status(204);
+  res.send(result)
 });
 
 // GET "/:id" - Show specific user by ID | PARAM: id
@@ -82,34 +87,28 @@ userRouter.put('/login', async (req, res) => {
   const username = req.body?.username || '0';
   const password = req.body?.password || '0';
   const result = await user.doLogin(username, password, res);
+
+  // HTTP Status
+  if (result === RESULT.done) { res.status(204); } 
+  else if (result === RESULT.denied) { res.status(401); } 
+  else { res.status(400); }
+
   res.send(result);
 });
 
 
 // PATCH ------------------------------------------------------------------------------------------------------
-// PATCH "/:id" - update user profile settings | BODY: id, data
-userRouter.patch('/:id', async (req, res) => {
-  const _uid = req.params.id || '';        // id - string
-  let _dat = [];                          // data - { columnName: string }[]
-  if (isStringJSON(req.body?.data)) {
-    _dat = JSON.parse(req.body?.data);     
-  }
-  console.log(req.body);
-  const getData = await user.updateUserProfile(req, _uid, _dat);
-  if (getData === RESULT.done) {
-    res.status(201);
-  }
-  res.send(getData);
-});
-
-// "/:id/password" - Update password for current user | BODY: oldpassword, newpassword
-userRouter.patch('/:id/password', async (req, res) => {
+// PATCH "/password" - Update password for current user | BODY: oldpassword, newpassword
+userRouter.patch('/password', async (req, res) => {
   const _oPass = req.body?.oldpassword ?? '';
   const _nPass = req.body?.newpassword ?? '';
   const getData = await user.updatePassword(req, _oPass, _nPass);
-  if (getData === RESULT.done) {
-    res.status(201);
-  }
+
+  // HTTP Status
+  if (getData === RESULT.done) { res.status(201); }
+  else if (getData === RESULT.denied) { res.status(401); }
+  else { res.status(400); }
+
   res.send(getData);
 });
 
@@ -118,9 +117,27 @@ userRouter.patch('/email', async (req, res) => {
   const _pass = req.body?.password ?? '';
   const _emai = req.body?.email ?? '';
   const getData = await user.updateEmail(req, _pass, _emai);
-  if (getData === RESULT.done) {
-    res.status(201);
-  }
+  
+  // HTTP Status
+  if (getData === RESULT.done) { res.status(204); }
+  else if (getData === RESULT.denied) { res.status(401); }
+  else { res.status(400); }
+
+  res.send(getData);
+});
+
+// PATCH "/:id" - update user profile settings | PARAM: id, BODY: data
+userRouter.patch('/:id', async (req, res) => {
+  const _uid = req.params.id || '';        // id - string
+  let _dat = [];                           // data - { columnName: string }[]
+  if (isStringJSON(req.body?.data)) { _dat = JSON.parse(req.body?.data); }
+  const getData = await user.updateUserProfile(req, _uid, _dat);
+
+  // HTTP Status
+  if (getData === RESULT.done) { res.status(204); }
+  else if (getData === RESULT.denied) { res.status(401); }
+  else { res.status(400); }
+  
   res.send(getData);
 });
 
@@ -131,19 +148,24 @@ userRouter.post('/register', async (req, res) => {
   const _pas = req.body?.password || '';
   const _ema = req.body?.email || '';
   const getData = await user.doRegister(req, _usr, _pas, _ema);
-  if (getData === RESULT.done) {
-    res.status(201);
-  }
+
+  // HTTP status 
+  if (getData === RESULT.done) { res.status(204); }
+  else { res.status(400); }
+
   res.send(getData);
 });
 
 // DELETE -------------------------------------------------------------------------------------------------------
-// "/delete" - Delete a user (root admin only) | BODY: id
-userRouter.delete('/delete', async (req, res) => {
-  const uid = req.body?.id || 0; // user ID
+// "/delete" - Delete a user (root admin only) | PARAM: id
+userRouter.delete('/:id', async (req, res) => {
+  const uid = req.params?.id || 0; // user ID
   const getData = await user.deleteUser(req, uid);
-  if (getData === RESULT.done) {
-    res.status(201);
-  }
+
+  // HTTP status
+  if (getData === RESULT.done) { res.status(204); }
+  else if (getData === RESULT.denied) { res.status(401); }
+  else { res.status(404); }
+
   res.send(getData);
 });

@@ -85,7 +85,7 @@ export default class User {
   // LOGIN METHODS ------------------------------------------------------------------------------------------------------------
   /** Main login function
    @param _response - when it is null, the function will NOT run "updateLoginCookie()"
-   @returns RESULT [badparam | fail | done]
+   @returns RESULT [badparam | fail | denied | done]
    */
   async doLogin(username, password, _response = null) {
     // Invalid param
@@ -97,30 +97,25 @@ export default class User {
 
     // Username not found
     if (queryData.length === 0) { return RESULT.fail; }
-
     // Ensure password is a string
-    if (queryData[0].password === undefined) { queryData[0].password = ''; }
+    if (typeof queryData[0].password !== 'string') { queryData[0].password = ''; }
 
-    return await new Promise((resolve) => {
-      // Login verification procedures
-      bcrypt.compare(password, queryData[0].password, (errBcrypt, bcryptResult) => {
-        // Login fail
-        if (errBcrypt) { handleError('us2',errBcrypt); resolve(RESULT.fail); return; }
-        if (!bcryptResult) { resolve(RESULT.fail); return; }
-
-        // Login success
-        if (_response) { updateLoginCookie(queryData[0].uid, _response); }
-        resolve(RESULT.done);
-      });
-    });
+    const result = await bcrypt.compare(password, queryData[0].password);
+    if (result) {
+      if (_response) { updateLoginCookie(queryData[0].uid, _response); }
+      return RESULT.done;
+    }
+    return RESULT.denied;
   }
 
   /** Main logout function 
    @returns - RESULT [done]
   */ 
-  doLogout(_response) {
+  async doLogout(_response) {
     _response.cookie('Login', 'logout', { expires: new Date(Date.now() + 2 * 1000), httpOnly: true, });
-    return RESULT.done;
+    return await new Promise((resolve) => {
+      setTimeout(() => resolve(RESULT.done), 1000);
+    });
   }
 
   /** Main register function
@@ -139,7 +134,6 @@ export default class User {
   }
 
   // PROFILE EDITING METHODS ------------------------------------------------------------------------------------------------------------
-
   /** Main function to update settings for updating user profile settings
    @param inputs - must be in `{ columnName: value }[]`
    @param insensitive - can be only set as `true` by methods like `updatePassword()`, `updateEmail()`, `updateUsername()`
@@ -198,23 +192,21 @@ export default class User {
   async updatePassword(_request, oldPassword, newPassword) {
     // Invalid param
     if (!oldPassword || !newPassword) { return RESULT.badparam; }
+
     // Passwords are the same
     if (oldPassword === newPassword) { handleError('us9'); return RESULT.same; } 
+
     // Verify if the current user is logged in
     const loginVerify = await checkLogin(_request); 
-    if (loginVerify === RESULT.fail) { handleError('us5'); return RESULT.denied; }
+    if (loginVerify === RESULT.denied) { handleError('us5'); return RESULT.denied; }
+
     // Verify old password with the logged in user
     const uid = (typeof loginVerify.uid === 'string') ? sanitizeInput(loginVerify.uid) : loginVerify.uid;
     const passwordVerify = await this.doLogin(loginVerify.username, oldPassword, null);
-    if (passwordVerify !== RESULT.ok) { handleError('us8'); return RESULT.fail; }
+    if (passwordVerify !== RESULT.done) { handleError('us8'); return RESULT.denied; }
 
     // Encrypt the password
-    const hashedNewPassword = await new Promise((resolve, reject) => {
-      bcrypt.hash(newPassword, 8, (err_bcrypt, hash) => {
-        if (err_bcrypt) { handleError('us4'); reject(RESULT.fail); return; } // Bcrypt fail
-        resolve(hash); // 
-      });
-    });
+    const hashedNewPassword = await bcrypt.hash(newPassword, CF.PASSWORD_SALT);
     return await this.updateUserProfile(_request, uid, [{ password: hashedNewPassword }], true);
   }
 
@@ -224,13 +216,16 @@ export default class User {
   async updateEmail(_request, password, newEmail) {
     // Invalid param
     if (!password || !newEmail) { return RESULT.badparam; }
+
     // Verify if the current user is logged in
     const loginVerify = await checkLogin(_request); 
     if (loginVerify === RESULT.fail) { handleError('us5'); return RESULT.denied; }
+
     // Verify password with the logged in user
     const uid = (typeof loginVerify.uid === 'string') ? sanitizeInput(loginVerify.uid) : loginVerify.uid;
     const passwordVerify = await this.doLogin(loginVerify.username, password, null);
-    if (passwordVerify !== RESULT.ok) { handleError('us8'); return RESULT.fail; }
+    if (passwordVerify !== RESULT.done) { handleError('us8'); return RESULT.denied; }
+
     // Verify if email is taken
     const checkEmailResult = await checkExistingUser(null, newEmail);
     if (checkEmailResult !== RESULT.ok) { handleError('us10'); return RESULT.exists; }

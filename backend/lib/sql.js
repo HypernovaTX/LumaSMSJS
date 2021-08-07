@@ -40,14 +40,17 @@ export default class SQL {
       this.connect();
     }
     // Set a promise to run the query
-    const getData = await new Promise((resolve) => {
+    const getData = await new Promise((resolve, reject) => {
       this.pool.getConnection((conErr, connection) => {
         if (conErr) { handleError('db0', conErr.message); }
         console.log(`\x1b[36m[SQL QUERY] ${this.query}\x1b[0m`);
 
         try {
           connection.query(this.query, (error, result) => {
-            if (error) { handleError('db2', error.message); }
+            if (error) { 
+              handleError('db2', error.message); 
+              resolve(RESULT.fail);
+            }
             else if (noReturn) { resolve(RESULT.done); }
             else { resolve(result); }
             connection.release();
@@ -55,7 +58,7 @@ export default class SQL {
         } catch (error) {
           // MySQL errors
           console.log(error); 
-          resolve(RESULT.fail);
+          reject(RESULT.fail);
         } 
       });
     });
