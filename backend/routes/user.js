@@ -37,12 +37,12 @@ userRouter.get('/verify', async (req, res) => {
 // GET "/permission" - return current user's permissions
 userRouter.get('/permission', async (req, res) => {
   const result = await checkPermission(req);
-  if (result === RESULT.fail) { 
-    res.status(401);
-  } else {
-    res.status(200);
-    res.send(result);
-  }
+
+  // HTTP status
+  if (result === RESULT.fail) { res.status(401); }
+  else { res.status(200); }
+
+  res.send(result);
 });
 
 // GET "/logout" - logout 
@@ -56,15 +56,15 @@ userRouter.get('/logout', async (req, res) => {
 userRouter.get('/:id', async (req, res) => {
   const id = req.params.id ?? 0;
   const result = await user.showUserByID(id);
-  if (result === RESULT.fail) { 
-    res.status(400); 
-  } else if (result === RESULT.notfound) { 
-    res.status(404); 
-  } else { 
-    res.status(200);
-    res.send(result); 
-  }
+
+  // HTTP Status
+  if (result === RESULT.fail) { res.status(400); }
+  else if (result === RESULT.notfound) { res.status(404); }
+  else { res.status(200); }
+
+  res.send(result); 
 });
+
 
 // PUT -------------------------------------------------------------------------------------------------------
 // PUT "/" - list users (with param for sort/filter) | BODY: ?page, ?count, ?row, ?dsc, ?filter
@@ -74,11 +74,12 @@ userRouter.put('/', async (req, res) => {
   const colSort = req.body?.column || '';                  // row - string
   const asc = (req.body?.dsc) ? false : true;              // dsc - string (true if undefined)
   let filter = [];                                         // filter - { columnName: value }[]
-  if (isStringJSON(req.body?.filter)) {
-    filter = JSON.parse(req.body?.filter);     
-  } 
+  if (isStringJSON(req.body?.filter)) { filter = JSON.parse(req.body?.filter); } 
   const result = await user.listUsers(page, count, colSort, asc, filter);
+
+  // HTTP STATUS
   if (result === RESULT.fail) { res.status(400); }
+
   res.send(result);
 });
 
@@ -112,7 +113,7 @@ userRouter.patch('/password', async (req, res) => {
   res.send(getData);
 });
 
-// "/email" - Update email for current user | BODY: password, email
+// PATCH "/email" - Update email for current user | BODY: password, email
 userRouter.patch('/email', async (req, res) => {
   const _pass = req.body?.password ?? '';
   const _emai = req.body?.email ?? '';
@@ -141,6 +142,7 @@ userRouter.patch('/:id', async (req, res) => {
   res.send(getData);
 });
 
+
 // POST ------------------------------------------------------------------------------------------------------
 // POST "/register" - register | BODY: username, password, email
 userRouter.post('/register', async (req, res) => {
@@ -156,8 +158,9 @@ userRouter.post('/register', async (req, res) => {
   res.send(getData);
 });
 
+
 // DELETE -------------------------------------------------------------------------------------------------------
-// "/delete" - Delete a user (root admin only) | PARAM: id
+// DELETE "/:id" - Delete a user (root admin only) | PARAM: id
 userRouter.delete('/:id', async (req, res) => {
   const uid = req.params?.id || 0; // user ID
   const getData = await user.deleteUser(req, uid);
