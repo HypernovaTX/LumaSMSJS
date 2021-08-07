@@ -1,10 +1,10 @@
 // ================================================================================
-// LumaSMS Backend API
+// LumaSMS Backend REST API
 // Written by - Hypernova
 // MFGG - 2021
 // ================================================================================
 
-// NOTE: ALL POST / PUT / DELETE REQUESTS (besides file uploads) MUST BE application/x-www-form-urlencoded!
+// NOTE: ALL POST / PUT / PATCH / DELETE REQUESTS (besides file uploads) MUST BE application/x-www-form-urlencoded!
 
 // ==================== Core Components ====================
 import express from 'express';

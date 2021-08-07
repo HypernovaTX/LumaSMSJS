@@ -11,6 +11,10 @@ import RESULT from '../lib/result.js';
 export const userRouter = express.Router();
 const user = new User();
 
+/**
+ * @todo Add user avatar upload
+ */
+
 // GET -------------------------------------------------------------------------------------------------------
 // GET "/" - list users (default)
 userRouter.get('/', async (req, res) => {
@@ -99,34 +103,6 @@ userRouter.put('/login', async (req, res) => {
 
 
 // PATCH ------------------------------------------------------------------------------------------------------
-// PATCH "/password" - Update password for current user | BODY: oldpassword, newpassword
-userRouter.patch('/password', async (req, res) => {
-  const _oPass = req.body?.oldpassword ?? '';
-  const _nPass = req.body?.newpassword ?? '';
-  const getData = await user.updatePassword(req, _oPass, _nPass);
-
-  // HTTP Status
-  if (getData === RESULT.done) { res.status(201); }
-  else if (getData === RESULT.denied) { res.status(401); }
-  else { res.status(400); }
-
-  res.send(getData);
-});
-
-// PATCH "/email" - Update email for current user | BODY: password, email
-userRouter.patch('/email', async (req, res) => {
-  const _pass = req.body?.password ?? '';
-  const _emai = req.body?.email ?? '';
-  const getData = await user.updateEmail(req, _pass, _emai);
-  
-  // HTTP Status
-  if (getData === RESULT.done) { res.status(204); }
-  else if (getData === RESULT.denied) { res.status(401); }
-  else { res.status(400); }
-
-  res.send(getData);
-});
-
 // PATCH "/:id" - update user profile settings | PARAM: id, BODY: data
 userRouter.patch('/:id', async (req, res) => {
   const _uid = req.params.id || '';        // id - string
@@ -144,8 +120,8 @@ userRouter.patch('/:id', async (req, res) => {
 
 
 // POST ------------------------------------------------------------------------------------------------------
-// POST "/register" - register | BODY: username, password, email
-userRouter.post('/register', async (req, res) => {
+// POST "/" - register | BODY: username, password, email
+userRouter.post('/', async (req, res) => {
   const _usr = req.body?.username || '';
   const _pas = req.body?.password || '';
   const _ema = req.body?.email || '';
@@ -153,6 +129,34 @@ userRouter.post('/register', async (req, res) => {
 
   // HTTP status 
   if (getData === RESULT.done) { res.status(204); }
+  else { res.status(400); }
+
+  res.send(getData);
+});
+
+// POST "/password" - Update password for current user | BODY: oldpassword, newpassword
+userRouter.post('/password', async (req, res) => {
+  const _oPass = req.body?.oldpassword ?? '';
+  const _nPass = req.body?.newpassword ?? '';
+  const getData = await user.updatePassword(req, _oPass, _nPass);
+
+  // HTTP Status
+  if (getData === RESULT.done) { res.status(201); }
+  else if (getData === RESULT.denied) { res.status(401); }
+  else { res.status(400); }
+
+  res.send(getData);
+});
+
+// POST "/email" - Update email for current user | BODY: password, email
+userRouter.post('/email', async (req, res) => {
+  const _pass = req.body?.password ?? '';
+  const _emai = req.body?.email ?? '';
+  const getData = await user.updateEmail(req, _pass, _emai);
+  
+  // HTTP Status
+  if (getData === RESULT.done) { res.status(204); }
+  else if (getData === RESULT.denied) { res.status(401); }
   else { res.status(400); }
 
   res.send(getData);
