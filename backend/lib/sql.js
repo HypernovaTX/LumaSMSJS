@@ -11,11 +11,11 @@ export default class SQL {
     this.query = '';
     this.pool = null;
     this.DBCONFIG = {
-      host: CF.DB_HOST, 
-      user: CF.DB_USER, 
-      password: CF.DB_PASS, 
-      database: CF.DB_NAME, 
-      connectionLimit: 10, 
+      host: CF.DB_HOST,
+      user: CF.DB_USER,
+      password: CF.DB_PASS,
+      database: CF.DB_NAME,
+      connectionLimit: 10,
     };
     this.clearQuery = () => { this.query = ''; }
   }
@@ -40,37 +40,38 @@ export default class SQL {
       this.connect();
     }
     // Set a promise to run the query
-    const getData = await new Promise((resolve, reject) => {
-      this.pool.getConnection((conErr, connection) => {
+    return new Promise((resolve, reject) => {
+        this.pool.getConnection((conErr, connection) => {
         if (conErr) { handleError('db0', conErr.message); }
         console.log(`\x1b[36m[SQL QUERY] ${this.query}\x1b[0m`);
 
         try {
           connection.query(this.query, (error, result) => {
-            if (error) { 
-              handleError('db2', error.message); 
-              resolve(RESULT.fail);
+            if (error) {
+              handleError('db2', error.message);
+              reject(RESULT.fail);
+            } else if (noReturn) {
+              resolve();
+            } else {
+              resolve(result);
             }
-            else if (noReturn) { resolve(RESULT.done); }
-            else { resolve(result); }
-            connection.release();
           });
         } catch (error) {
           // MySQL errors
-          console.log(error); 
+          console.log(error);
           reject(RESULT.fail);
-        } 
+        } finally {
+          connection.release();
+        }
       });
     });
-    
-    return getData;
   }
 
   // ---------- Section B: Query Builder ----------
 
   // Reset all query of the SQL instance
   clearQuery() { this.query = ''; }
-  
+
   // SELECT query
   buildSelect(table, column = '*') {
     let output = '';
@@ -157,7 +158,7 @@ export default class SQL {
       const currentValue = (typeof values[i] === 'string') ? `'${sanitizeInput(values[i])}'` : values[i];
       outputValues += currentValue + comma;
     }
-    
+
     table = sanitizeInput(table);
     outputColumns = sanitizeInput(outputColumns);
     this.query = `INSERT INTO ${table} (${outputColumns}) VALUES (${outputValues}) `;
@@ -183,7 +184,7 @@ export default class SQL {
     this.query = `UPDATE ${table} SET ${updateArray.join(', ')} `;
     return this.query;
   }
- 
+
   // DELETE FROM query
   // FOR @param {string | string[]} input - Where statement, you can include multiple with arrays
   buildDelete(table, input) {

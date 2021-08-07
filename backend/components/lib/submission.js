@@ -3,8 +3,9 @@
 // ================================================================================
 import CF from '../../config.js';
 import SQL from '../../lib/sql.js';
-import { sanitizeInput, placeholderPromise, handleError } from '../../lib/globallib.js'; 
+import { sanitizeInput, handleError } from '../../lib/globallib.js';
 import { checkLogin, checkPermission } from './userlib.js';
+import RESULT from '../../lib/result.js';
 
 export default class Submission {
   constructor() {
@@ -21,7 +22,7 @@ export default class Submission {
   async listPublic(page = 0, count = 25, column = '', asc = false, filter = []) {
     const selects = [
       'z.id', 'z.uid', 'z.title', 'z.description', 'z.author_override', 'z.created', 'z.updated',
-      'z.accept_date', 'z.catwords', 'u.username', 'g.name_prefix', 'g.name_suffix', 
+      'z.accept_date', 'z.catwords', 'u.username', 'g.name_prefix', 'g.name_suffix',
       `(SELECT COUNT(*) FROM ${CF.DB_PREFIX}comments WHERE rid = z.id) AS comments`,
       ...this.additionalQueries.listSelect
     ];
@@ -41,9 +42,9 @@ export default class Submission {
       }
       this.DB.buildWhere(statements);
     }
-    
+
     if (column) { this.DB.buildOrder([column], [asc]); }
-    if (count) { this.DB.buildCustomQuery(`LIMIT ${page * count}, ${count}`); }  
+    if (count) { this.DB.buildCustomQuery(`LIMIT ${page * count}, ${count}`); }
     return await this.DB.runQuery();
   }
 
@@ -90,10 +91,10 @@ export default class Submission {
     const permission = await checkPermission(_request);
     console.log(files);
     if (!permission.can_submit || login === 'LOGGED OUT') {
-      handleError('re0'); return placeholderPromise('DENIED');
+      handleError('re0'); throw RESULT.denied;
     }
     if (payload.length === 0) {
-      handleError('re1'); return placeholderPromise('EMPTY');
+      handleError('re1'); return;
     }
 
     // Apply changes to the sub table first and get eid
@@ -108,19 +109,20 @@ export default class Submission {
     const firstResult = await this.DB.runQuery();
     return firstResult;
   }
-  
+
   async updateSubmission(_request, id, payload) {
     const login = await checkLogin(_request);
     const getPermission = await checkPermission(_request);
     if (!getPermission.can_submit || login === 'LOGGED OUT') {
-      handleError('re0'); return placeholderPromise('DENIED');
+      handleError('re0'); throw RESULT.denied;
     }
     if (!id || payload.length === 0) {
-      handleError('re1'); return placeholderPromise('ERROR');
+      handleError('re1'); throw RESULT.genericerror;
     }
     const getExistingSubmission = await this.showSubmissionDetails(id);
     if (!getExistingSubmission) {
-      handleError('re2'); return placeholderPromise('INVALID');
+      handleError('re2');
+      throw RESULT.invalid;
     }
 
     // Apply changes to the sub table first and get eid
@@ -139,22 +141,26 @@ export default class Submission {
   async deleteSubmission(_request, id) {
     const getPermission = await checkPermission(_request);
     if (getPermission === 'LOGGED OUT') { // Not logged in
-      handleError('re0'); return placeholderPromise('DENIED');
+      handleError('re0');
+      throw RESULT.denied;
     }
     if (!id) {
-      handleError('re1'); return placeholderPromise('ERROR');
+      handleError('re1');
+      throw RESULT.genericerror;
     }
     const getExistingSubmission = await this.showSubmissionDetails(id);
     if (!getPermission.staff_qc && getExistingSubmission.uid !== getPermission.uid) { // Only root admin can delete other user
-      handleError('re2'); return placeholderPromise('QC ONLY');
+      handleError('re2'); return 'QC ONLY';
     }
 
     id = (typeof id === 'string') ? `'${sanitizeInput(id)}'` : id;
     this.DB.buildDelete(this.specificTable, `id = ${id}`);
     const getResult = await this.DB.runQuery();
-    if (!getResult?.affectedRows) { return placeholderPromise('FAIL'); }
-    return placeholderPromise('DONE'); 
-    
+    if (!getResult?.affectedRows) {
+      throw RESULT.genericerror;
+    }
+    return true;
+
     // THIS IS A TEMPORARY PLACEHOLDER, IT WOULD BE BETTER IF THE SUBMISSION IS PLACED IN A PENDIng DELETION STATE
     // npm install node-schedule
 
@@ -166,10 +172,10 @@ export default class Submission {
   async voteSubmission(_request) {
     const getPermission = await checkPermission(_request);
     if (getPermission === 'LOGGED OUT') {
-      handleError('re0'); return placeholderPromise('DENIED');
+      handleError('re0'); throw RESULT.denied;
     }
     if (getPermission?.staff_qc) {
-      handleError('re2'); return placeholderPromise('QC ONLY');
+      handleError('re2'); return 'QC ONLY';
     }
 
     // READ TABLE

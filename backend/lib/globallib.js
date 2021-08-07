@@ -19,14 +19,6 @@ export function clientIP(_request) {
 
 // Misc ----------------------------------------------------
 
-// Placeholder Promise
-export function placeholderPromise(input = '') {
-  const output = new Promise((resolve) => {
-    resolve(input);
-  })
-  return output;
-}
-
 // Verify if it's JSON
 export function isStringJSON(toCheck = '') {
   if (typeof toCheck !== 'string') { return false; }
@@ -45,5 +37,3 @@ export function sanitizeInput(input = '') {
 // Regular expressions
 export const imageMIME = /image\/(apng|gif|jpeg|png|svg|webp)$/i;
 export const fileExtension = /\.[0-9a-z]+$/;
-
-

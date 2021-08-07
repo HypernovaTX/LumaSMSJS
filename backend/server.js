@@ -12,6 +12,8 @@ import cookieParser from 'cookie-parser';
 import cors from 'cors';
 import helmet from 'helmet';
 import morgan from 'morgan';
+import { httpResultHandler } from 'lib/result.js';
+
 const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -21,6 +23,7 @@ app.use(helmet());
 app.use(morgan('combined', {
   skip: (req, res) => res.statusCode < 400
 }));
+app.use(httpResultHandler); // custom error handling
 
 // ==================== Routes ====================
 // - User -
@@ -35,6 +38,6 @@ app.use('/submission', submissionRouter);
 let server = app.listen(12026, () => {
   const getAddress = server.address();
   let host = getAddress.address;
-  let port = getAddress.port;    
+  let port = getAddress.port;
   console.log(`Application is running at "${host}:${port}".`);
 });

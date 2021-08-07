@@ -20,8 +20,8 @@ spriteRouter.get('/', async (req, res) => {
   const asc = (req.headers?.asc) ? true : false;              // asc - string (true if not undefined)
   let filter = [];                                            // filter - { columnName: value }[]
   if (isStringJSON(req.headers?.filter)) {
-    filter = JSON.parse(req.headers?.filter);     
-  } 
+    filter = JSON.parse(req.headers?.filter);
+  }
   const getData = await sprite.listPublic(page, count, colSort, asc, filter);
   res.send(getData);
 });
@@ -29,38 +29,32 @@ spriteRouter.get('/', async (req, res) => {
 // POST -------------------------------------------------------------------------------------------------------
 // "/create" - register | BODY: data, thumb, file
 const uploadFields = [
-  { name: 'thumb', maxCount: 1}, 
-  { name: 'file', maxCount: 1}, 
+  { name: 'thumb', maxCount: 1},
+  { name: 'file', maxCount: 1},
 ];
 spriteRouter.post('/create', upload.fields(uploadFields), async (req, res) => {
-  let _data = [];       // string of { columnName: value }[] 
+  let _data = [];       // string of { columnName: value }[]
   if (isStringJSON(req.body?.data)) {
-    _data = JSON.parse(req.body?.data);     
+    _data = JSON.parse(req.body?.data);
   }
   const files = {
     thumb: req.files.thumb[0] ?? {},
     file: req.files.file[0] ?? {},
   }
-  const getData = await sprite.createSubmission(req, _data, files);
-  if (getData === 'DONE') {
-    res.status(201);
-  }
-  res.send(getData);
+  const result = await sprite.createSubmission(req, _data, files);
+  res.status(201).send(result);
 });
 
 // PUT -------------------------------------------------------------------------------------------------------
 // "/update" - register | BODY: data
 spriteRouter.put('/update', async (req, res) => {
-  let _data = [];       // string of { columnName: value }[] 
+  let _data = [];       // string of { columnName: value }[]
   if (isStringJSON(req.body?.data)) {
-    _data = JSON.parse(req.body?.data);     
-  } 
-  const _id = req.body?.id ?? '0';
-  const getData = await sprite.updateSubmission(req, _id, _data);
-  if (getData === 'DONE') {
-    res.status(201);
+    _data = JSON.parse(req.body?.data);
   }
-  res.send(getData);
+  const _id = req.body?.id ?? '0';
+  const result = await sprite.updateSubmission(req, _id, _data);
+  res.status(201).send(result);
 });
 
 

@@ -14,7 +14,7 @@ export default class User {
     this.DB = new SQL();
     this.userTable = `${CF.DB_PREFIX}users`;
   }
-  
+
   // PUBLIC METHODS (no login required) ------------------------------------------------------------------------------------------------------------
 
   /** List of users
@@ -40,7 +40,7 @@ export default class User {
     if (column) { this.DB.buildOrder([column], [asc]); }
     if (count) { this.DB.buildCustomQuery(`LIMIT ${page * count}, ${count}`); }
     const listOfUsers = await this.DB.runQuery();
-    
+
     // Remove password key
     for (let user of listOfUsers) {
       const hasPassword = Object.prototype.hasOwnProperty.call(user, 'password');
@@ -50,7 +50,7 @@ export default class User {
   }
 
   /** Show details of a specific user
-   @returns JSON, RESULT [fail | notfound] */ 
+   @returns JSON, RESULT [fail | notfound] */
   async showUserByID(id = 0) {
     const uidWhere = 'WHERE uid = u.uid';
     const subWhere = `${uidWhere} AND queue_code = 0`;
@@ -58,7 +58,7 @@ export default class User {
       return `(SELECT COUNT(*) FROM ${table} ${where}) ${(as) ? `AS ${as}` : ``}`;
     }
     this.DB.buildSelect(`${this.userTable} u`, [
-      `u.*`, 
+      `u.*`,
       countQuery(`${CF.DB_PREFIX}comments`, uidWhere, `comments`), // Number of comments made by the user
       `(SELECT ` + // Count all of the active submissions by this user
         countQuery(`${CF.DB_PREFIX}submission_games`, subWhere) + `+` +
@@ -67,7 +67,7 @@ export default class User {
         countQuery(`${CF.DB_PREFIX}submission_misc`, subWhere) + `+` +
         countQuery(`${CF.DB_PREFIX}submission_reviews`, subWhere) + `+` +
         countQuery(`${CF.DB_PREFIX}submission_sounds`, subWhere) + `+` +
-        countQuery(`${CF.DB_PREFIX}submission_sprites`, subWhere) + 
+        countQuery(`${CF.DB_PREFIX}submission_sprites`, subWhere) +
       `) AS submissions`,
     ]);
     this.DB.buildWhere(`u.uid = ${sanitizeInput(id)}`);
@@ -79,7 +79,7 @@ export default class User {
     const hasPassword = Object.prototype.hasOwnProperty.call(queryResult[0], 'password');
     if (hasPassword) { delete queryResult[0].password; }
 
-    return queryResult[0]; 
+    return queryResult[0];
   }
 
   // LOGIN METHODS ------------------------------------------------------------------------------------------------------------
@@ -89,32 +89,32 @@ export default class User {
    */
   async doLogin(username, password, _response = null) {
     // Invalid param
-    if (!username || !password) { handleError('us1'); return RESULT.badparam; }
+    if (!username || !password) { handleError('us1'); throw RESULT.badparam; }
 
     this.DB.buildSelect(this.userTable);
     this.DB.buildWhere(`username = '${sanitizeInput(username)}'`);
     const queryData = await this.DB.runQuery();
 
     // Username not found
-    if (queryData.length === 0) { return RESULT.fail; }
+    if (queryData.length === 0) { throw RESULT.fail; }
     // Ensure password is a string
     if (typeof queryData[0].password !== 'string') { queryData[0].password = ''; }
 
     const result = await bcrypt.compare(password, queryData[0].password);
     if (result) {
       if (_response) { updateLoginCookie(queryData[0].uid, _response); }
-      return RESULT.done;
+      return true;
     }
-    return RESULT.denied;
+    throw RESULT.denied;
   }
 
-  /** Main logout function 
+  /** Main logout function
    @returns - RESULT [done]
-  */ 
+  */
   async doLogout(_response) {
     _response.cookie('Login', 'logout', { expires: new Date(Date.now() + 2 * 1000), httpOnly: true, });
     return await new Promise((resolve) => {
-      setTimeout(() => resolve(RESULT.done), 1000);
+      setTimeout(() => resolve(), 1000);
     });
   }
 
@@ -123,10 +123,10 @@ export default class User {
   */
   async doRegister(_request, username, password, email) {
     // Invalid param
-    if (!username || !password || !email) { handleError('us3'); return RESULT.badparam; }
+    if (!username || !password || !email) { handleError('us3'); throw RESULT.badparam; }
 
     // Need to ensure no other username/email were used
-    const userCheckResult = await checkExistingUser(username, email); 
+    const userCheckResult = await checkExistingUser(username, email);
     if (userCheckResult === RESULT.ok) {
       return await createUser(_request, username, email, password);
     }
@@ -142,13 +142,13 @@ export default class User {
   async updateUserProfile(_request, uid = 0, inputs = [], insensitive = false) {
     // Not logged in
     const getPermission = await checkPermission(_request);
-    if (getPermission === RESULT.fail) { handleError('us5'); return RESULT.fail; } 
+    if (getPermission === RESULT.fail) { handleError('us5'); throw RESULT.fail; }
     // Non-staff user cannot modify other user -or- banned user cannot modify their profile
-    if ((parseInt(uid) !== parseInt(getPermission.id) && !getPermission.staff_user) 
+    if ((parseInt(uid) !== parseInt(getPermission.id) && !getPermission.staff_user)
     || (!getPermission.can_msg || !getPermission.can_submit || !getPermission.can_comment)) { // banned user
-      handleError('us6'); return RESULT.denied; 
+      handleError('us6'); throw RESULT.denied;
     }
-    if (inputs.length === 0) { handleError('us7'); return RESULT.badparam; } // Nothing for "inputs"
+    if (inputs.length === 0) { handleError('us7'); throw RESULT.badparam; } // Nothing for "inputs"
 
     // A standalone function specified for this method
     // To verify the column (of the user table) is not restricted
@@ -157,13 +157,13 @@ export default class User {
       const staffKey = ['gid', 'username'];
       const sensitiveKey = ['password', 'email'];
       // Read only
-      if (readOnlyKey.find(eachRO => eachRO === column)) { return RESULT.badparam; }
+      if (readOnlyKey.find(eachRO => eachRO === column)) { throw RESULT.badparam; }
       // Can be called by functions that changes password/email
-      if (sensitiveKey.find(eachSS => eachSS === column) && !insensitive && !getPermission.staff_user) { return RESULT.badparam; }
+      if (sensitiveKey.find(eachSS => eachSS === column) && !insensitive && !getPermission.staff_user) { throw RESULT.badparam; }
       // Only staff with "staff_user" permission can modify gid and username
-      if (staffKey.find(eachST => eachST === column) && !getPermission.staff_user) { return RESULT.denied; }
+      if (staffKey.find(eachST => eachST === column) && !getPermission.staff_user) { throw RESULT.denied; }
       // Only root admin can promote other user
-      if (column === 'gid' && value === '1' && !getPermission.staff_root) { return RESULT.denied; } 
+      if (column === 'gid' && value === '1' && !getPermission.staff_root) { throw RESULT.denied; }
 
       return RESULT.ok;
     }
@@ -175,7 +175,7 @@ export default class User {
       const specialPermissionResult = checkSpecialPermission(entry[0], entry[1]);
       if (specialPermissionResult !== RESULT.ok) {
         handleError('us6');
-        return specialPermissionResult; 
+        return specialPermissionResult;
       }
       updateColumns.push(entry[0]);
       updateValues.push(entry[1]);
@@ -191,19 +191,28 @@ export default class User {
   */
   async updatePassword(_request, oldPassword, newPassword) {
     // Invalid param
-    if (!oldPassword || !newPassword) { return RESULT.badparam; }
+    if (!oldPassword || !newPassword) { throw RESULT.badparam; }
 
     // Passwords are the same
-    if (oldPassword === newPassword) { handleError('us9'); return RESULT.same; } 
+    if (oldPassword === newPassword) { handleError('us9'); return RESULT.same; }
 
     // Verify if the current user is logged in
-    const loginVerify = await checkLogin(_request); 
-    if (loginVerify === RESULT.denied) { handleError('us5'); return RESULT.denied; }
+    try {
+      loginVerify = await checkLogin(_request);
+
+    } catch(e) {
+      handleError('us5');
+      throw RESULT.denied;
+    }
 
     // Verify old password with the logged in user
     const uid = (typeof loginVerify.uid === 'string') ? sanitizeInput(loginVerify.uid) : loginVerify.uid;
-    const passwordVerify = await this.doLogin(loginVerify.username, oldPassword, null);
-    if (passwordVerify !== RESULT.done) { handleError('us8'); return RESULT.denied; }
+    try {
+      await this.doLogin(loginVerify.username, oldPassword, null);
+    } catch(e) {
+      handleError('us8');
+      throw RESULT.denied;
+    }
 
     // Encrypt the password
     const hashedNewPassword = await bcrypt.hash(newPassword, CF.PASSWORD_SALT);
@@ -215,16 +224,27 @@ export default class User {
   */
   async updateEmail(_request, password, newEmail) {
     // Invalid param
-    if (!password || !newEmail) { return RESULT.badparam; }
+    if (!password || !newEmail) {
+      throw RESULT.badparam;
+    }
 
     // Verify if the current user is logged in
-    const loginVerify = await checkLogin(_request); 
-    if (loginVerify === RESULT.fail) { handleError('us5'); return RESULT.denied; }
+    try {
+      await checkLogin(_request);
+    } catch (e) {
+      handleError('us5');
+      throw RESULT.denied;
+    }
 
     // Verify password with the logged in user
     const uid = (typeof loginVerify.uid === 'string') ? sanitizeInput(loginVerify.uid) : loginVerify.uid;
-    const passwordVerify = await this.doLogin(loginVerify.username, password, null);
-    if (passwordVerify !== RESULT.done) { handleError('us8'); return RESULT.denied; }
+
+    try {
+      await this.doLogin(loginVerify.username, password, null);
+    } catch (err) {
+      handleError('us8');
+      throw RESULT.denied;
+    }
 
     // Verify if email is taken
     const checkEmailResult = await checkExistingUser(null, newEmail);
@@ -239,19 +259,27 @@ export default class User {
   async deleteUser(_request, uid = 0) {
     // CHECK LOGIN
     const getPermission = await checkPermission(_request);
-    if (getPermission === RESULT.fail) { handleError('us5'); RESULT.denied; }
+    if (getPermission === RESULT.fail) {
+      handleError('us5');
+      throw RESULT.denied;
+    }
     // Only root admin can delete user
-    if (!getPermission.staff_root) { handleError('us11'); RESULT.denied; }
+    if (!getPermission.staff_root) {
+      handleError('us11');
+      throw RESULT.denied;
+    }
 
     uid = (typeof uid === 'string') ? `'${sanitizeInput(uid)}'` : uid;
     this.DB.buildDelete(this.userTable, `uid = ${uid}`);
     const getResult = await this.DB.runQuery();
 
     // Nothing deleted
-    if (!getResult?.affectedRows) { return RESULT.fail; }
+    if (!getResult?.affectedRows) {
+      throw RESULT.notfound;
+    }
 
     // Done
-    return RESULT.done; 
+    return true;
   }
-  
+
 }

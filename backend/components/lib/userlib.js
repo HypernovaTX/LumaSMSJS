@@ -5,7 +5,7 @@ import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
 import CF from '../../config.js';
 import SQL from '../../lib/sql.js';
-import { handleError, placeholderPromise, clientIP, sanitizeInput } from '../../lib/globallib.js';
+import { handleError, clientIP, sanitizeInput } from '../../lib/globallib.js';
 import RESULT from '../../lib/result.js';
 
 const DB = new SQL();
@@ -15,12 +15,14 @@ const groupTable = `${CF.DB_PREFIX}groups`;
 // ---- CHECKS ----
 /** @returns JSON, RESULT [fail] */
 export async function checkLogin(_request) {
-  if (!_request.cookies?.Login) { return RESULT.fail; } // No cookie found
+  if (!_request.cookies?.Login) { return Promise.reject(RESULT.fail); } // No cookie found
 
-  return new Promise((resolve) => {
-    //Use the JWT to verify the cookie with secret code
+  //Use the JWT to verify the cookie with secret code
+  return new Promise((resolve, reject) => {
     jwt.verify(_request.cookies.Login, CF.JWT_SECRET, (err, decoded) => {
-      if (err) { resolve(RESULT.fail); }
+      if (err) {
+        reject(RESULT.fail);
+      }
 
       //Prepare data
       DB.buildSelect(userTable);
@@ -35,7 +37,9 @@ export async function checkLogin(_request) {
           const hasPassword = Object.prototype.hasOwnProperty.call(queryData[0], 'password');
           if (hasPassword) { delete queryData[0].password; }
           resolve(queryData[0]);
-        } else { resolve(RESULT.fail); }
+        } else {
+          reject(RESULT.fail);
+        }
       });
     });
   });
@@ -43,11 +47,11 @@ export async function checkLogin(_request) {
 
 /** @returns JSON, RESULT [fail] */
 export async function checkPermission(_request) {
-  const loginStatus = await checkLogin(_request);
-  if (loginStatus === RESULT.fail) {
+  try {
+    await checkLogin(_request);
+  } catch (e) {
     handleError('us5');
-    const loggedOut = { id: 0, staff_mod: 0, staff_user: 0, staff_qc: 0, staff_admin: 0, staff_root: 0, can_msg: 0, can_submit: 0, can_comment: 0 };
-    return placeholderPromise(loggedOut);
+    return { id: 0, staff_mod: 0, staff_user: 0, staff_qc: 0, staff_admin: 0, staff_root: 0, can_msg: 0, can_submit: 0, can_comment: 0 };
   }
 
   const groupID = loginStatus.gid;
@@ -62,20 +66,20 @@ export async function checkPermission(_request) {
     'can_submit', 'can_comment'
   ]);
   DB.buildWhere(`gid = ${groupID}`);
-  
-  return await new Promise((resolve) => {
-    DB.runQuery().then((queryData) => {
-      queryData[0].id = loginStatus.uid;
-      resolve(queryData[0]);
-    });
+
+  return await DB.runQuery().then((queryData) => {
+    queryData[0].id = loginStatus.uid;
+    return queryData[0];
   });
 }
 
 /** @returns RESULT [badparam | ok | exists] */
 export async function checkExistingUser(username, email) {
   if (!username && !email) {
-    handleError('us0'); return placeholderPromise(RESULT.badparam);
+    handleError('us0');
+    throw RESULT.badparam;
   }
+
   username = username ?? '';
   email = email ?? '';
   const cleanUser = sanitizeInput(username);
@@ -86,12 +90,13 @@ export async function checkExistingUser(username, email) {
   if (!email) { whereQuery = `username = '${cleanUser}'` }
   DB.buildWhere(whereQuery);
 
-  return await new Promise((resolve) => {
-    DB.runQuery().then((queryData) => {
-      if (queryData.length === 0) { resolve(RESULT.ok); } // Nothing matches
-      else { resolve(RESULT.exists); } // When something matches
-    });
-  })
+  return DB.runQuery().then((queryData) => {
+    if (queryData.length === 0) {
+      return RESULT.ok;// Nothing matches
+    } else {
+      return RESULT.exists;
+    } // When something matches
+  });
 }
 
 // ---- UPDATES / CREATE ----
