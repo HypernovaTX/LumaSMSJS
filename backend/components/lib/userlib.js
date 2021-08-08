@@ -15,7 +15,7 @@ const groupTable = `${CF.DB_PREFIX}groups`;
 // ---- CHECKS ----
 /** @returns JSON, RESULT [fail] */
 export async function checkLogin(_request) {
-  if (!_request.cookies?.Login) { return Promise.reject(RESULT.fail); } // No cookie found
+  if (!_request.cookies?.Login) { throw RESULT.fail; } // No cookie found
 
   //Use the JWT to verify the cookie with secret code
   return new Promise((resolve, reject) => {

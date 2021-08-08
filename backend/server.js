@@ -12,7 +12,7 @@ import cookieParser from 'cookie-parser';
 import cors from 'cors';
 import helmet from 'helmet';
 import morgan from 'morgan';
-import { httpResultHandler } from 'lib/result.js';
+import { httpResultHandler } from './lib/result.js';
 
 const app = express();
 app.use(express.json());

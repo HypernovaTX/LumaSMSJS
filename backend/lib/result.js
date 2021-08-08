@@ -4,14 +4,13 @@
 
 export class Result {
   constructor(message) {
-    super(...arguments);
     this.message = message;
   }
 }
 
-export class ErrorResult extends Error {
+export class ErrorResult {
   constructor(message) {
-    super(...arguments);
+    //super(...arguments);
     this.message = message;
   }
 }
@@ -51,6 +50,7 @@ export function httpResultHandler (err, req, res, next) {
         res.status(400);
         break;
     }
+    // console.log(`WTF MAN - ${err}`);
     // Send the error message as the payload
     res.send(err.message);
   } else {
