@@ -7,7 +7,7 @@ import CF from '../config.js';
 import User from '../components/user.js';
 import { checkLogin, checkPermission } from '../components/lib/userlib.js';
 import { isStringJSON } from '../lib/globallib.js';
-import RESULT from '../lib/result.js';
+import RESULT, { httpStatus } from '../lib/result.js';
 export const userRouter = express.Router();
 const user = new User();
 
@@ -19,22 +19,14 @@ const user = new User();
 // GET "/" - list users (default)
 userRouter.get('/', async (req, res) => {
   const result = await user.listUsers(0, CF.ROWS, '', false, []);
-
-  // HTTP Status
-  if (result === RESULT.fail) { res.status(401); }
-  else { res.status(200); }
-
+  httpStatus(res, result);
   res.send(result);
 });
 
 // GET "/verify" - verify login
 userRouter.get('/verify', async (req, res) => {
   const result = await checkLogin(req);
-
-  // HTTP Status
-  if (result === RESULT.fail) { res.status(401); }
-  else { res.status(200); }
-
+  httpStatus(res, result);
   res.send(result);
 });
 
