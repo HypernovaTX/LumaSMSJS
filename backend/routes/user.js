@@ -125,9 +125,12 @@ userRouter.post("/email", async (req, res) => {
 // POST "/avatar" - Upload avatar for a user
 const uploadFields = [{ name: "avatar", maxCount: 1 }];
 userRouter.post("/avatar", upload.fields(uploadFields), async (req, res) => {
-  const _pass = req.body?.password ?? "";
-  const _emai = req.body?.email ?? "";
-  const result = await user.updateUserAvatar(req, _pass, _emai);
+  const _uid = req.body?.password ?? "";
+  const [_avatar] = req.files.avatar;
+  const files = {
+    thumb: _avatar ?? {},
+  };
+  const result = await user.updateUserAvatar(req, _uid, files);
   httpStatus(res, result);
   res.send(result);
 });

@@ -201,7 +201,6 @@ export default class User {
       !getPermission.can_submit ||
       !getPermission.can_comment
     ) {
-      // banned user
       handleError("us6");
       return RESULT.denied;
     }
@@ -275,6 +274,19 @@ export default class User {
       handleError("us5");
       return RESULT.fail;
     }
+
+    // Non-staff user cannot modify other user -or- banned user cannot modify their profile
+    if (
+      (parseInt(uid) !== parseInt(getPermission.id) &&
+        !getPermission.staff_user) ||
+      !getPermission.can_msg ||
+      !getPermission.can_submit ||
+      !getPermission.can_comment
+    ) {
+      handleError("us6");
+      return RESULT.denied;
+    }
+    console.log('avatar upload ')
 
     console.log(uid);
     console.log(file);
