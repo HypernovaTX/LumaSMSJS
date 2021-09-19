@@ -15,11 +15,9 @@ export default class ERR {
 
     switch (this.error) {
       default: output += `??? - An unknown error (code: ${this.error}) has occured.`; break;
-      
 
       // gr# - general errors
-        
-
+      
       // db# - related to SQL database
       case('db0'): output += `DB0 - Failed to connect to the database!`; break;
       case('db1'): output += `DB1 - Failed to disconnect from the database!`; break;
