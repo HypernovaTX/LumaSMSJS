@@ -5,57 +5,118 @@
  */
 
 export default class ERR {
-  constructor(err, message = '') {
+  constructor(err, message = "") {
     this.error = err;
     this.message = message;
   }
   show_error() {
-    let output = '[LUMASMS API ERROR] ';
-    const reason = (this.message === '') ? `` : `[Reason] - ${this.message}`;
+    let output = "[LUMASMS API ERROR] ";
+    const reason = this.message === "" ? `` : `[Reason] - ${this.message}`;
 
     switch (this.error) {
-      default: output += `??? - An unknown error (code: ${this.error}) has occured.`; break;
+      default:
+        output += `??? - An unknown error (code: ${this.error}) has occured.`;
+        break;
 
       // gr# - general errors
-      
+
       // db# - related to SQL database
-      case('db0'): output += `DB0 - Failed to connect to the database!`; break;
-      case('db1'): output += `DB1 - Failed to disconnect from the database!`; break;
-      case('db2'): output += `DB2 - Failed to perform the SQL query!`; break;
-      case('db3'): output += `DB3 - "column" in "buildSelect()" is not a string nor string array!`; break;
-      case('db4'): output += `DB4 - "input" in "buildWhere()" is not a string nor string array!`; break;
-      case('db5'): output += `DB5 - One or more param have incorrect type for "buildOrder()"!`; break;
-      case('db6'): output += `DB6 - Arrays for both param are not matching for "buildOrder()"!`; break;
-      case('db7'): output += `DB7 - One or more param is null for "buildInsert()"!`; break;
-      case('db8'): output += `DB8 - One or more param is null for "buildUpdate()"!`; break;
-      case('db9'): output += `DB9 - One or more param is null for "buildDelete()"!`; break;
-      case('db10'): output += `DB10 - "input" for "buildCustomQuery()" is NOT string!`; break;
+      case "db0":
+        output += `DB0 - Failed to connect to the database!`;
+        break;
+      case "db1":
+        output += `DB1 - Failed to disconnect from the database!`;
+        break;
+      case "db2":
+        output += `DB2 - Failed to perform the SQL query!`;
+        break;
+      case "db3":
+        output += `DB3 - "column" in "buildSelect()" is not a string nor string array!`;
+        break;
+      case "db4":
+        output += `DB4 - "input" in "buildWhere()" is not a string nor string array!`;
+        break;
+      case "db5":
+        output += `DB5 - One or more param have incorrect type for "buildOrder()"!`;
+        break;
+      case "db6":
+        output += `DB6 - Arrays for both param are not matching for "buildOrder()"!`;
+        break;
+      case "db7":
+        output += `DB7 - One or more param is null for "buildInsert()"!`;
+        break;
+      case "db8":
+        output += `DB8 - One or more param is null for "buildUpdate()"!`;
+        break;
+      case "db9":
+        output += `DB9 - One or more param is null for "buildDelete()"!`;
+        break;
+      case "db10":
+        output += `DB10 - "input" for "buildCustomQuery()" is NOT string!`;
+        break;
 
       // us# - related to user
-      case('us0'): output += `US0 - Please check the parameters in "checkExistingUser()"!`; break;
-      case('us1'): output += `US1 - Please check the parameters in "loginRequest()"!`; break;
-      case('us2'): output += `US2 - Error while processing bcrypt.match in login!`; break;
-      case('us3'): output += `US3 - Please check the parameters in "doRegister()"!`; break;
-      case('us4'): output += `US4 - Error while processing bcrypt.hash in register!`; break;
-      case('us5'): output += `US5 - User is not logged in to perform the action!`; break;
-      case('us6'): output += `US6 - User does not have the right permission to perform the action!`; break;
-      case('us7'): output += `US7 - Param 'inputs' is blank or invalid for "updateUserProfile()"!`; break;
-      case('us8'): output += `US8 - Wrong password for verification"!`; break;
-      case('us9'): output += `US9 - Old and new passwords are the same!`; break;
-      case('us10'): output += `US10 - Email is already taken!`; break;
-      case('us11'): output += `US11 - Only root admins can delete users!`; break;
+      case "us0":
+        output += `US0 - Please check the parameters in "checkExistingUser()"!`;
+        break;
+      case "us1":
+        output += `US1 - Please check the parameters in "loginRequest()"!`;
+        break;
+      case "us2":
+        output += `US2 - Error while processing bcrypt.match in login!`;
+        break;
+      case "us3":
+        output += `US3 - Please check the parameters in "doRegister()"!`;
+        break;
+      case "us4":
+        output += `US4 - Error while processing bcrypt.hash in register!`;
+        break;
+      case "us5":
+        output += `US5 - User is not logged in to perform the action!`;
+        break;
+      case "us6":
+        output += `US6 - User does not have the right permission to perform the action!`;
+        break;
+      case "us7":
+        output += `US7 - Param 'inputs' is blank or invalid for "updateUserProfile()"!`;
+        break;
+      case "us8":
+        output += `US8 - Wrong password for verification"!`;
+        break;
+      case "us9":
+        output += `US9 - Old and new passwords are the same!`;
+        break;
+      case "us10":
+        output += `US10 - Email is already taken!`;
+        break;
+      case "us11":
+        output += `US11 - Only root admins can delete users!`;
+        break;
 
       // re# - related to submission
-      case('re0'): output += `RE0 - User does not have the right permission to perform the action!`; break;
-      case('re1'): output += `RE1 - One or more input data is empty!`; break;
-      case('re2'): output += `RE2 - The selected submission does not exist for updates!`; break;
-      case('re3'): output += `RE3 - One of more required file is empty!`; break;
+      case "re0":
+        output += `RE0 - User does not have the right permission to perform the action!`;
+        break;
+      case "re1":
+        output += `RE1 - One or more input data is empty!`;
+        break;
+      case "re2":
+        output += `RE2 - The selected submission does not exist for updates!`;
+        break;
+      case "re3":
+        output += `RE3 - One of more required file is empty!`;
+        break;
 
       // fi# - related to files
-      case('fi1'): output += `FI1 - Incorrect directory to write file.`; break;
+      case "fi1":
+        output += `FI1 - Incorrect directory to write file.`;
+        break;
     }
 
+    //Only calls if it's not blank
     console.log(`\x1b[41m${output}\x1b[0m`);
-    if (reason !== '') { console.log(`\x1b[33m${reason}\x1b[0m`); } //Only calls if it's not blank
+    if (reason !== "") {
+      console.log(`\x1b[33m${reason}\x1b[0m`);
+    } 
   }
 }
