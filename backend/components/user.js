@@ -253,10 +253,8 @@ export default class User {
     let [updateColumns, updateValues] = [[], []];
     for (let eachObj of inputs) {
       const [entry] = Object.entries(eachObj);
-      const specialPermissionResult = checkSpecialPermission(
-        entry[0],
-        entry[1]
-      );
+      const [column, value] = entry;
+      const specialPermissionResult = checkSpecialPermission(column, value);
       if (specialPermissionResult !== RESULT.ok) {
         handleError("us6");
         return specialPermissionResult;
@@ -268,6 +266,18 @@ export default class User {
     this.DB.buildWhere(`uid = ${uid}`);
     let output = await this.DB.runQuery(true);
     return output;
+  }
+
+  async updateUserAvatar(_request, uid = 0, file) {
+    // Not logged in
+    const getPermission = await checkPermission(_request);
+    if (getPermission === RESULT.fail) {
+      handleError("us5");
+      return RESULT.fail;
+    }
+
+    console.log(uid);
+    console.log(file);
   }
 
   /** Update current (logged in) user's password
