@@ -3,69 +3,40 @@
 // (primarily called by /routes/user.js)
 // ================================================================================
 import bcrypt from "bcryptjs";
-import SQL from "../lib/sql.js";
-import { handleError, sanitizeInput } from "../lib/globallib.js";
+import User from '../queries/userquery';
+import { sanitizeInput } from "../lib/globallib";
+import { isError } from "../lib/error";
 import {
   checkPermission,
   checkLogin,
   checkExistingUser,
   updateLoginCookie,
   createUser,
-} from "./lib/userlib.js";
-import CF from "../config.js";
-import RESULT from "../lib/result.js";
+} from "./lib/userlib";
+import CF from "../config";
+import { userList } from "../schema/userResponse";
+import { forEachChild } from "typescript";
 
-export default class User {
-  constructor() {
-    this.DB = new SQL();
-    this.userTable = `${CF.DB_PREFIX}users`;
-  }
-
-  // PUBLIC METHODS (no login required) ------------------------------------------------------------------------------------------------------------
+  // PUBLIC (no login required) ------------------------------------------------------------------------------------------------------------
 
   /** List of users
    @param column - is used for which column to sort by
    @param filter - must be in { columnName: string }[]
    @returns JSON, RESULT[fail] */
-  async listUsers(page = 0, count = 25, column = "", asc = true, filter = []) {
-    this.DB.buildSelect(this.userTable);
-
-    // Apply filter
-    if (filter.length > 0) {
-      let statements = [];
-      for (let eachObj of filter) {
-        let [entry] = Object.entries(eachObj);
-        entry[0] =
-          typeof entry[0] === "string" ? sanitizeInput(entry[0]) : entry[0];
-        entry[1] =
-          typeof entry[1] === "string"
-            ? `'${sanitizeInput(entry[1])}'`
-            : entry[1];
-        statements.push(`${entry[0]} = ${entry[1]}`);
-      }
-      this.DB.buildWhere(statements);
+  export async function listUsers(page: number = 0, count: number = CF.ROWS, column = '', asc = true, filter = []) {
+    const query = new User();
+    const result = await query.listUsers(page, count, column, asc, filter)
+    if (isError(result)) {
+      return result;
     }
-
-    // Order and limit
-    if (column) {
-      this.DB.buildOrder([column], [asc]);
-    }
-    if (count) {
-      this.DB.buildCustomQuery(`LIMIT ${page * count}, ${count}`);
-    }
-    const listOfUsers = await this.DB.runQuery();
-
     // Remove password key
-    for (let user of listOfUsers) {
-      const hasPassword = Object.prototype.hasOwnProperty.call(
-        user,
-        "password"
-      );
-      if (hasPassword) {
+    (result as userList).forEach((user) => {
+      if (user.password) {
         delete user.password;
       }
-    }
-    return listOfUsers;
+      return user;
+    })
+    return result;
   }
 
   /** Show details of a specific user
@@ -413,4 +384,3 @@ export default class User {
     // Done
     return RESULT.done;
   }
-}

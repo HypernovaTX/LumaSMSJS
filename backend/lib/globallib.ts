@@ -1,16 +1,14 @@
 // ================================================================================
 // Reuseable utility functions that can be used anywhere
 // ================================================================================
-import SqlString from "sqlstring";
-import { Request } from "express";
+import SqlString from 'sqlstring';
+import { Request } from 'express';
 
 // Common server specific use ----------------------------------------------------
 
 // Get client IP
 export function clientIP(_request: Request) {
-  return (
-    _request.headers["x-forwarded-for"] || _request.socket.remoteAddress
-  );
+  return _request.headers['x-forwarded-for'] || _request.socket.remoteAddress;
 }
 
 // Misc ----------------------------------------------------

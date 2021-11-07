@@ -1,6 +1,7 @@
 {
   "tabWidth": 2,
   "useTabs": false,
+  "prettier.singleQuote": true,
   "[javascript]": {
     "editor.formatOnSave": true
   }

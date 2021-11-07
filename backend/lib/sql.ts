@@ -1,9 +1,9 @@
 // ==================== MAIN SQL OBJ ====================
-import mysql from "mysql";
-import CF from "../config.js";
-import { handleError, sanitizeInput } from "./globallib";
-import ERR from "./error";
-import RESULT from "./result.js";
+import mysql from 'mysql';
+import CF from '../config';
+import { sanitizeInput } from './globallib';
+import ERR from './error';
+import { allPossibleResponses } from '../schema';
 
 // ==================== SQL resolve ====================
 enum SQLResult {
@@ -46,30 +46,36 @@ export default class SQL {
    * @param { boolean } noReturn - (Optional) - whether to return the rows or just a string of RESULT<done, fail>
    */
   async runQuery(noReturn: boolean | undefined = false) {
+    //DEBUG PURPOSE
+    console.log(this.query);
+    if (this.query) {
+      return { test: 'test' };
+    }
+
     // Start the connection
     if (!this.checkPool()) {
       this.connect();
     }
     // run the query
-    const getData = await new Promise((resolve) => {
+    const getData = await new Promise<any>((resolve) => {
       this.pool.getConnection((poolError, connection) => {
         poolError && ERR('dbDisconnect', poolError.message);
-        console.log(`\x1b[36m[SQL QUERY] ${this.query}\x1b[0m`);
+        CF.DEBUG_MODE &&
+          console.log(`\x1b[36m[SQL QUERY] ${this.query}\x1b[0m`);
 
         try {
           connection.query(this.query, (error, result) => {
             connection.release();
             if (error) {
-              ERR('dbQuery', error.message);
-              resolve(RESULT.fail);
+              resolve(ERR('dbQuery', error.message));
             } else {
-              resolve(noReturn ? RESULT.done : result);
+              resolve(noReturn ? {} : result);
             }
           });
         } catch (error) {
           // MySQL errors
-          console.log(error);
-          resolve(RESULT.fail);
+          CF.DEBUG_MODE && console.log(error);
+          resolve(ERR('dbQuery', error.message));
         }
       });
     });
@@ -81,13 +87,13 @@ export default class SQL {
 
   // Reset all query of the SQL instance
   clearQuery() {
-    this.query = "";
+    this.query = '';
   }
 
   // SELECT query
-  buildSelect(table: string, column: string | string[] = "*") {
+  buildSelect(table: string, column: string | string[] = '*') {
     if (Array.isArray(column)) {
-      column = column.map((each) => sanitizeInput(each)).join(", ");
+      column = column.map((each) => sanitizeInput(each)).join(', ');
     } else {
       column = sanitizeInput(column);
     }
@@ -101,85 +107,61 @@ export default class SQL {
   // WHERE query
   // Note: all data must be sanitized manually
   buildWhere(input: string | string[]) {
-    input = Array.isArray(input) ? input.join(" && ") : input;
+    input = Array.isArray(input) ? input.join(' && ') : input;
     this.query += `WHERE (${input}) `;
     return this.query;
   }
 
   // ORDER BY query
   // Note: both param must have the same number of arrays
-  buildOrder(column: string[] = [""], ascending: boolean[] = [true]) {
+  buildOrder(column: string[], ascending: boolean[]) {
     if (column.length !== ascending.length) {
       return ERR('dbOrderNumber');
     }
     const list = ascending.map((value, index) => {
       const cleanColumn = sanitizeInput(column[index]);
-      const orderDirection = value ? "ASC" : "DESC";
+      const orderDirection = value ? 'ASC' : 'DESC';
       return `${cleanColumn} ${orderDirection}`;
     });
 
-    this.query += `ORDER BY ${list.join(", ")} `;
+    this.query += `ORDER BY ${list.join(', ')} `;
     return this.query;
   }
 
   // INSERT INTO query
   // Note: both 'columns' and 'values' param must have the same number of arrays
-  buildInsert(
-    table: string,
-    columns: string[] = [''],
-    values: string[] = ['']
-  ) {
-    if (column.length !== ascending.length) {
-      return ERR('dbOrderNumber');
+  buildInsert(table: string, columns: string[], values: string[]) {
+    if (columns.length !== values.length) {
+      return ERR('dbInsertNumber');
     }
-    let outputColumns = columns.join(', ');
-    let outputValues = '';
-    for (let i = 0; i < values.length; i++) {
-      const comma = i < values.length - 1 ? ", " : "";
-      const currentValue =
-        typeof values[i] === "string"
-          ? `'${sanitizeInput(values[i])}'`
-          : values[i];
-      outputValues += currentValue + comma;
-    }
-
     table = sanitizeInput(table);
-    outputColumns = sanitizeInput(outputColumns);
+    const outputColumns = sanitizeInput(columns.join(', '));
+    const outputValues = values
+      .map((eachValue) => sanitizeInput(eachValue))
+      .join(', ');
     this.query = `INSERT INTO ${table} (${outputColumns}) VALUES (${outputValues}) `;
     return this.query;
   }
 
   // UPDATE query
-  buildUpdate(table, columns = [""], values = [""]) {
-    if (table === null || columns === [""] || values === [""]) {
-      handleError("db8");
-      return;
+  // Note: both 'columns' and 'values' param must have the same number of arrays
+  buildUpdate(table: string, columns: string[], values: string[]) {
+    if (columns.length !== values.length) {
+      return ERR('dbUpdateNumber');
     }
-
-    let updateArray = [];
-    columns.forEach((data, index) => {
-      if (typeof data === "string") {
-        const value =
-          typeof values[index] === "string"
-            ? `'${sanitizeInput(values[index])}'`
-            : values[index];
-        data = sanitizeInput(data);
-        updateArray.push(`${"`" + data + "`"} = ${value}`);
-      }
+    const updateArray = columns.map((column, index) => {
+      const value = `'${sanitizeInput(values[index])}'`;
+      column = sanitizeInput(column);
+      return `${'`' + column + '`'} = ${value}`;
     });
-
     table = sanitizeInput(table);
-    this.query = `UPDATE ${table} SET ${updateArray.join(", ")} `;
+    this.query = `UPDATE ${table} SET ${updateArray.join(', ')} `;
     return this.query;
   }
 
   // DELETE FROM query
   // FOR @param {string | string[]} input - Where statement, you can include multiple with arrays
-  buildDelete(table, input) {
-    if (table === null) {
-      handleError("db9");
-      return;
-    }
+  buildDelete(table: string, input: string | string[]) {
     table = sanitizeInput(table);
     this.query = `DELETE FROM ${table} `;
     this.buildWhere(input);
@@ -187,13 +169,9 @@ export default class SQL {
   }
 
   // Custom SQL queries, MUST BE STRING!
-  buildCustomQuery(input) {
-    if (typeof input !== "string") {
-      handleError("db10");
-      return;
-    }
+  buildCustomQuery(input: string) {
     input = sanitizeInput(input);
-    this.query += input + " ";
+    this.query += `${input} `;
     return this.query;
   }
 }
