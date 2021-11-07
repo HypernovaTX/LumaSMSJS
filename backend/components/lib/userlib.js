@@ -4,7 +4,7 @@
 import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
 import CF from "../../config.js";
-import SQL from "../../lib/sql.js";
+
 import {
   handleError,
   placeholderPromise,
@@ -12,10 +12,6 @@ import {
   sanitizeInput,
 } from "../../lib/globallib.js";
 import RESULT from "../../lib/result.js";
-
-const DB = new SQL();
-const userTable = `${CF.DB_PREFIX}users`;
-const groupTable = `${CF.DB_PREFIX}groups`;
 
 // ---- CHECKS ----
 /** @returns JSON, RESULT [fail] */

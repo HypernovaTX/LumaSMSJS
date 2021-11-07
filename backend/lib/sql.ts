@@ -1,24 +1,31 @@
 // ==================== MAIN SQL OBJ ====================
 import mysql from "mysql";
 import CF from "../config.js";
-import { handleError, sanitizeInput } from "./globallib.js";
+import { handleError, sanitizeInput } from "./globallib";
+import ERR from "./error";
 import RESULT from "./result.js";
+
+// ==================== SQL resolve ====================
+enum SQLResult {
+  pass,
+  fail,
+}
+export { SQLResult };
 
 // ==================== Database Class ====================
 export default class SQL {
+  query: string;
+  DBCONFIG: mysql.PoolConfig;
+  pool: mysql.Pool;
+
   // SQL Class based variables
   constructor() {
-    this.query = "";
-    this.pool = null;
     this.DBCONFIG = {
       host: CF.DB_HOST,
       user: CF.DB_USER,
       password: CF.DB_PASS,
       database: CF.DB_NAME,
       connectionLimit: 10,
-    };
-    this.clearQuery = () => {
-      this.query = "";
     };
   }
 
@@ -27,50 +34,42 @@ export default class SQL {
     this.pool = mysql.createPool(this.DBCONFIG);
   }
   release() {
-    this.pool.release((error) => {
-      if (error) {
-        handleError("db1", error.message);
-      }
+    this.pool.end((error) => {
+      error && ERR('dbConnect', error.message);
     });
   }
   checkPool() {
-    if (!this.pool) {
-      return false;
-    }
-    return true;
+    return this.pool ? true : false;
   }
+
   /** runQuery(callback, noReturn) - Run the query
    * @param { boolean } noReturn - (Optional) - whether to return the rows or just a string of RESULT<done, fail>
    */
-  async runQuery(noReturn = false) {
+  async runQuery(noReturn: boolean | undefined = false) {
     // Start the connection
     if (!this.checkPool()) {
       this.connect();
     }
-    // Set a promise to run the query
-    const getData = await new Promise((resolve, reject) => {
-      this.pool.getConnection((conErr, connection) => {
-        if (conErr) {
-          handleError("db0", conErr.message);
-        }
+    // run the query
+    const getData = await new Promise((resolve) => {
+      this.pool.getConnection((poolError, connection) => {
+        poolError && ERR('dbDisconnect', poolError.message);
         console.log(`\x1b[36m[SQL QUERY] ${this.query}\x1b[0m`);
 
         try {
           connection.query(this.query, (error, result) => {
-            if (error) {
-              handleError("db2", error.message);
-              resolve(RESULT.fail);
-            } else if (noReturn) {
-              resolve(RESULT.done);
-            } else {
-              resolve(result);
-            }
             connection.release();
+            if (error) {
+              ERR('dbQuery', error.message);
+              resolve(RESULT.fail);
+            } else {
+              resolve(noReturn ? RESULT.done : result);
+            }
           });
         } catch (error) {
           // MySQL errors
           console.log(error);
-          reject(RESULT.fail);
+          resolve(RESULT.fail);
         }
       });
     });
@@ -86,81 +85,37 @@ export default class SQL {
   }
 
   // SELECT query
-  buildSelect(table, column = "*") {
-    let output = "";
-    if (typeof column !== "string") {
-      if (Array.isArray(column)) {
-        if (typeof column[0] !== "string") {
-          handleError("db3");
-          return;
-        }
-        output = column.join(", ");
-      } else {
-        handleError("db3");
-        return;
-      }
+  buildSelect(table: string, column: string | string[] = "*") {
+    if (Array.isArray(column)) {
+      column = column.map((each) => sanitizeInput(each)).join(", ");
     } else {
-      output = column;
+      column = sanitizeInput(column);
     }
-
     table = sanitizeInput(table);
-    output = sanitizeInput(output);
+
     // Apply this to the query
-    this.query = `SELECT ${output} FROM ${table} `;
+    this.query = `SELECT ${column} FROM ${table} `;
     return this.query;
   }
 
   // WHERE query
-  // Note: param 'input' can be single string or multiple strings as array, all data must be sanitized manually
-  buildWhere(input) {
-    let output = "";
-
-    if (Array.isArray(input)) {
-      if (typeof input[0] !== "string") {
-        handleError("db4");
-        return;
-      }
-      output = input.join(" && ");
-    } else if (typeof input === "string") {
-      output = input;
-    } else {
-      handleError("db4");
-      return;
-    }
-
-    this.query += `WHERE (${output}) `;
+  // Note: all data must be sanitized manually
+  buildWhere(input: string | string[]) {
+    input = Array.isArray(input) ? input.join(" && ") : input;
+    this.query += `WHERE (${input}) `;
     return this.query;
   }
 
   // ORDER BY query
   // Note: both param must have the same number of arrays
-  buildOrder(column = [""], ascending = [true]) {
-    // Error Handling
-    if (Array.isArray(column) && Array.isArray(ascending)) {
-      console.log(typeof column[0]);
-      console.log(typeof ascending[0]);
-      if (typeof column[0] !== "string" || typeof ascending[0] !== "boolean") {
-        handleError("db5");
-        return;
-      }
-    } else {
-      handleError("db5");
-      return;
-    }
-    if (column === [""]) {
-      handleError("db5");
-      return;
-    }
+  buildOrder(column: string[] = [""], ascending: boolean[] = [true]) {
     if (column.length !== ascending.length) {
-      handleError("db6");
-      return;
+      return ERR('dbOrderNumber');
     }
-
-    let list = [];
-    ascending.forEach((value, index) => {
+    const list = ascending.map((value, index) => {
       const cleanColumn = sanitizeInput(column[index]);
-      const orderDirection = value === true ? "ASC" : "DESC";
-      list.push(`${cleanColumn} ${orderDirection}`);
+      const orderDirection = value ? "ASC" : "DESC";
+      return `${cleanColumn} ${orderDirection}`;
     });
 
     this.query += `ORDER BY ${list.join(", ")} `;
@@ -169,14 +124,16 @@ export default class SQL {
 
   // INSERT INTO query
   // Note: both 'columns' and 'values' param must have the same number of arrays
-  buildInsert(table, columns = [""], values = [""]) {
-    if (table === null || columns === [""] || values === [""]) {
-      handleError("db7");
-      return;
+  buildInsert(
+    table: string,
+    columns: string[] = [''],
+    values: string[] = ['']
+  ) {
+    if (column.length !== ascending.length) {
+      return ERR('dbOrderNumber');
     }
-
-    let outputColumns = columns.join(", ");
-    let outputValues = "";
+    let outputColumns = columns.join(', ');
+    let outputValues = '';
     for (let i = 0; i < values.length; i++) {
       const comma = i < values.length - 1 ? ", " : "";
       const currentValue =

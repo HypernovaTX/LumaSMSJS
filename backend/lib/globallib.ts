@@ -2,27 +2,21 @@
 // Reuseable utility functions that can be used anywhere
 // ================================================================================
 import SqlString from "sqlstring";
-import ERR from "./error.js";
+import { Request } from "express";
 
 // Common server specific use ----------------------------------------------------
 
-// ERROR CALL FUNCTION
-export function handleError(code, message) {
-  const errorClass = new ERR(code, message);
-  errorClass.show_error();
-}
-
 // Get client IP
-export function clientIP(_request) {
+export function clientIP(_request: Request) {
   return (
-    _request.headers["x-forwarded-for"] || _request.connection.remoteAddress
+    _request.headers["x-forwarded-for"] || _request.socket.remoteAddress
   );
 }
 
 // Misc ----------------------------------------------------
 
 // Placeholder Promise
-export function placeholderPromise(input = "") {
+export function placeholderPromise(input: string) {
   const output = new Promise((resolve) => {
     resolve(input);
   });
@@ -30,10 +24,7 @@ export function placeholderPromise(input = "") {
 }
 
 // Verify if it's JSON
-export function isStringJSON(toCheck = "") {
-  if (typeof toCheck !== "string") {
-    return false;
-  }
+export function isStringJSON(toCheck: string) {
   try {
     JSON.parse(toCheck);
   } catch (e) {
@@ -44,7 +35,7 @@ export function isStringJSON(toCheck = "") {
 }
 
 // Proper Escape String without '
-export function sanitizeInput(input = "") {
+export function sanitizeInput(input: string) {
   let output = SqlString.escape(input);
   output = output.substring(1, output.length - 1);
   return output;
