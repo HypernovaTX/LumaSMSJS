@@ -2,19 +2,20 @@
 // MAIN USER OBJECT
 // (primarily called by /routes/user.js)
 // ================================================================================
-// import bcrypt from 'bcryptjs';
+import bcrypt from 'bcryptjs';
 import UserQuery from '../queries/userquery';
 // import { sanitizeInput } from '../lib/globallib';
-import { isError } from '../lib/error';
-// import {
-//   checkPermission,
-//   checkLogin,
-//   checkExistingUser,
-//   updateLoginCookie,
-//   createUser,
-// } from './lib/userlib';
+import ERR, { isError } from '../lib/error';
+import {
+  //checkPermission,
+  //checkLogin,
+  //checkExistingUser,
+  updateLoginCookie,
+  //createUser,
+} from './lib/userlib';
 import CF from '../config';
 import { User, UserList } from '../schema/userResponse';
+import { Response } from 'express';
 
 // PUBLIC (no login required) -----------------------------------
 export async function listUsers(
@@ -29,21 +30,21 @@ export async function listUsers(
   if (isError(result)) {
     return result;
   }
-  console.log(result);
-  const users = result as UserList;
-  let output = [];
-  for (const user of users) {
-    if (user.password) {
-      delete user.password;
-    }
-    output.push(user);
+  let output = result;
+  if (Array.isArray(result)) {
+    output = result.map((user) => {
+      if (user.password) {
+        delete user.password;
+      }
+      return user;
+    });
   }
   return output;
 }
 
 export async function showUserByID(id: number) {
   const query = new UserQuery();
-  const result = await query.showUserById(id);
+  const result = await query.getUserById(id);
   if (isError(result)) {
     return result;
   }
@@ -54,40 +55,33 @@ export async function showUserByID(id: number) {
   return result;
 }
 
-// // LOGIN METHODS ------------------------------------------------------------------------------------------------------------
-// /** Main login function
-//  @param _response - when it is null, the function will NOT run "updateLoginCookie()"
-//  @returns RESULT [badparam | fail | denied | done]
-//  */
-// async doLogin(username, password, _response = null) {
-//   // Invalid param
-//   if (!username || !password) {
-//     handleError("us1");
-//     return RESULT.badparam;
-//   }
+// LOGIN METHODS ------------------------------------------------------------------------------------------------------------
+export async function doLogin(
+  username: string,
+  password: string,
+  _response: Response
+) {
+  const query = new UserQuery();
+  let queryResult = await query.getUserByUsername(username);
 
-//   this.DB.buildSelect(this.userTable);
-//   this.DB.buildWhere(`username = '${sanitizeInput(username)}'`);
-//   const queryData = await this.DB.runQuery();
+  if (isError(queryResult)) {
+    return queryResult;
+  }
 
-//   // Username not found
-//   if (queryData.length === 0) {
-//     return RESULT.fail;
-//   }
-//   // Ensure password is a string
-//   if (typeof queryData[0].password !== "string") {
-//     queryData[0].password = "";
-//   }
+  const userHelper = queryResult as User;
 
-//   const result = await bcrypt.compare(password, queryData[0].password);
-//   if (result) {
-//     if (_response) {
-//       updateLoginCookie(queryData[0].uid, _response);
-//     }
-//     return RESULT.done;
-//   }
-//   return RESULT.denied;
-// }
+  // Ensure password is a string
+  if (typeof userHelper.password !== 'string') {
+    userHelper.password = '';
+  }
+
+  const result = await bcrypt.compare(password, userHelper.password);
+  if (result) {
+    updateLoginCookie(userHelper.uid, _response);
+    return userHelper;
+  }
+  return ERR('userLogin');
+}
 
 // /** Main logout function
 //  @returns - RESULT [done]

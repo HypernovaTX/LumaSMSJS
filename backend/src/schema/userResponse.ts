@@ -39,3 +39,36 @@ export interface User {
 }
 
 export type UserList = User[];
+
+export interface UserPermissions {
+  gid: number;
+  group_name: string;
+  group_title: string;
+  moderator: number;
+  acp_access: number;
+  acp_modq: number;
+  acp_users: number;
+  acp_news: number;
+  can_msg_users: number;
+  acp_super: number;
+  can_submit: number;
+  can_comment: number;
+  can_report: number;
+  can_modify: number;
+  can_msg: number;
+  use_bbcode: number;
+  edit_comment: number;
+  delete_comment: number;
+  msg_capacity: number;
+  name_prefix: string;
+  name_suffix: string;
+}
+
+export type PermissionArray = (keyof UserPermissions)[];
+export const invalidPermissionKeys = [
+  'gid',
+  'group_name',
+  'group_title',
+  'name_prefix',
+  'name_suffix',
+];

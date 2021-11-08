@@ -23,11 +23,15 @@ export const errors = {
 
   // user
   userNotFound: 'User not found!',
+  userRoleNotFound: 'User role not found!',
+  userCookie: 'User cookie not found!',
+  userJwt: 'User JWT related error!',
+  userLogin: 'User name/password does not match!',
   // userListNumber: 'listUser "order" "asc" array counts does not match!',
 };
 
 export function isError(x: any) {
-  return (x as errorObj).error && (x as errorObj).message;
+  return (x as errorObj)?.error && (x as errorObj).message;
 }
 
 export default function ERR(error: errorCodes, reason?: string): errorObj {

@@ -36,7 +36,8 @@
     "passport": "^0.4.1",
     "passport-local": "^1.0.0",
     "path": "^0.12.7",
-    "sqlstring": "^2.3.1"
+    "sqlstring": "^2.3.1",
+    "ts-transformer-keys": "^0.4.3"
   },
   "devDependencies": {
     "eslint": "^7.31.0",

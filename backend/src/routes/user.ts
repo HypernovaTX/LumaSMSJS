@@ -6,7 +6,7 @@ import express from 'express';
 // import multer from 'multer';
 
 import CF from '../config';
-import { listUsers } from '../components/user';
+import { doLogin, listUsers, showUserByID } from '../components/user';
 // import { checkLogin, checkPermission } from '../components/lib/userlib.js';
 import { isStringJSON } from '../lib/globallib';
 import { httpStatus } from '../lib/result';
@@ -45,19 +45,19 @@ userRouter.get('/', async (_, res) => {
 // });
 
 // GET "/:id" - Show specific user by ID | PARAM: id
-// userRouter.get('/:id', async (req, res) => {
-//   const id = req.params.id ?? 0;
-//   const result = await user.showUserByID(id);
-//   httpStatus(res, result);
-//   res.send(result);
-// });
+userRouter.get('/:id', async (req, res) => {
+  const id = parseInt(req.params.id) ?? 0;
+  const result = await showUserByID(id);
+  httpStatus(res, result);
+  res.send(result);
+});
 
 // PUT -------------------------------------------------------------------------------------------------------
 // PUT "/" - list users (with param for sort/filter) | BODY: ?page, ?count, ?row, ?dsc, ?filter
 userRouter.put('/', async (req, res) => {
-  const page = req.body?.page || 0; // page - number
-  const count = req.body?.count || 25; // count - number
-  const colSort = req.body?.column || ''; // row - string
+  const page = parseInt(req.body?.page) ?? 0;
+  const count = parseInt(req.body?.count) || 25;
+  const colSort = `${req.body?.column}` || '';
   const asc = req.body?.dsc ? false : true; // dsc - string (true if undefined)
   let filter = []; // filter - { columnName: value }[]
 
@@ -71,13 +71,13 @@ userRouter.put('/', async (req, res) => {
 });
 
 // PUT "/login" - login | BODY: username, password
-// userRouter.put('/login', async (req, res) => {
-//   const username = req.body?.username || '0';
-//   const password = req.body?.password || '0';
-//   const result = await user.doLogin(username, password, res);
-//   httpStatus(res, result);
-//   res.send(result);
-// });
+userRouter.put('/login', async (req, res) => {
+  const username = `${req.body?.username}` || '0';
+  const password = `${req.body?.password}` || '0';
+  const result = await doLogin(username, password, res);
+  httpStatus(res, result);
+  res.send(result);
+});
 
 // PATCH ------------------------------------------------------------------------------------------------------
 // PATCH "/:id" - update user profile settings | PARAM: id, BODY: data
