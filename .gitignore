@@ -104,6 +104,5 @@ dist
 .tern-port
 
 # config file
-backend/config.js
-backend/config.ts
-backend/files
+backend/src/config.ts
+backend/build

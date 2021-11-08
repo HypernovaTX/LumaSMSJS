@@ -1,9 +1,8 @@
 // ==================== MAIN SQL OBJ ====================
-import mysql from 'mysql';
+import mysql, { Pool, PoolConfig } from 'mysql';
 import CF from '../config';
 import { sanitizeInput } from './globallib';
 import ERR from './error';
-import { allPossibleResponses } from '../schema';
 
 // ==================== SQL resolve ====================
 enum SQLResult {
@@ -15,8 +14,8 @@ export { SQLResult };
 // ==================== Database Class ====================
 export default class SQL {
   query: string;
-  DBCONFIG: mysql.PoolConfig;
-  pool: mysql.Pool;
+  DBCONFIG: PoolConfig;
+  pool: Pool | undefined;
 
   // SQL Class based variables
   constructor() {
@@ -27,6 +26,7 @@ export default class SQL {
       database: CF.DB_NAME,
       connectionLimit: 10,
     };
+    this.query = '';
   }
 
   // ---------- Section A: Connection ---------
@@ -34,8 +34,12 @@ export default class SQL {
     this.pool = mysql.createPool(this.DBCONFIG);
   }
   release() {
-    this.pool.end((error) => {
-      error && ERR('dbConnect', error.message);
+    if (!this.checkPool()) {
+      ERR('dbDisconnect');
+      return;
+    }
+    (this.pool as Pool).end((error) => {
+      error && ERR('dbDisconnect', error.message);
     });
   }
   checkPool() {
@@ -46,11 +50,8 @@ export default class SQL {
    * @param { boolean } noReturn - (Optional) - whether to return the rows or just a string of RESULT<done, fail>
    */
   async runQuery(noReturn: boolean | undefined = false) {
-    //DEBUG PURPOSE
+    // DEBUG PURPOSE
     console.log(this.query);
-    if (this.query) {
-      return { test: 'test' };
-    }
 
     // Start the connection
     if (!this.checkPool()) {
@@ -58,7 +59,7 @@ export default class SQL {
     }
     // run the query
     const getData = await new Promise<any>((resolve) => {
-      this.pool.getConnection((poolError, connection) => {
+      (this.pool as Pool).getConnection((poolError, connection) => {
         poolError && ERR('dbDisconnect', poolError.message);
         CF.DEBUG_MODE &&
           console.log(`\x1b[36m[SQL QUERY] ${this.query}\x1b[0m`);
@@ -75,7 +76,7 @@ export default class SQL {
         } catch (error) {
           // MySQL errors
           CF.DEBUG_MODE && console.log(error);
-          resolve(ERR('dbQuery', error.message));
+          resolve(ERR('dbQuery'));
         }
       });
     });

@@ -1,4 +1,4 @@
-export interface user {
+export interface User {
   uid: number;
   gid: number;
   username: string;
@@ -38,4 +38,4 @@ export interface user {
   password?: string;
 }
 
-export type userList = user[];
+export type UserList = User[];
