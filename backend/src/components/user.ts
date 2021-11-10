@@ -77,7 +77,7 @@ export async function userLogin(
   }
   const result = await bcrypt.compare(password, userHelper.password);
   if (result) {
-    updateLoginCookie(userHelper.uid, _response, remember);
+    updateLoginCookie(userHelper.uid, userHelper.username, _response, remember);
     // Delete password
     if (userHelper.password) {
       delete userHelper.password;
@@ -116,22 +116,14 @@ export async function userRegistration(
   return ERR('userExists');
 }
 
-export async function updateUserProfile(
-  _request: Request,
-  uid: number,
-  inputs: User
-) {
+export async function updateUserProfile(_request: Request, inputs: User) {
   // Ensure user is logged in
   const getLogin = await checkLogin(_request);
   if (isError(getLogin)) {
     return getLogin as ErrorObj;
   }
-  // Ensure user is update themselves, not other user
-  const currentUser = getLogin as User;
-  if (uid !== currentUser.uid) {
-    return ERR('userUpdateOther');
-  }
   // Ensure user is not banned
+  const currentUser = getLogin as User;
   const getPermission = await checkPermission(_request);
   const permitted = validatePermission(getPermission, [
     'can_msg',
@@ -148,7 +140,7 @@ export async function updateUserProfile(
   if (invalidKeys.length) {
     return ERR('userUpdateInvalid');
   }
-  return await updateUser(uid, inputs);
+  return await updateUser(currentUser.uid, inputs);
 }
 
 // async updateUserAvatar(_request, uid = 0, file) {
@@ -225,52 +217,6 @@ export async function updateEmail(
   }
   return await updateUser(uid, { email: sanitizeInput(email) });
 }
-
-// /** Update current (logged in) user's email
-//  @returns RESULT [badparam | denied | fail | done | same]
-// */
-// async updateEmail(_request, password, newEmail) {
-//   // Invalid param
-//   if (!password || !newEmail) {
-//     return RESULT.badparam;
-//   }
-
-//   // Verify if the current user is logged in
-//   const loginVerify = await checkLogin(_request);
-//   if (loginVerify === RESULT.fail) {
-//     handleError("us5");
-//     return RESULT.denied;
-//   }
-
-//   // Verify password with the logged in user
-//   const uid =
-//     typeof loginVerify.uid === "string"
-//       ? sanitizeInput(loginVerify.uid)
-//       : loginVerify.uid;
-//   const passwordVerify = await this.doLogin(
-//     loginVerify.username,
-//     password,
-//     null
-//   );
-//   if (passwordVerify !== RESULT.done) {
-//     handleError("us8");
-//     return RESULT.denied;
-//   }
-
-//   // Verify if email is taken
-//   const checkEmailResult = await checkExistingUser(null, newEmail);
-//   if (checkEmailResult !== RESULT.ok) {
-//     handleError("us10");
-//     return RESULT.exists;
-//   }
-
-//   return await this.updateUserProfile(
-//     _request,
-//     uid,
-//     [{ email: newEmail }],
-//     true
-//   );
-// }
 
 // /** Delete user
 //  @returns RESULT [denied | fail | done]

@@ -25,6 +25,8 @@ export const errors = {
 
   // user
   userCookie: 'User cookie not found!',
+  userCookieInvalid: 'User cookie is invalid!',
+  userDeleteOwn: 'You cannot delete your own account!',
   userEmailExists: 'Email is already taken!',
   userEmailSame: 'New email is the same as the old one!',
   userExists: 'Username and / or email are already taken!',
@@ -38,6 +40,8 @@ export const errors = {
   userPasswordWrong: 'The password is incorrect!',
   userRoleNotFound: 'User role not found!',
   userPermission: 'User is not permitted to perform such action!',
+  userRootPermit: 'Only root admins are permitted to perform this action!',
+  userStaffPermit: 'Only staff are permitted to perform this action!',
   userUpdateInvalid: "Invalid update to user's profile!",
   userUpdateOther: "You cannot update other user's profile!",
 };

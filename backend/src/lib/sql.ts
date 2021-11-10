@@ -52,9 +52,6 @@ export default class SQL {
    * @param { boolean } noReturn - (Optional) - whether to return the rows or just a string of RESULT<done, fail>
    */
   async runQuery(noReturn: boolean | undefined = false) {
-    // DEBUG PURPOSE
-    console.log(this.query);
-
     // Start the connection
     if (!this.checkPool()) {
       this.connect();
@@ -65,7 +62,6 @@ export default class SQL {
         poolError && ERR('dbDisconnect', poolError.message);
         CF.DEBUG_MODE &&
           console.log(`\x1b[36m[SQL QUERY] ${this.query}\x1b[0m`);
-
         try {
           connection.query(this.query, (error, result) => {
             connection.release();
@@ -82,7 +78,6 @@ export default class SQL {
         }
       });
     });
-
     return getData;
   }
 
@@ -101,7 +96,6 @@ export default class SQL {
       column = sanitizeInput(column);
     }
     table = sanitizeInput(table);
-
     // Apply this to the query
     this.query = `SELECT ${column} FROM ${table} `;
     return this.query;
@@ -126,7 +120,6 @@ export default class SQL {
       const orderDirection = value ? 'ASC' : 'DESC';
       return `${cleanColumn} ${orderDirection}`;
     });
-
     this.query += `ORDER BY ${list.join(', ')} `;
     return this.query;
   }

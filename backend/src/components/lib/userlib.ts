@@ -28,25 +28,31 @@ export async function checkLogin(_request: Request) {
     jwt.verify(
       _request.cookies.Login,
       CF.JWT_SECRET,
-      async (err: VerifyErrors, decoded: { uid: string }) => {
+      async (err: VerifyErrors, decoded: { uid: string; username: string }) => {
         if (err) {
           resolve(ERR('userJwt', err.message));
         }
         const query = new UserQuery();
-        const result = await query.getUserByIdLazy(parseInt(decoded.uid));
+        const result = await query.getUserByIdLazy(parseInt(decoded?.uid));
         const ip = clientIP(_request);
         if (isError(result)) {
           resolve(ERR('userLogin', err.message));
         }
         const userHelper = result as User;
-        //Do the query to check if the ID matches
-        if (userHelper.uid) {
+        console.log(decoded);
+        // Ensure cookie info match the DB
+        if (
+          userHelper?.uid === parseInt(decoded?.uid) &&
+          userHelper?.username === decoded?.username
+        ) {
           //If matches - confirm
           updateLastActivity(userHelper.uid, ip);
           if (userHelper?.password) {
             delete userHelper.password;
           }
           resolve(userHelper);
+        } else {
+          resolve(ERR('userCookieInvalid'));
         }
       }
     );
@@ -55,7 +61,7 @@ export async function checkLogin(_request: Request) {
 
 export async function verifyPassword(uid: number, password: string) {
   const query = new UserQuery();
-  const queryResult = await query.getUserByUid(uid);
+  const queryResult = await query.getUserByIdLazy(uid);
   if (isError(queryResult)) {
     return false;
   }
@@ -134,12 +140,18 @@ export async function updateLastActivity(uid: number, ip: string) {
 
 export async function updateLoginCookie(
   uid: number,
+  username: string,
   _response: Response,
   remember?: boolean
 ) {
-  const token = jwt.sign({ uid: uid.toString() }, CF.JWT_SECRET, {
-    expiresIn: remember ? CF.JWT_EXPIRES_IN : '24h',
-  });
+  const token = jwt.sign(
+    {
+      uid: uid.toString(),
+      username,
+    },
+    CF.JWT_SECRET,
+    { expiresIn: remember ? CF.JWT_EXPIRES_IN : '24h' }
+  );
   const cookieOptions = {
     expires: new Date(
       Date.now() +

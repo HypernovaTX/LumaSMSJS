@@ -7,6 +7,7 @@ import express from 'express';
 
 import CF from '../config';
 import { checkLogin, checkPermission } from '../components/lib/userlib';
+import { deleteUser } from '../components/staff/userStaff';
 import {
   listUsers,
   showUserByID,
@@ -107,14 +108,13 @@ userRouter.put('/login', async (req, res) => {
 });
 
 // PATCH ------------------------------------------------------------------------------------------------------
-// PATCH "/:id" - update user profile settings
-//PARAM: id, BODY: data
-userRouter.patch('/:id', async (req, res) => {
+// PATCH "/:id" - update any user profile settings [STAFF]
+// PARAM: id, BODY: data
+userRouter.patch('/', async (req, res) => {
   if (!validateRequiredParam(req, ['data'])) {
     invalidParamResponse(res);
     return;
   }
-  const uid = parseInt(req.params.id) ?? 0; // id - string
   let data = {} as User;
   if (isStringJSON(req.body?.data)) {
     data = JSON.parse(req.body?.data);
@@ -122,10 +122,30 @@ userRouter.patch('/:id', async (req, res) => {
     invalidJsonResponse(res);
     return;
   }
-  const result = await updateUserProfile(req, uid, data);
+  const result = await updateUserProfile(req, data);
   httpStatus(res, result);
   res.send(result);
 });
+
+// PATCH "/:id" - update any user profile settings [STAFF]
+// PARAM: id, BODY: data
+// userRouter.patch('/:id', async (req, res) => {
+//   if (!validateRequiredParam(req, ['data'])) {
+//     invalidParamResponse(res);
+//     return;
+//   }
+//   const uid = parseInt(req.params.id) ?? 0;
+//   let data = {} as User;
+//   if (isStringJSON(req.body?.data)) {
+//     data = JSON.parse(req.body?.data);
+//   } else if (req.body?.data) {
+//     invalidJsonResponse(res);
+//     return;
+//   }
+//   const result = await updateUserProfile(req, uid, data);
+//   httpStatus(res, result);
+//   res.send(result);
+// });
 
 // POST ------------------------------------------------------------------------------------------------------
 // POST "/" - create user | BODY: username, password, email
@@ -184,10 +204,11 @@ userRouter.post('/email', async (req, res) => {
 // });
 
 // DELETE -------------------------------------------------------------------------------------------------------
-// DELETE "/:id" - Delete a user (root admin only) | PARAM: id
-// userRouter.delete('/:id', async (req, res) => {
-//   const uid = req.params?.id || 0; // user ID
-//   const result = await user.deleteUser(req, uid);
-//   httpStatus(res, result);
-//   res.send(result);
-// });
+// DELETE "/:id" - Delete a user [ROOT]
+// PARAM: id
+userRouter.delete('/:id', async (req, res) => {
+  const uid = parseInt(req.params.id) ?? 0; // user ID
+  const result = await deleteUser(req, uid);
+  httpStatus(res, result);
+  res.send(result);
+});
