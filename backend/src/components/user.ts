@@ -2,22 +2,24 @@
 // MAIN USER OBJECT
 // (primarily called by /routes/user.js)
 // ================================================================================
+import { Request, Response } from 'express';
 import bcrypt from 'bcryptjs';
+
 import UserQuery from '../queries/userquery';
-// import { sanitizeInput } from '../lib/globallib';
-import ERR, { isError } from '../lib/error';
+import ERR, { ErrorObj, isError } from '../lib/error';
 import {
+  checkExistingUserAndEmail,
   //checkPermission,
   //checkLogin,
-  //checkExistingUser,
   updateLoginCookie,
   //createUser,
 } from './lib/userlib';
 import CF from '../config';
 import { User, UserList } from '../schema/userResponse';
-import { Response } from 'express';
+import { clientIP, sanitizeInput } from '../lib/globallib';
+import { NoResponse } from '../lib/result';
 
-// PUBLIC (no login required) -----------------------------------
+// SAFE FUNCTIONS
 export async function listUsers(
   page: number = 0,
   count: number = CF.ROWS,
@@ -55,10 +57,10 @@ export async function showUserByID(id: number) {
   return result;
 }
 
-// LOGIN METHODS ------------------------------------------------------------------------------------------------------------
-export async function doLogin(
+export async function userLogin(
   username: string,
   password: string,
+  remember: boolean,
   _response: Response
 ) {
   const query = new UserQuery();
@@ -77,42 +79,44 @@ export async function doLogin(
 
   const result = await bcrypt.compare(password, userHelper.password);
   if (result) {
-    updateLoginCookie(userHelper.uid, _response);
+    updateLoginCookie(userHelper.uid, _response, remember);
+    // Delete password
+    if (userHelper.password) {
+      delete userHelper.password;
+    }
     return userHelper;
   }
   return ERR('userLogin');
 }
 
-// /** Main logout function
-//  @returns - RESULT [done]
-// */
-// async doLogout(_response) {
-//   _response.cookie("Login", "logout", {
-//     expires: new Date(Date.now() + 2 * 1000),
-//     httpOnly: true,
-//   });
-//   return await new Promise((resolve) => {
-//     setTimeout(() => resolve(RESULT.done), 1000);
-//   });
-// }
+export function userLogout(_response: Response) {
+  _response.cookie('Login', 'logout', {
+    expires: new Date(Date.now() + 2 * 1000),
+    httpOnly: true,
+  });
+}
 
-// /** Main register function
-//  @returns RESULT [badparam | done | fail | exists]
-// */
-// async doRegister(_request, username, password, email) {
-//   // Invalid param
-//   if (!username || !password || !email) {
-//     handleError("us3");
-//     return RESULT.badparam;
-//   }
-
-//   // Need to ensure no other username/email were used
-//   const userCheckResult = await checkExistingUser(username, email);
-//   if (userCheckResult === RESULT.ok) {
-//     return await createUser(_request, username, email, password);
-//   }
-//   return userCheckResult;
-// }
+// RISKY FUNCTIONS
+export async function userRegistration(
+  _request: Request,
+  username: string,
+  password: string,
+  email: string
+) {
+  // Need to ensure no other username/email were used
+  const userExists = await checkExistingUserAndEmail(username, email);
+  if (!userExists) {
+    const hashedPassword = await bcrypt.hash(password, CF.PASSWORD_SALT);
+    const ip = clientIP(_request);
+    const query = new UserQuery();
+    const result = await query.createUser(username, email, hashedPassword, ip);
+    if (isError(result)) {
+      return result as ErrorObj;
+    }
+    return result as NoResponse;
+  }
+  return ERR('userExists');
+}
 
 // // PROFILE EDITING METHODS ------------------------------------------------------------------------------------------------------------
 // /** Main function to update settings for updating user profile settings

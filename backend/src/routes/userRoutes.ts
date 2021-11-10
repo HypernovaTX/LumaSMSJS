@@ -6,9 +6,21 @@ import express from 'express';
 // import multer from 'multer';
 
 import CF from '../config';
-import { doLogin, listUsers, showUserByID } from '../components/user';
-// import { checkLogin, checkPermission } from '../components/lib/userlib.js';
-import { isStringJSON } from '../lib/globallib';
+import {
+  listUsers,
+  showUserByID,
+  userLogin,
+  userLogout,
+  userRegistration,
+} from '../components/user';
+import { checkLogin, checkPermission } from '../components/lib/userlib';
+import {
+  invalidJsonResponse,
+  invalidParamResponse,
+  isStringJSON,
+  stringToBoolean,
+  validateRequiredParam,
+} from '../lib/globallib';
 import { httpStatus } from '../lib/result';
 
 export const userRouter = express.Router();
@@ -24,25 +36,26 @@ userRouter.get('/', async (_, res) => {
 });
 
 // GET "/verify" - verify login
-// userRouter.get('/verify', async (req, res) => {
-//   const result = await checkLogin(req);
-//   httpStatus(res, result);
-//   res.send(result);
-// });
+userRouter.get('/verify', async (req, res) => {
+  const result = await checkLogin(req);
+  httpStatus(res, result);
+  res.send(result);
+});
 
 // GET "/permission" - return current user's permissions
-// userRouter.get('/permission', async (req, res) => {
-//   const result = await checkPermission(req);
-//   httpStatus(res, result);
-//   res.send(result);
-// });
+userRouter.get('/permission', async (req, res) => {
+  const result = await checkPermission(req);
+  httpStatus(res, result);
+  res.send(result);
+});
 
 // GET "/logout" - logout
-// userRouter.get('/logout', async (req, res) => {
-//   const result = await user.doLogout(res);
-//   httpStatus(res, result);
-//   res.send(result);
-// });
+userRouter.get('/logout', (_, res) => {
+  userLogout(res);
+  const result = { noContent: true };
+  httpStatus(res, result);
+  res.send(result);
+});
 
 // GET "/:id" - Show specific user by ID | PARAM: id
 userRouter.get('/:id', async (req, res) => {
@@ -53,16 +66,20 @@ userRouter.get('/:id', async (req, res) => {
 });
 
 // PUT -------------------------------------------------------------------------------------------------------
-// PUT "/" - list users (with param for sort/filter) | BODY: ?page, ?count, ?row, ?dsc, ?filter
+// PUT "/" - list users (with param for sort/filter)
+// BODY: ?page, ?count, ?row, ?dsc, ?filter
 userRouter.put('/', async (req, res) => {
   const page = parseInt(req.body?.page) ?? 0;
   const count = parseInt(req.body?.count) || 25;
-  const colSort = `${req.body?.column}` || '';
+  const colSort = `${req.body?.column} ?? ''`;
   const asc = req.body?.dsc ? false : true; // dsc - string (true if undefined)
   let filter = []; // filter - { columnName: value }[]
 
   if (isStringJSON(req.body?.filter)) {
     filter = JSON.parse(req.body?.filter);
+  } else if (req.body?.filter) {
+    invalidJsonResponse(res);
+    return;
   }
   const result = await listUsers(page, count, colSort, asc, filter);
 
@@ -70,11 +87,17 @@ userRouter.put('/', async (req, res) => {
   res.send(result);
 });
 
-// PUT "/login" - login | BODY: username, password
+// PUT "/login" - login
+// BODY: username, password, "remember
 userRouter.put('/login', async (req, res) => {
-  const username = `${req.body?.username}` || '0';
-  const password = `${req.body?.password}` || '0';
-  const result = await doLogin(username, password, res);
+  if (!validateRequiredParam(req, ['username', 'password'])) {
+    invalidParamResponse(res);
+    return;
+  }
+  const username = `${req.body?.username ?? ''}`;
+  const password = `${req.body?.password ?? ''}`;
+  const remember = stringToBoolean(`${req.body?.remember}`);
+  const result = await userLogin(username, password, remember, res);
   httpStatus(res, result);
   res.send(result);
 });
@@ -93,15 +116,19 @@ userRouter.put('/login', async (req, res) => {
 // });
 
 // POST ------------------------------------------------------------------------------------------------------
-// POST "/" - register | BODY: username, password, email
-// userRouter.post('/', async (req, res) => {
-//   const _usr = req.body?.username || '';
-//   const _pas = req.body?.password || '';
-//   const _ema = req.body?.email || '';
-//   const result = await user.doRegister(req, _usr, _pas, _ema);
-//   httpStatus(res, result);
-//   res.send(result);
-// });
+// POST "/" - create user | BODY: username, password, email
+userRouter.post('/', async (req, res) => {
+  if (!validateRequiredParam(req, ['username', 'password', 'email'])) {
+    invalidParamResponse(res);
+    return;
+  }
+  const username = `${req.body?.username ?? ''}`;
+  const password = `${req.body?.password ?? ''}`;
+  const email = `${req.body?.email ?? ''}`;
+  const result = await userRegistration(req, username, password, email);
+  httpStatus(res, result);
+  res.send(result);
+});
 
 // POST "/password" - Update password for current user | BODY: oldpassword, newpassword
 // userRouter.post('/password', async (req, res) => {

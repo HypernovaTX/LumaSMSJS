@@ -1,6 +1,6 @@
 import SQL from '../lib/sql';
 import CF from '../config';
-import ERR, { errorObj } from '../lib/error';
+import ERR, { ErrorObj } from '../lib/error';
 import { sanitizeInput } from '../lib/globallib';
 import { User, UserList, UserPermissions } from '../schema/userResponse';
 
@@ -22,7 +22,6 @@ export default class UserQuery {
     filter: [string, string][] = []
   ) {
     this.DB.buildSelect(this.userTable);
-
     // Apply filter
     if (filter.length > 0) {
       const statements = filter.map((item) => {
@@ -33,7 +32,6 @@ export default class UserQuery {
       });
       this.DB.buildWhere(statements);
     }
-
     // Order and limit
     if (column) {
       this.DB.buildOrder([column], [asc]);
@@ -41,7 +39,7 @@ export default class UserQuery {
     if (count) {
       this.DB.buildCustomQuery(`LIMIT ${page * count}, ${count}`);
     }
-    return (await this.DB.runQuery()) as UserList | errorObj;
+    return (await this.DB.runQuery()) as UserList | ErrorObj;
   }
 
   async getUserById(id: number) {
@@ -70,40 +68,47 @@ export default class UserQuery {
         `) AS submissions`,
     ]);
     this.DB.buildWhere(`u.uid = ${id.toString()}`);
-    const queryResult = await this.DB.runQuery(); // Only return the 1st result if there's more
-
+    const queryResult = await this.DB.runQuery();
     if (!Array.isArray(queryResult) || !queryResult.length) {
       return ERR('userNotFound');
     }
-
+    // Only return the 1st result if there's more
     const [user] = queryResult;
-    return user as User | errorObj;
+    return user as User | ErrorObj;
   }
 
   async getUserByIdLazy(id: number) {
     this.DB.buildSelect(this.userTable, '*');
     this.DB.buildWhere(`uid = ${id.toString()}`);
-    const queryResult = await this.DB.runQuery(); // Only return the 1st result if there's more
-
+    const queryResult = await this.DB.runQuery();
     if (!Array.isArray(queryResult) || !queryResult.length) {
       return ERR('userNotFound');
     }
-
+    // Only return the 1st result if there's more
     const [user] = queryResult;
-    return user as User | errorObj;
+    return user as User | ErrorObj;
   }
 
   async getUserByUsername(username: string) {
     this.DB.buildSelect(this.userTable);
     this.DB.buildWhere(`username = '${sanitizeInput(username)}'`);
     const queryResult = await this.DB.runQuery();
-
     if (!Array.isArray(queryResult) || !queryResult.length) {
       return ERR('userNotFound');
     }
-
     const [user] = queryResult;
-    return user as User | errorObj;
+    return user as User | ErrorObj;
+  }
+
+  async getUserByEmail(email: string) {
+    this.DB.buildSelect(this.userTable);
+    this.DB.buildWhere(`email = '${sanitizeInput(email)}'`);
+    const queryResult = await this.DB.runQuery();
+    if (!Array.isArray(queryResult) || !queryResult.length) {
+      return ERR('userNotFound');
+    }
+    const [user] = queryResult;
+    return user as User | ErrorObj;
   }
 
   async getUserByUsernameAndEmail(username: string, email: string) {
@@ -113,13 +118,11 @@ export default class UserQuery {
         || email = '${sanitizeInput(email)}'`
     );
     const queryResult = await this.DB.runQuery();
-
     if (!Array.isArray(queryResult) || !queryResult.length) {
       return ERR('userNotFound');
     }
-
     const [user] = queryResult;
-    return user as User | errorObj;
+    return user as User | ErrorObj;
   }
 
   async updateLastActivity(uid: number, timestamp: string, ip: string) {
@@ -142,6 +145,38 @@ export default class UserQuery {
     }
 
     const [role] = queryResult;
-    return role as UserPermissions | errorObj;
+    return role as UserPermissions | ErrorObj;
+  }
+
+  // RISKY STUFFS
+  async createUser(
+    username: string,
+    email: string,
+    password: string,
+    ip: string
+  ) {
+    const columnNames = [
+      'username',
+      'email',
+      'password',
+      'join_date',
+      'items_per_page',
+      'gid',
+      'registered_ip',
+      'last_activity',
+    ];
+    const timestamp = Math.ceil(Date.now() / 1000);
+    const columnValues = [
+      username,
+      email,
+      password,
+      `${timestamp}`,
+      `${CF.ROWS}`,
+      `${CF.DEFAULT_GROUP}`,
+      ip,
+      `${timestamp}`,
+    ];
+    this.DB.buildInsert(this.userTable, columnNames, columnValues);
+    return await this.DB.runQuery(true);
   }
 }

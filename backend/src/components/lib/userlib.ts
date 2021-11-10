@@ -7,7 +7,7 @@ import bcrypt from 'bcryptjs';
 import CF from '../../config';
 
 import { clientIP } from '../../lib/globallib';
-import ERR, { errorObj, isError } from '../../lib/error';
+import ERR, { ErrorObj, isError } from '../../lib/error';
 import UserQuery from '../../queries/userquery';
 import {
   User,
@@ -22,7 +22,7 @@ export async function checkLogin(_request: Request) {
   if (!_request.cookies?.Login) {
     return ERR('userCookie');
   }
-  const output = await new Promise<errorObj | User>((resolve) => {
+  const output = await new Promise<ErrorObj | User>((resolve) => {
     //Use the JWT to verify the cookie with secret code
     jwt.verify(
       _request.cookies.Login,
@@ -33,10 +33,7 @@ export async function checkLogin(_request: Request) {
         }
         const query = new UserQuery();
         const result = await query.getUserByIdLazy(parseInt(decoded.uid));
-        let ip = clientIP(_request);
-        if (Array.isArray(ip)) {
-          [ip] = ip;
-        }
+        const ip = clientIP(_request);
         if (isError(result)) {
           resolve(ERR('userLogin', err.message));
         }
@@ -70,7 +67,6 @@ export async function checkPermission(
   if (isError(result)) {
     return [];
   }
-
   const groupHelper = result as UserPermissions;
   const permissions = Object.entries(groupHelper).map((each) => {
     const [name, value] = each;
@@ -78,13 +74,36 @@ export async function checkPermission(
       return name;
     }
   });
-  console.log(permissions);
-  return permissions as PermissionArray;
+  const output = (permissions as PermissionArray).filter(
+    (findNull) => !!findNull
+  );
+  return output;
 }
 
-export async function checkExistingUser(username: string, email: string) {
+export async function checkExistingUserAndEmail(
+  username: string,
+  email: string
+) {
   const query = new UserQuery();
   const result = await query.getUserByUsernameAndEmail(username, email);
+  if (isError(result)) {
+    return false;
+  }
+  return true;
+}
+
+export async function checkExistingUser(username: string) {
+  const query = new UserQuery();
+  const result = await query.getUserByUsername(username);
+  if (isError(result)) {
+    return false;
+  }
+  return true;
+}
+
+export async function checkExistingEmail(email: string) {
+  const query = new UserQuery();
+  const result = await query.getUserByEmail(email);
   if (isError(result)) {
     return false;
   }
@@ -98,41 +117,22 @@ export async function updateLastActivity(uid: number, ip: string) {
   query.updateLastActivity(uid, timestamp.toString(), ip);
 }
 
-export async function updateLoginCookie(uid: number, _response: Response) {
+export async function updateLoginCookie(
+  uid: number,
+  _response: Response,
+  remember?: boolean
+) {
   const token = jwt.sign({ uid: uid.toString() }, CF.JWT_SECRET, {
-    expiresIn: CF.JWT_EXPIRES_IN,
+    expiresIn: remember ? CF.JWT_EXPIRES_IN : '24h',
   });
   const cookieOptions = {
     expires: new Date(
-      Date.now() + CF.JWT_COOKIE_EXPIRES * 365 * 24 * 60 * 60 * 1000
+      Date.now() +
+        (remember
+          ? CF.JWT_COOKIE_EXPIRES * 365 * 24 * 60 * 60 * 1000
+          : 24 * 60 * 60 * 1000)
     ),
     httpOnly: true,
   };
   _response.cookie('Login', token, cookieOptions);
 }
-
-// export async function createUser(_request, username, email, password) {
-//   const hashedPassword = await bcrypt.hash(password, CF.PASSWORD_SALT);
-//   const columnNames = [
-//     'username',
-//     'email',
-//     'password',
-//     'join_date',
-//     'items_per_page',
-//     'gid',
-//     'registered_ip',
-//   ];
-//   const timestamp = Math.ceil(Date.now() / 1000);
-//   const columnValues = [
-//     username,
-//     email,
-//     hashedPassword,
-//     timestamp,
-//     CF.ROWS,
-//     CF.DEFAULT_GROUP,
-//     clientIP(_request),
-//   ];
-
-//   DB.buildInsert(userTable, columnNames, columnValues);
-//   return await DB.runQuery(true);
-// }

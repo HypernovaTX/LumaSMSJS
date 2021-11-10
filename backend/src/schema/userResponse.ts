@@ -69,6 +69,7 @@ export const invalidPermissionKeys = [
   'gid',
   'group_name',
   'group_title',
+  'msg_capacity',
   'name_prefix',
   'name_suffix',
 ];

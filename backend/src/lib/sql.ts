@@ -1,8 +1,10 @@
 // ==================== MAIN SQL OBJ ====================
 import mysql, { Pool, PoolConfig } from 'mysql';
+
 import CF from '../config';
-import { sanitizeInput } from './globallib';
 import ERR from './error';
+import { sanitizeInput } from './globallib';
+import { noContentResponse } from './result';
 
 // ==================== SQL resolve ====================
 enum SQLResult {
@@ -70,7 +72,7 @@ export default class SQL {
             if (error) {
               resolve(ERR('dbQuery', error.message));
             } else {
-              resolve(noReturn ? {} : result);
+              resolve(noReturn ? noContentResponse() : result);
             }
           });
         } catch (error) {
@@ -136,9 +138,11 @@ export default class SQL {
       return ERR('dbInsertNumber');
     }
     table = sanitizeInput(table);
-    const outputColumns = sanitizeInput(columns.join(', '));
+    const outputColumns = columns
+      .map((eachColumn) => sanitizeInput(eachColumn))
+      .join(', ');
     const outputValues = values
-      .map((eachValue) => sanitizeInput(eachValue))
+      .map((eachValue) => `'${sanitizeInput(eachValue)}'`)
       .join(', ');
     this.query = `INSERT INTO ${table} (${outputColumns}) VALUES (${outputValues}) `;
     return this.query;
