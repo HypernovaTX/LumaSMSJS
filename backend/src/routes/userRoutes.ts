@@ -6,14 +6,17 @@ import express from 'express';
 // import multer from 'multer';
 
 import CF from '../config';
+import { checkLogin, checkPermission } from '../components/lib/userlib';
 import {
   listUsers,
   showUserByID,
+  updateEmail,
+  updatePassword,
+  updateUserProfile,
   userLogin,
   userLogout,
   userRegistration,
 } from '../components/user';
-import { checkLogin, checkPermission } from '../components/lib/userlib';
 import {
   invalidJsonResponse,
   invalidParamResponse,
@@ -22,6 +25,7 @@ import {
   validateRequiredParam,
 } from '../lib/globallib';
 import { httpStatus } from '../lib/result';
+import { User } from '../schema/userTypes';
 
 export const userRouter = express.Router();
 
@@ -103,17 +107,25 @@ userRouter.put('/login', async (req, res) => {
 });
 
 // PATCH ------------------------------------------------------------------------------------------------------
-// PATCH "/:id" - update user profile settings | PARAM: id, BODY: data
-// userRouter.patch('/:id', async (req, res) => {
-//   const _uid = req.params.id || ''; // id - string
-//   let _dat = []; // data - { columnName: string }[]
-//   if (isStringJSON(req.body?.data)) {
-//     _dat = JSON.parse(req.body?.data);
-//   }
-//   const result = await user.updateUserProfile(req, _uid, _dat);
-//   httpStatus(res, result);
-//   res.send(result);
-// });
+// PATCH "/:id" - update user profile settings
+//PARAM: id, BODY: data
+userRouter.patch('/:id', async (req, res) => {
+  if (!validateRequiredParam(req, ['data'])) {
+    invalidParamResponse(res);
+    return;
+  }
+  const uid = parseInt(req.params.id) ?? 0; // id - string
+  let data = {} as User;
+  if (isStringJSON(req.body?.data)) {
+    data = JSON.parse(req.body?.data);
+  } else if (req.body?.data) {
+    invalidJsonResponse(res);
+    return;
+  }
+  const result = await updateUserProfile(req, uid, data);
+  httpStatus(res, result);
+  res.send(result);
+});
 
 // POST ------------------------------------------------------------------------------------------------------
 // POST "/" - create user | BODY: username, password, email
@@ -130,23 +142,33 @@ userRouter.post('/', async (req, res) => {
   res.send(result);
 });
 
-// POST "/password" - Update password for current user | BODY: oldpassword, newpassword
-// userRouter.post('/password', async (req, res) => {
-//   const _oPass = req.body?.oldpassword ?? '';
-//   const _nPass = req.body?.newpassword ?? '';
-//   const result = await user.updatePassword(req, _oPass, _nPass);
-//   httpStatus(res, result);
-//   res.send(result);
-// });
+// POST "/password" - Update password for current user
+// BODY: oldpassword, newpassword
+userRouter.post('/password', async (req, res) => {
+  if (!validateRequiredParam(req, ['oldpassword', 'newpassword'])) {
+    invalidParamResponse(res);
+    return;
+  }
+  const oldPassword = `${req.body?.oldpassword ?? ''}`;
+  const newPassword = `${req.body?.newpassword ?? ''}`;
+  const result = await updatePassword(req, oldPassword, newPassword);
+  httpStatus(res, result);
+  res.send(result);
+});
 
-// POST "/email" - Update email for current user | BODY: password, email
-// userRouter.post('/email', async (req, res) => {
-//   const _pass = req.body?.password ?? '';
-//   const _emai = req.body?.email ?? '';
-//   const result = await user.updateEmail(req, _pass, _emai);
-//   httpStatus(res, result);
-//   res.send(result);
-// });
+// POST "/email" - Update email for current user
+// BODY: password, email
+userRouter.post('/email', async (req, res) => {
+  if (!validateRequiredParam(req, ['password', 'email'])) {
+    invalidParamResponse(res);
+    return;
+  }
+  const password = `${req.body?.password ?? ''}`;
+  const newEmail = `${req.body?.email ?? ''}`;
+  const result = await updateEmail(req, password, newEmail);
+  httpStatus(res, result);
+  res.send(result);
+});
 
 // POST "/avatar" - Upload avatar for a user
 // const uploadFields = [{ name: 'avatar', maxCount: 1 }];

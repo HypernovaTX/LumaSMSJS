@@ -1,8 +1,9 @@
 // ================================================================================
 // Reuseable utility functions that can be used anywhere
 // ================================================================================
-import SqlString from 'sqlstring';
 import { Request, Response } from 'express';
+import SqlString from 'sqlstring';
+
 import CF from '../config';
 import ERR from './error';
 import { httpStatus } from './result';

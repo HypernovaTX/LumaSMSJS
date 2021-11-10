@@ -1,8 +1,10 @@
 import SQL from '../lib/sql';
+
 import CF from '../config';
 import ERR, { ErrorObj } from '../lib/error';
 import { sanitizeInput } from '../lib/globallib';
-import { User, UserList, UserPermissions } from '../schema/userResponse';
+import { NoResponse } from '../lib/result';
+import { User, UserList, UserPermissionResponse } from '../schema/userTypes';
 
 export default class UserQuery {
   DB: SQL;
@@ -89,6 +91,17 @@ export default class UserQuery {
     return user as User | ErrorObj;
   }
 
+  async getUserByUid(uid: number) {
+    this.DB.buildSelect(this.userTable);
+    this.DB.buildWhere(`uid = ${uid}`);
+    const queryResult = await this.DB.runQuery();
+    if (!Array.isArray(queryResult) || !queryResult.length) {
+      return ERR('userNotFound');
+    }
+    const [user] = queryResult;
+    return user as User | ErrorObj;
+  }
+
   async getUserByUsername(username: string) {
     this.DB.buildSelect(this.userTable);
     this.DB.buildWhere(`username = '${sanitizeInput(username)}'`);
@@ -145,7 +158,7 @@ export default class UserQuery {
     }
 
     const [role] = queryResult;
-    return role as UserPermissions | ErrorObj;
+    return role as UserPermissionResponse | ErrorObj;
   }
 
   // RISKY STUFFS
@@ -177,6 +190,16 @@ export default class UserQuery {
       `${timestamp}`,
     ];
     this.DB.buildInsert(this.userTable, columnNames, columnValues);
-    return await this.DB.runQuery(true);
+    return (await this.DB.runQuery(true)) as NoResponse | ErrorObj;
+  }
+
+  async updateUser(
+    uid: number,
+    updateColumns: string[],
+    updateValues: string[]
+  ) {
+    this.DB.buildUpdate(this.userTable, updateColumns, updateValues);
+    this.DB.buildWhere(`uid = ${uid}`);
+    return (await this.DB.runQuery(true)) as NoResponse | ErrorObj;
   }
 }

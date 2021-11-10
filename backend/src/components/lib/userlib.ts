@@ -1,20 +1,21 @@
 // ================================================================================
-// Misc user functions
+// COMMONLY USED USER FUNCTIONS
 // ================================================================================
 import { Request, Response } from 'express';
-import jwt, { VerifyErrors } from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
-import CF from '../../config';
+import jwt, { VerifyErrors } from 'jsonwebtoken';
 
-import { clientIP } from '../../lib/globallib';
+import CF from '../../config';
 import ERR, { ErrorObj, isError } from '../../lib/error';
+import { clientIP } from '../../lib/globallib';
 import UserQuery from '../../queries/userquery';
 import {
   User,
   UserPermissions,
   PermissionArray,
   invalidPermissionKeys,
-} from '../../schema/userResponse';
+  PermissionKind,
+} from '../../schema/userTypes';
 
 // ---- CHECKS ----
 export async function checkLogin(_request: Request) {
@@ -22,7 +23,7 @@ export async function checkLogin(_request: Request) {
   if (!_request.cookies?.Login) {
     return ERR('userCookie');
   }
-  const output = await new Promise<ErrorObj | User>((resolve) => {
+  return await new Promise<ErrorObj | User>((resolve) => {
     //Use the JWT to verify the cookie with secret code
     jwt.verify(
       _request.cookies.Login,
@@ -50,7 +51,21 @@ export async function checkLogin(_request: Request) {
       }
     );
   });
-  return output;
+}
+
+export async function verifyPassword(uid: number, password: string) {
+  const query = new UserQuery();
+  const queryResult = await query.getUserByUid(uid);
+  if (isError(queryResult)) {
+    return false;
+  }
+  const userHelper = queryResult as User;
+  // Ensure password is a string
+  if (typeof userHelper?.password !== 'string') {
+    userHelper.password = '';
+  }
+  const result = await bcrypt.compare(password, userHelper.password);
+  return result;
 }
 
 export async function checkPermission(
@@ -136,3 +151,45 @@ export async function updateLoginCookie(
   };
   _response.cookie('Login', token, cookieOptions);
 }
+
+export async function updateUser(uid: number, inputs: User) {
+  const entries = Object.entries(inputs);
+  const columns = entries.map((item) => {
+    const [column] = item;
+    return column;
+  });
+  const values = entries.map((item) => {
+    const [_, value] = item;
+    return value;
+  });
+  const query = new UserQuery();
+  return await query.updateUser(uid, columns, values);
+}
+
+// ---- CONSTANTS / UTIL ----
+export function validatePermission(
+  input: PermissionArray,
+  permissions: PermissionKind | PermissionArray
+) {
+  if (!input.length) {
+    return false;
+  }
+  if (Array.isArray(permissions)) {
+    const intersection = input.filter((permit) => permissions.includes(permit));
+    return !!(intersection.length === permissions.length);
+  }
+  return input.includes(permissions);
+}
+
+export const invalidUserUpdateKeys = [
+  'uid',
+  'email',
+  'gid',
+  'join_date',
+  'last_active',
+  'last_ip',
+  'last_visit',
+  'password',
+  'registered_ip',
+  'username',
+];

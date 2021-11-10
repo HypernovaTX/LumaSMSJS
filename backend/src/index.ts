@@ -12,8 +12,8 @@ import cors from 'cors';
 import helmet from 'helmet';
 import morgan from 'morgan';
 
-import { userRouter } from './routes/userRoutes';
 // import { submissionRouter } from "./routes/submission.js";
+import { userRouter } from './routes/userRoutes';
 
 const app: Application = express();
 

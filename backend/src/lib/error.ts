@@ -26,13 +26,20 @@ export const errors = {
   // user
   userCookie: 'User cookie not found!',
   userEmailExists: 'Email is already taken!',
+  userEmailSame: 'New email is the same as the old one!',
   userExists: 'Username and / or email are already taken!',
   userJwt: 'User token related error!',
+  userListNumber: 'listUser "order" "asc" array counts does not match!',
   userLogin: 'Username and password are incorrect!',
   userNameExists: 'Username is already taken!',
   userNotFound: 'User not found!',
+  userPasswordSame: 'New password is the same as the old one!',
+  userPasswordOldWrong: 'The old password is incorrect!',
+  userPasswordWrong: 'The password is incorrect!',
   userRoleNotFound: 'User role not found!',
-  // userListNumber: 'listUser "order" "asc" array counts does not match!',
+  userPermission: 'User is not permitted to perform such action!',
+  userUpdateInvalid: "Invalid update to user's profile!",
+  userUpdateOther: "You cannot update other user's profile!",
 };
 
 export function isError(x: any) {
@@ -42,7 +49,7 @@ export function isError(x: any) {
 export default function ERR(error: ErrorCodes, reason?: string): ErrorObj {
   const message = errors[error];
   // Only calls if it's not blank
-  console.log(`\x1b[41m[LUMASMS API ERROR] ${message}\x1b[0m`);
+  console.log(`\x1b[41m[LUMASMS API ERROR] - (${error}) ${message}\x1b[0m`);
   if (reason) {
     console.log(`\x1b[33m[Reason] - ${reason}\x1b[0m`);
   }
