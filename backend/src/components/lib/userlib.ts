@@ -198,4 +198,5 @@ export const invalidUserUpdateKeys = [
   'password',
   'registered_ip',
   'username',
+  'avatar_file',
 ];

@@ -25,6 +25,12 @@ export const errors = {
   dbQuery: 'SQL Query fail!',
   dbUpdateNumber: 'SQL UPDATE "column" "value" array counts does not match!',
 
+  // file
+  fileImageInvalid: 'Image is not in PNG, JPG, nor GIF format!',
+  fileNameTooLong: 'File name is too long!',
+  fileUnlink: 'File unlink error!',
+  noFile: 'No file has been uploaded as per requirement!',
+
   // user
   userCookie: 'User cookie not found!',
   userCookieInvalid: 'User cookie is invalid!',

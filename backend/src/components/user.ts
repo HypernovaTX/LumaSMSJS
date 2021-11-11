@@ -7,7 +7,7 @@ import bcrypt from 'bcryptjs';
 import CF from '../config';
 import ERR, { ErrorObj, isError } from '../lib/error';
 import { clientIP, sanitizeInput } from '../lib/globallib';
-import { NoResponse } from '../lib/result';
+import { noContentResponse, NoResponse } from '../lib/result';
 import {
   checkExistingUser,
   checkExistingUserAndEmail,
@@ -20,6 +20,11 @@ import {
 } from './lib/userlib';
 import UserQuery from '../queries/userquery';
 import { User } from '../schema/userTypes';
+import {
+  attachFileExtension,
+  unlinkFile,
+  verifyImageFile,
+} from '../lib/filemanager';
 
 // SAFE FUNCTIONS
 export async function listUsers(
@@ -166,31 +171,6 @@ export async function updateUserProfile(_request: Request, inputs: User) {
   return await updateUser(currentUser.uid, inputs);
 }
 
-// async updateUserAvatar(_request, uid = 0, file) {
-//   // Not logged in
-//   const getPermission = await checkPermission(_request);
-//   if (getPermission === RESULT.fail) {
-//     handleError("us5");
-//     return RESULT.fail;
-//   }
-
-//   // Non-staff user cannot modify other user -or- banned user cannot modify their profile
-//   if (
-//     (parseInt(uid) !== parseInt(getPermission.id) &&
-//       !getPermission.staff_user) ||
-//     !getPermission.can_msg ||
-//     !getPermission.can_submit ||
-//     !getPermission.can_comment
-//   ) {
-//     handleError("us6");
-//     return RESULT.denied;
-//   }
-//   console.log('avatar upload ')
-
-//   console.log(uid);
-//   console.log(file);
-// }
-
 export async function updateUsername(
   _request: Request,
   username: string,
@@ -270,4 +250,34 @@ export async function updateEmail(
     return ERR('userPasswordWrong');
   }
   return await updateUser(uid, { email: sanitizeInput(email) });
+}
+
+export async function updateUserAvatar(
+  _request: Request,
+  file: Express.Multer.File
+) {
+  const directory = `${CF.UPLOAD_DIRECTORY}/${CF.UPLOAD_AVATAR}/`;
+  // File name too long
+  if (file.filename.length > CF.FILENAME_LIMIT) {
+    unlinkFile(file.filename, directory);
+    return ERR('fileNameTooLong');
+  }
+  // Ensure user is logged in
+  const getLogin = await checkLogin(_request);
+  if (isError(getLogin)) {
+    unlinkFile(file.filename, directory);
+    return getLogin as ErrorObj;
+  }
+  // Ensure it is an image, otherwise
+  if (!verifyImageFile(file)) {
+    unlinkFile(file.filename, directory);
+    return ERR('fileImageInvalid');
+  }
+  // Remove user's old file
+  const currentUser = getLogin as User;
+  if (currentUser?.avatar_file) {
+    unlinkFile(currentUser.avatar_file, directory);
+  }
+  // Apply
+  return await updateUser(currentUser?.uid, { avatar_file: file.filename });
 }

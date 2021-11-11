@@ -150,6 +150,7 @@ UPDATE `tsms_bookmarks` c SET c.rid = (
 ) WHERE c.type > 0;
 DELETE FROM `tsms_bookmarks` WHERE rid = 0;
 
+/* Create a table that is used to log username changes */
 CREATE TABLE `mfgg_mainsite`.`tsms_username_change` (
   `unrid` INT NOT NULL AUTO_INCREMENT , 
   `uid` INT NOT NULL DEFAULT '0' , 
@@ -158,3 +159,6 @@ CREATE TABLE `mfgg_mainsite`.`tsms_username_change` (
   `date` INT(16) NOT NULL DEFAULT '0' , 
   PRIMARY KEY (`unrid`)
 );
+
+/* add a column to the user table for avatar file uploads */
+ALTER TABLE `tsms_users` ADD `avatar_file` VARCHAR(256) NULL DEFAULT NULL AFTER `new_password`;

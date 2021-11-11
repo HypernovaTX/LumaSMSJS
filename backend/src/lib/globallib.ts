@@ -20,6 +20,12 @@ export function invalidParamResponse(_response: Response) {
   _response.send(error);
 }
 
+export function invalidFileResponse(_response: Response) {
+  const error = ERR('noFile');
+  httpStatus(_response, error);
+  _response.send(error);
+}
+
 export function invalidJsonResponse(_response: Response) {
   const error = ERR('invalidJson');
   httpStatus(_response, error);
@@ -76,5 +82,3 @@ export function objIntoArrays(input: { [key: string]: any }) {
 }
 
 // Regular expressions
-export const imageMIME = /image\/(apng|gif|jpeg|png|svg|webp)$/i;
-export const fileExtension = /\.[0-9a-z]+$/;

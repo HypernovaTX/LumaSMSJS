@@ -3,7 +3,7 @@
 // Quick note: Request param with ? is optional
 // ================================================================================
 import express from 'express';
-// import multer from 'multer';
+import multer from 'multer';
 
 import CF from '../config';
 import { checkLogin, getPermission } from '../components/lib/userlib';
@@ -21,13 +21,16 @@ import {
   showUserByID,
   updateEmail,
   updatePassword,
+  updateUserAvatar,
   updateUsername,
   updateUserProfile,
   userLogin,
   userLogout,
   userRegistration,
 } from '../components/user';
+import { diskStorage } from '../lib/filemanager';
 import {
+  invalidFileResponse,
   invalidJsonResponse,
   invalidParamResponse,
   isStringJSON,
@@ -38,8 +41,8 @@ import { httpStatus } from '../lib/result';
 import { User, UserPermissionFull } from '../schema/userTypes';
 
 export const userRouter = express.Router();
-
-// const upload = multer({ storage: multer.memoryStorage() });
+const storage = diskStorage(`${CF.UPLOAD_DIRECTORY}/${CF.UPLOAD_AVATAR}/`);
+const upload = multer({ storage });
 
 // GET -------------------------------------------------------------------------------------------------------
 // GET "/" - list users (default)
@@ -195,6 +198,19 @@ userRouter.patch('/email', async (req, res) => {
   res.send(result);
 });
 
+// PATCH "/avatar" - Upload avatar for a user
+// FILE: avatar
+userRouter.patch('/avatar', upload.single('avatar'), async (req, res) => {
+  if (!req.file) {
+    invalidFileResponse(res);
+    return;
+  }
+  const avatar = req.file;
+  const result = await updateUserAvatar(req, avatar);
+  httpStatus(res, result);
+  res.send(result);
+});
+
 // PATCH "/changerole" - Update user's role [STAFF, ROOT FOR UPDATING OTHER USER TO ROOT]
 // BODY: uid, gid
 userRouter.patch('/changerole', async (req, res) => {
@@ -283,19 +299,6 @@ userRouter.post('/role', async (req, res) => {
   httpStatus(res, result);
   res.send(result);
 });
-
-// POST "/avatar" - Upload avatar for a user
-// const uploadFields = [{ name: 'avatar', maxCount: 1 }];
-// userRouter.post('/avatar', upload.fields(uploadFields), async (req, res) => {
-//   const _uid = req.body?.password ?? '';
-//   const [_avatar] = req.files.avatar;
-//   const files = {
-//     thumb: _avatar ?? {},
-//   };
-//   const result = await user.updateUserAvatar(req, _uid, files);
-//   httpStatus(res, result);
-//   res.send(result);
-// });
 
 // DELETE -------------------------------------------------------------------------------------------------------
 // DELETE "/role/:id" - Delete a role [ROOT]

@@ -170,4 +170,5 @@ const invalidStaffUserUpdateKeys = [
   'last_ip',
   'last_visit',
   'registered_ip',
+  'avatar_file',
 ];

@@ -36,6 +36,7 @@ export interface User {
   last_ip?: string;
   new_password?: number;
   password?: string;
+  avatar_file?: string;
 }
 export type UserKeys = keyof User;
 export type UserList = User[];
