@@ -149,3 +149,12 @@ UPDATE `tsms_bookmarks` c SET c.rid = (
   END
 ) WHERE c.type > 0;
 DELETE FROM `tsms_bookmarks` WHERE rid = 0;
+
+CREATE TABLE `mfgg_mainsite`.`tsms_username_change` (
+  `unrid` INT NOT NULL AUTO_INCREMENT , 
+  `uid` INT NOT NULL DEFAULT '0' , 
+  `old_username` VARCHAR(32) NOT NULL DEFAULT '' , 
+  `new_username` VARCHAR(32) NOT NULL DEFAULT '' , 
+  `date` INT(16) NOT NULL DEFAULT '0' , 
+  PRIMARY KEY (`unrid`)
+);

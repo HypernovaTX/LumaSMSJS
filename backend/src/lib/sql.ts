@@ -167,8 +167,8 @@ export default class SQL {
   }
 
   // Custom SQL queries, MUST BE STRING!
+  // Note: all data must be sanitized manually
   buildCustomQuery(input: string) {
-    input = sanitizeInput(input);
     this.query += `${input} `;
     return this.query;
   }

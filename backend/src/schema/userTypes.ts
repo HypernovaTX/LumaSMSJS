@@ -31,8 +31,8 @@ export interface User {
   show_thumbs?: number;
   use_comment_msg?: number;
   use_comment_digest?: number;
-  last_visit?: string;
-  last_activity?: string;
+  last_visit?: number;
+  last_activity?: number;
   last_ip?: string;
   new_password?: number;
   password?: string;
@@ -56,7 +56,7 @@ export interface UserPermissions {
   edit_comment: number;
   delete_comment: number;
 }
-export interface UserPermissionResponse extends UserPermissions {
+export interface UserPermissionFull extends UserPermissions {
   gid: number;
   group_name: string;
   group_title: string;
@@ -74,3 +74,10 @@ export const invalidPermissionKeys = [
   'name_prefix',
   'name_suffix',
 ];
+export interface UsernameChange {
+  unrid: number;
+  uid: number;
+  old_username: string;
+  new_username: string;
+  date: number;
+}

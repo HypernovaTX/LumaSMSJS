@@ -3,41 +3,141 @@
 // ================================================================================
 import { Request } from 'express';
 
-import {
-  checkLogin,
-  checkPermission,
-  validatePermission,
-} from '../lib/userlib';
+import { checkLogin, updateUser, validatePermission } from '../lib/userlib';
 import ERR, { ErrorObj, isError } from '../../lib/error';
+import { objIntoArrays } from '../../lib/globallib';
 import UserQuery from '../../queries/userquery';
-import { User } from '../../schema/userTypes';
+import { User, UserPermissionFull } from '../../schema/userTypes';
 
-export async function updateOtherUser() {}
+export async function updateOtherUser(
+  _request: Request,
+  uid: number,
+  inputs: User
+) {
+  // Verify permission
+  const permitted = await validatePermission(_request, 'acp_users');
+  if (!permitted) {
+    return ERR('userStaffPermit');
+  }
+  // Ensure `inputs` does not have keys that are not allowed to update to the DB
+  const invalidKeys = Object.keys(inputs).filter((key) =>
+    invalidStaffUserUpdateKeys.includes(key)
+  );
+  if (invalidKeys.length) {
+    return ERR('userUpdateInvalid');
+  }
+  return await updateUser(uid, inputs);
+}
 
-export async function updateUserRole() {}
+export async function updateUserRole(
+  _request: Request,
+  uid: number,
+  inputs: User
+) {}
 
 export async function deleteUser(_request: Request, uid: number) {
   // Ensure staff is logged in
   const getLogin = await checkLogin(_request);
   if (isError(getLogin)) {
-    return getLogin as ErrorObj;
+    return ERR('userRootPermit');
   }
-  // Ensure staff is not deleting their own account
   const currentUser = getLogin as User;
+  // Ensure staff is not deleting their own account
   if (uid === currentUser.uid) {
     return ERR('userDeleteOwn');
   }
   // Verify permission
-  const getPermission = await checkPermission(_request);
-  if (!validatePermission(getPermission, 'acp_super')) {
+  const permitted = await validatePermission(_request, 'acp_super');
+  if (!permitted) {
     return ERR('userRootPermit');
   }
+  // Verify user exists
   const query = new UserQuery();
+  const getRole = await query.getUserByIdLazy(uid);
+  if (isError(getRole)) {
+    return getRole as ErrorObj;
+  }
   return await query.deleteUser(uid);
 }
 
-export async function createRole() {}
+export async function createRole(
+  _request: Request,
+  inputs: UserPermissionFull
+) {
+  // Verify permission
+  const permitted = await validatePermission(_request, 'acp_users');
+  if (!permitted) {
+    return ERR('userStaffPermit');
+  }
+  // Ensure `inputs` does not have keys that are not allowed to update to the DB
+  const invalidKeys = Object.keys(inputs).filter((key) => key === 'gid');
+  if (invalidKeys.length) {
+    return ERR('userRoleGid');
+  }
+  // Prep Data
+  const { columns, values } = objIntoArrays(inputs);
+  const query = new UserQuery();
+  return await query.createRole(columns, values);
+}
 
-export async function updateRole() {}
+export async function updateRole(
+  _request: Request,
+  gid: number,
+  inputs: UserPermissionFull
+) {
+  // Verify permission
+  const permitted = await validatePermission(_request, 'acp_users');
+  if (!permitted) {
+    return ERR('userStaffPermit');
+  }
+  // Ensure `inputs` does not have keys that are not allowed to update to the DB
+  const invalidKeys = Object.keys(inputs).filter((key) => key === 'gid');
+  if (invalidKeys.length) {
+    return ERR('userRoleGid');
+  }
+  // Verify role exists
+  const query = new UserQuery();
+  const getRole = await query.getRole(gid);
+  if (isError(getRole)) {
+    return getRole as ErrorObj;
+  }
+  // Prep Data
+  const { columns, values } = objIntoArrays(inputs);
+  return await query.updateRole(gid, columns, values);
+}
 
-export async function deleteRole() {}
+export async function deleteRole(_request: Request, gid: number) {
+  // Ensure staff is logged in
+  const getLogin = await checkLogin(_request);
+  if (isError(getLogin)) {
+    return ERR('userRootPermit');
+  }
+  // Verify permission
+  const permitted = await validatePermission(_request, 'acp_super');
+  if (!permitted) {
+    return ERR('userRootPermit');
+  }
+  // Ensure no user is using this role
+  const query = new UserQuery();
+  const getUserUsingRole = await query.getUserByGid(gid);
+  if (!isError(getUserUsingRole)) {
+    return ERR('userRoleInUse');
+  }
+  // Verify role exists
+  const getRole = await query.getRole(gid);
+  if (isError(getRole)) {
+    return getRole as ErrorObj;
+  }
+  return await query.deleteRole(gid);
+}
+
+// Variables
+const invalidStaffUserUpdateKeys = [
+  'uid',
+  'gid',
+  'join_date',
+  'last_active',
+  'last_ip',
+  'last_visit',
+  'registered_ip',
+];

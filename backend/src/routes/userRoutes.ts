@@ -6,13 +6,21 @@ import express from 'express';
 // import multer from 'multer';
 
 import CF from '../config';
-import { checkLogin, checkPermission } from '../components/lib/userlib';
-import { deleteUser } from '../components/staff/userStaff';
+import { checkLogin, getPermission } from '../components/lib/userlib';
 import {
+  createRole,
+  deleteRole,
+  deleteUser,
+  updateOtherUser,
+  updateRole,
+} from '../components/staff/userStaff';
+import {
+  findUsersByName,
   listUsers,
   showUserByID,
   updateEmail,
   updatePassword,
+  updateUsername,
   updateUserProfile,
   userLogin,
   userLogout,
@@ -26,7 +34,7 @@ import {
   validateRequiredParam,
 } from '../lib/globallib';
 import { httpStatus } from '../lib/result';
-import { User } from '../schema/userTypes';
+import { User, UserPermissionFull } from '../schema/userTypes';
 
 export const userRouter = express.Router();
 
@@ -49,7 +57,7 @@ userRouter.get('/verify', async (req, res) => {
 
 // GET "/permission" - return current user's permissions
 userRouter.get('/permission', async (req, res) => {
-  const result = await checkPermission(req);
+  const result = await getPermission(req);
   httpStatus(res, result);
   res.send(result);
 });
@@ -74,9 +82,9 @@ userRouter.get('/:id', async (req, res) => {
 // PUT "/" - list users (with param for sort/filter)
 // BODY: ?page, ?count, ?row, ?dsc, ?filter
 userRouter.put('/', async (req, res) => {
-  const page = parseInt(req.body?.page) ?? 0;
+  const page = parseInt(req.body?.page) || 0;
   const count = parseInt(req.body?.count) || 25;
-  const colSort = `${req.body?.column} ?? ''`;
+  const colSort = `${req.body?.column ?? ''}`;
   const asc = req.body?.dsc ? false : true; // dsc - string (true if undefined)
   let filter = []; // filter - { columnName: value }[]
 
@@ -88,6 +96,23 @@ userRouter.put('/', async (req, res) => {
   }
   const result = await listUsers(page, count, colSort, asc, filter);
 
+  httpStatus(res, result);
+  res.send(result);
+});
+
+// PUT "/find" - Find user by username query
+// BODY: query, ?page, ?count, ?row, ?dsc, ?filter
+userRouter.put('/find', async (req, res) => {
+  if (!validateRequiredParam(req, ['query'])) {
+    invalidParamResponse(res);
+    return;
+  }
+  const query = `${req.body?.query ?? ''}`;
+  const page = parseInt(req.body?.page) || 0;
+  const count = parseInt(req.body?.count) || 25;
+  const colSort = `${req.body?.column ?? ''}`;
+  const asc = req.body?.dsc ? false : true; // dsc - string (true if undefined)
+  const result = await findUsersByName(query, page, count, colSort, asc);
   httpStatus(res, result);
   res.send(result);
 });
@@ -108,8 +133,8 @@ userRouter.put('/login', async (req, res) => {
 });
 
 // PATCH ------------------------------------------------------------------------------------------------------
-// PATCH "/:id" - update any user profile settings [STAFF]
-// PARAM: id, BODY: data
+// PATCH "/" - update current user profile settings
+// BODY: data
 userRouter.patch('/', async (req, res) => {
   if (!validateRequiredParam(req, ['data'])) {
     invalidParamResponse(res);
@@ -127,28 +152,91 @@ userRouter.patch('/', async (req, res) => {
   res.send(result);
 });
 
+// PATCH "/username" - Update username for current user
+// BODY: username, password
+userRouter.patch('/username', async (req, res) => {
+  if (!validateRequiredParam(req, ['username', 'password'])) {
+    invalidParamResponse(res);
+    return;
+  }
+  const username = `${req.body?.username ?? ''}`;
+  const password = `${req.body?.password ?? ''}`;
+  const result = await updateUsername(req, username, password);
+  httpStatus(res, result);
+  res.send(result);
+});
+
+// PATCH "/password" - Update password for current user
+// BODY: oldpassword, newpassword
+userRouter.patch('/password', async (req, res) => {
+  if (!validateRequiredParam(req, ['oldpassword', 'newpassword'])) {
+    invalidParamResponse(res);
+    return;
+  }
+  const oldPassword = `${req.body?.oldpassword ?? ''}`;
+  const newPassword = `${req.body?.newpassword ?? ''}`;
+  const result = await updatePassword(req, oldPassword, newPassword);
+  httpStatus(res, result);
+  res.send(result);
+});
+
+// PATCH "/email" - Update email for current user
+// BODY: password, email
+userRouter.patch('/email', async (req, res) => {
+  if (!validateRequiredParam(req, ['password', 'email'])) {
+    invalidParamResponse(res);
+    return;
+  }
+  const password = `${req.body?.password ?? ''}`;
+  const newEmail = `${req.body?.email ?? ''}`;
+  const result = await updateEmail(req, password, newEmail);
+  httpStatus(res, result);
+  res.send(result);
+});
+
+// PATCH "/role/:id" - update role [STAFF]
+// PARAM: id, BODY: data
+userRouter.patch('/role/:id', async (req, res) => {
+  if (!validateRequiredParam(req, ['data'])) {
+    invalidParamResponse(res);
+    return;
+  }
+  const gid = parseInt(req.params.id) ?? 0;
+  let data = {} as UserPermissionFull;
+  if (isStringJSON(req.body?.data)) {
+    data = JSON.parse(req.body?.data);
+  } else if (req.body?.data) {
+    invalidJsonResponse(res);
+    return;
+  }
+  const result = await updateRole(req, gid, data);
+  httpStatus(res, result);
+  res.send(result);
+});
+
 // PATCH "/:id" - update any user profile settings [STAFF]
 // PARAM: id, BODY: data
-// userRouter.patch('/:id', async (req, res) => {
-//   if (!validateRequiredParam(req, ['data'])) {
-//     invalidParamResponse(res);
-//     return;
-//   }
-//   const uid = parseInt(req.params.id) ?? 0;
-//   let data = {} as User;
-//   if (isStringJSON(req.body?.data)) {
-//     data = JSON.parse(req.body?.data);
-//   } else if (req.body?.data) {
-//     invalidJsonResponse(res);
-//     return;
-//   }
-//   const result = await updateUserProfile(req, uid, data);
-//   httpStatus(res, result);
-//   res.send(result);
-// });
+userRouter.patch('/:id', async (req, res) => {
+  if (!validateRequiredParam(req, ['data'])) {
+    invalidParamResponse(res);
+    return;
+  }
+  const uid = parseInt(req.params.id) ?? 0;
+  let data = {} as User;
+  if (isStringJSON(req.body?.data)) {
+    data = JSON.parse(req.body?.data);
+  } else if (req.body?.data) {
+    invalidJsonResponse(res);
+    return;
+  }
+  const result = await updateOtherUser(req, uid, data);
+  httpStatus(res, result);
+  res.send(result);
+});
 
 // POST ------------------------------------------------------------------------------------------------------
-// POST "/" - create user | BODY: username, password, email
+// POST "/" - create user
+// BODY: username, password, email
 userRouter.post('/', async (req, res) => {
   if (!validateRequiredParam(req, ['username', 'password', 'email'])) {
     invalidParamResponse(res);
@@ -162,30 +250,21 @@ userRouter.post('/', async (req, res) => {
   res.send(result);
 });
 
-// POST "/password" - Update password for current user
-// BODY: oldpassword, newpassword
-userRouter.post('/password', async (req, res) => {
-  if (!validateRequiredParam(req, ['oldpassword', 'newpassword'])) {
+// POST "/role" - create role [STAFF]
+// BODY: data
+userRouter.post('/role', async (req, res) => {
+  if (!validateRequiredParam(req, ['data'])) {
     invalidParamResponse(res);
     return;
   }
-  const oldPassword = `${req.body?.oldpassword ?? ''}`;
-  const newPassword = `${req.body?.newpassword ?? ''}`;
-  const result = await updatePassword(req, oldPassword, newPassword);
-  httpStatus(res, result);
-  res.send(result);
-});
-
-// POST "/email" - Update email for current user
-// BODY: password, email
-userRouter.post('/email', async (req, res) => {
-  if (!validateRequiredParam(req, ['password', 'email'])) {
-    invalidParamResponse(res);
+  let data = {} as UserPermissionFull;
+  if (isStringJSON(req.body?.data)) {
+    data = JSON.parse(req.body?.data);
+  } else if (req.body?.data) {
+    invalidJsonResponse(res);
     return;
   }
-  const password = `${req.body?.password ?? ''}`;
-  const newEmail = `${req.body?.email ?? ''}`;
-  const result = await updateEmail(req, password, newEmail);
+  const result = await createRole(req, data);
   httpStatus(res, result);
   res.send(result);
 });
@@ -204,6 +283,15 @@ userRouter.post('/email', async (req, res) => {
 // });
 
 // DELETE -------------------------------------------------------------------------------------------------------
+// DELETE "/role/:id" - Delete a role [ROOT]
+// PARAM: id
+userRouter.delete('/role/:id', async (req, res) => {
+  const gid = parseInt(req.params.id) ?? 0; // user ID
+  const result = await deleteRole(req, gid);
+  httpStatus(res, result);
+  res.send(result);
+});
+
 // DELETE "/:id" - Delete a user [ROOT]
 // PARAM: id
 userRouter.delete('/:id', async (req, res) => {

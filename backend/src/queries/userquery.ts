@@ -4,16 +4,23 @@ import CF from '../config';
 import ERR, { ErrorObj } from '../lib/error';
 import { sanitizeInput } from '../lib/globallib';
 import { NoResponse } from '../lib/result';
-import { User, UserList, UserPermissionResponse } from '../schema/userTypes';
+import {
+  User,
+  UserList,
+  UsernameChange,
+  UserPermissionFull,
+} from '../schema/userTypes';
 
 export default class UserQuery {
   DB: SQL;
   userTable: string;
   groupTable: string;
+  usernameUpdateTable: string;
   constructor() {
     this.DB = new SQL();
     this.userTable = `${CF.DB_PREFIX}users`;
     this.groupTable = `${CF.DB_PREFIX}groups`;
+    this.usernameUpdateTable = `${CF.DB_PREFIX}username_change`;
   }
 
   async listUsers(
@@ -42,6 +49,29 @@ export default class UserQuery {
       this.DB.buildCustomQuery(`LIMIT ${page * count}, ${count}`);
     }
     return (await this.DB.runQuery()) as UserList | ErrorObj;
+  }
+
+  async findUserByUsername(
+    input: string,
+    page: number,
+    count: number = 25,
+    column: string = '',
+    asc: boolean = true
+  ) {
+    this.DB.buildSelect(this.userTable);
+    this.DB.buildCustomQuery(`WHERE username LIKE '${sanitizeInput(input)}%'`);
+    // Order and limit
+    if (column) {
+      this.DB.buildOrder([column], [asc]);
+    }
+    if (count) {
+      this.DB.buildCustomQuery(`LIMIT ${page * count}, ${count}`);
+    }
+    const queryResult = await this.DB.runQuery();
+    if (!Array.isArray(queryResult) || !queryResult.length) {
+      return ERR('userNotFound');
+    }
+    return queryResult as User[] | ErrorObj;
   }
 
   async getUserById(id: number) {
@@ -113,6 +143,18 @@ export default class UserQuery {
     return user as User | ErrorObj;
   }
 
+  async getUserByGid(gid: number) {
+    this.DB.buildSelect(this.userTable, '*');
+    this.DB.buildWhere(`gid = ${gid.toString()}`);
+    const queryResult = await this.DB.runQuery();
+    if (!Array.isArray(queryResult) || !queryResult.length) {
+      return ERR('userNotFound');
+    }
+    // Only return the 1st result if there's more
+    const [user] = queryResult;
+    return user as User | ErrorObj;
+  }
+
   async getUserByUsernameAndEmail(username: string, email: string) {
     this.DB.buildSelect(this.userTable);
     this.DB.buildWhere(
@@ -127,6 +169,29 @@ export default class UserQuery {
     return user as User | ErrorObj;
   }
 
+  async getRole(gid: number) {
+    this.DB.buildSelect(this.groupTable, '*');
+    this.DB.buildWhere(`gid = ${gid}`);
+    const queryResult = await this.DB.runQuery();
+    if (!Array.isArray(queryResult) || !queryResult.length) {
+      return ERR('userRoleNotFound');
+    }
+    const [role] = queryResult;
+    return role as UserPermissionFull | ErrorObj;
+  }
+
+  async getUsernameChanges(uid: number) {
+    this.DB.buildSelect(this.usernameUpdateTable);
+    this.DB.buildWhere(`uid = ${uid}`);
+    this.DB.buildOrder(['date'], [false]);
+    const queryResult = await this.DB.runQuery();
+    if (!Array.isArray(queryResult) || !queryResult.length) {
+      return ERR('userNotFound');
+    }
+    return queryResult as UsernameChange[] | ErrorObj;
+  }
+
+  // RISKY STUFFS
   async updateLastActivity(uid: number, timestamp: string, ip: string) {
     this.DB.buildUpdate(
       this.userTable,
@@ -137,20 +202,6 @@ export default class UserQuery {
     this.DB.runQuery();
   }
 
-  async getPermissions(gid: number) {
-    this.DB.buildSelect(this.groupTable, '*');
-    this.DB.buildWhere(`gid = ${gid}`);
-    const queryResult = await this.DB.runQuery();
-
-    if (!Array.isArray(queryResult) || !queryResult.length) {
-      return ERR('userRoleNotFound');
-    }
-
-    const [role] = queryResult;
-    return role as UserPermissionResponse | ErrorObj;
-  }
-
-  // RISKY STUFFS
   async createUser(
     username: string,
     email: string,
@@ -194,6 +245,34 @@ export default class UserQuery {
 
   async deleteUser(uid: number) {
     this.DB.buildDelete(this.userTable, `uid = ${uid}`);
+    return (await this.DB.runQuery(true)) as NoResponse | ErrorObj;
+  }
+
+  async createRole(updateColumns: string[], updateValues: string[]) {
+    this.DB.buildInsert(this.groupTable, updateColumns, updateValues);
+    return (await this.DB.runQuery(true)) as NoResponse | ErrorObj;
+  }
+
+  async updateRole(
+    gid: number,
+    updateColumns: string[],
+    updateValues: string[]
+  ) {
+    this.DB.buildUpdate(this.groupTable, updateColumns, updateValues);
+    this.DB.buildWhere(`gid = ${gid}`);
+    return (await this.DB.runQuery(true)) as NoResponse | ErrorObj;
+  }
+
+  async deleteRole(gid: number) {
+    this.DB.buildDelete(this.userTable, `gid = ${gid}`);
+    return (await this.DB.runQuery(true)) as NoResponse | ErrorObj;
+  }
+
+  async usernameUpdate(uid: number, oldUsername: string, newusername: string) {
+    const columnNames = ['uid', 'old_username', 'new_username', 'date'];
+    const timestamp = Math.ceil(Date.now() / 1000);
+    const columnValues = [`${uid}`, oldUsername, newusername, `${timestamp}`];
+    this.DB.buildInsert(this.usernameUpdateTable, columnNames, columnValues);
     return (await this.DB.runQuery(true)) as NoResponse | ErrorObj;
   }
 }

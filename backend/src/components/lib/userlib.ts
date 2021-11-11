@@ -6,8 +6,8 @@ import bcrypt from 'bcryptjs';
 import jwt, { VerifyErrors } from 'jsonwebtoken';
 
 import CF from '../../config';
-import ERR, { ErrorObj, isError } from '../../lib/error';
-import { clientIP } from '../../lib/globallib';
+import ERR, { ErrorCodes, ErrorObj, isError } from '../../lib/error';
+import { clientIP, objIntoArrays } from '../../lib/globallib';
 import UserQuery from '../../queries/userquery';
 import {
   User,
@@ -30,13 +30,13 @@ export async function checkLogin(_request: Request) {
       CF.JWT_SECRET,
       async (err: VerifyErrors, decoded: { uid: string; username: string }) => {
         if (err) {
-          resolve(ERR('userJwt', err.message));
+          resolve(ERR('userJwt', err?.message));
         }
         const query = new UserQuery();
         const result = await query.getUserByIdLazy(parseInt(decoded?.uid));
         const ip = clientIP(_request);
         if (isError(result)) {
-          resolve(ERR('userLogin', err.message));
+          resolve(result);
         }
         const userHelper = result as User;
         console.log(decoded);
@@ -74,7 +74,7 @@ export async function verifyPassword(uid: number, password: string) {
   return result;
 }
 
-export async function checkPermission(
+export async function getPermission(
   _request: Request
 ): Promise<PermissionArray> {
   const loginStatus = await checkLogin(_request);
@@ -84,7 +84,7 @@ export async function checkPermission(
   const userHelper = loginStatus as User;
   const groupID = userHelper.gid;
   const query = new UserQuery();
-  const result = await query.getPermissions(groupID);
+  const result = await query.getRole(groupID);
   if (isError(result)) {
     return [];
   }
@@ -165,32 +165,27 @@ export async function updateLoginCookie(
 }
 
 export async function updateUser(uid: number, inputs: User) {
-  const entries = Object.entries(inputs);
-  const columns = entries.map((item) => {
-    const [column] = item;
-    return column;
-  });
-  const values = entries.map((item) => {
-    const [_, value] = item;
-    return value;
-  });
+  const { columns, values } = objIntoArrays(inputs);
   const query = new UserQuery();
   return await query.updateUser(uid, columns, values);
 }
 
 // ---- CONSTANTS / UTIL ----
-export function validatePermission(
-  input: PermissionArray,
+export async function validatePermission(
+  _request: Request,
   permissions: PermissionKind | PermissionArray
 ) {
-  if (!input.length) {
+  const permissionResult = await getPermission(_request);
+  if (!permissionResult.length) {
     return false;
   }
   if (Array.isArray(permissions)) {
-    const intersection = input.filter((permit) => permissions.includes(permit));
+    const intersection = permissionResult.filter((permit) =>
+      permissions.includes(permit)
+    );
     return !!(intersection.length === permissions.length);
   }
-  return input.includes(permissions);
+  return permissionResult.includes(permissions);
 }
 
 export const invalidUserUpdateKeys = [

@@ -62,6 +62,18 @@ export function sanitizeInput(input: string) {
   output = output.substring(1, output.length - 1);
   return output;
 }
+export function objIntoArrays(input: { [key: string]: any }) {
+  const entries = Object.entries(input);
+  const columns = entries.map((item) => {
+    const [column] = item;
+    return column;
+  });
+  const values = entries.map((item) => {
+    const [_, value] = item;
+    return value;
+  });
+  return { columns, values };
+}
 
 // Regular expressions
 export const imageMIME = /image\/(apng|gif|jpeg|png|svg|webp)$/i;

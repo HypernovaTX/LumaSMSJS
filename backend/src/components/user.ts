@@ -9,9 +9,9 @@ import ERR, { ErrorObj, isError } from '../lib/error';
 import { clientIP, sanitizeInput } from '../lib/globallib';
 import { NoResponse } from '../lib/result';
 import {
+  checkExistingUser,
   checkExistingUserAndEmail,
   checkLogin,
-  checkPermission,
   invalidUserUpdateKeys,
   updateLoginCookie,
   updateUser,
@@ -31,6 +31,30 @@ export async function listUsers(
 ) {
   const query = new UserQuery();
   const result = await query.listUsers(page, count, column, asc, filter);
+  if (isError(result)) {
+    return result;
+  }
+  let output = result;
+  if (Array.isArray(result)) {
+    output = result.map((user) => {
+      if (user.password) {
+        delete user.password;
+      }
+      return user;
+    });
+  }
+  return output;
+}
+
+export async function findUsersByName(
+  find: string,
+  page: number = 0,
+  count: number = CF.ROWS,
+  column: string = '',
+  asc: boolean = true
+) {
+  const query = new UserQuery();
+  const result = await query.findUserByUsername(find, page, count, column, asc);
   if (isError(result)) {
     return result;
   }
@@ -122,10 +146,9 @@ export async function updateUserProfile(_request: Request, inputs: User) {
   if (isError(getLogin)) {
     return getLogin as ErrorObj;
   }
-  // Ensure user is not banned
   const currentUser = getLogin as User;
-  const getPermission = await checkPermission(_request);
-  const permitted = validatePermission(getPermission, [
+  // Ensure user is not banned
+  const permitted = await validatePermission(_request, [
     'can_msg',
     'can_submit',
     'can_comment',
@@ -168,6 +191,37 @@ export async function updateUserProfile(_request: Request, inputs: User) {
 //   console.log(file);
 // }
 
+export async function updateUsername(
+  _request: Request,
+  username: string,
+  password: string
+) {
+  // Ensure user is logged in
+  const getLogin = await checkLogin(_request);
+  if (isError(getLogin)) {
+    return getLogin as ErrorObj;
+  }
+  // Username is the same as before
+  const currentUser = getLogin as User;
+  if (currentUser?.username === username) {
+    return ERR('userNameSame');
+  }
+  // Verify password
+  const uid = currentUser?.uid ?? 0;
+  const correctPassword = await verifyPassword(uid, sanitizeInput(password));
+  if (!correctPassword) {
+    return ERR('userPasswordWrong');
+  }
+  // Check if username exists
+  const checkExistingUsername = await checkExistingUser(username);
+  if (checkExistingUsername) {
+    return ERR('userNameExists');
+  }
+  const query = new UserQuery();
+  query.usernameUpdate(uid, currentUser?.username, username);
+  return await updateUser(uid, { username });
+}
+
 export async function updatePassword(
   _request: Request,
   oldPassword: string,
@@ -182,8 +236,8 @@ export async function updatePassword(
   if (isError(getLogin)) {
     return getLogin as ErrorObj;
   }
-  // Verify old password
   const currentUser = getLogin as User;
+  // Verify old password
   const uid = currentUser?.uid ?? 0;
   const correctPassword = await verifyPassword(uid, sanitizeInput(oldPassword));
   if (!correctPassword) {
@@ -204,8 +258,8 @@ export async function updateEmail(
   if (isError(getLogin)) {
     return getLogin as ErrorObj;
   }
-  // Emails are the same
   const currentUser = getLogin as User;
+  // Emails are the same
   if (currentUser?.email === email) {
     return ERR('userEmailSame');
   }
@@ -217,32 +271,3 @@ export async function updateEmail(
   }
   return await updateUser(uid, { email: sanitizeInput(email) });
 }
-
-// /** Delete user
-//  @returns RESULT [denied | fail | done]
-// */
-// async deleteUser(_request, uid = 0) {
-//   // CHECK LOGIN
-//   const getPermission = await checkPermission(_request);
-//   if (getPermission === RESULT.fail) {
-//     handleError("us5");
-//     RESULT.denied;
-//   }
-//   // Only root admin can delete user
-//   if (!getPermission.staff_root) {
-//     handleError("us11");
-//     RESULT.denied;
-//   }
-
-//   uid = typeof uid === "string" ? `'${sanitizeInput(uid)}'` : uid;
-//   this.DB.buildDelete(this.userTable, `uid = ${uid}`);
-//   const getResult = await this.DB.runQuery();
-
-//   // Nothing deleted
-//   if (!getResult?.affectedRows) {
-//     return RESULT.fail;
-//   }
-
-//   // Done
-//   return RESULT.done;
-// }
