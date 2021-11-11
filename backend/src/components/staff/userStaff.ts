@@ -32,8 +32,38 @@ export async function updateOtherUser(
 export async function updateUserRole(
   _request: Request,
   uid: number,
-  inputs: User
-) {}
+  gid: number
+) {
+  // Verify permission
+  const permitted = await validatePermission(_request, 'acp_users');
+  if (!permitted) {
+    return ERR('userStaffPermit');
+  }
+  console.log('1');
+  // Verify role exists
+  const query = new UserQuery();
+  const getRole = await query.getRole(gid);
+  if (isError(getRole)) {
+    return getRole as ErrorObj;
+  }
+  console.log('2');
+  // Verify user exists
+  const getUser = await query.getUserById(uid);
+  if (isError(getUser)) {
+    return getUser as ErrorObj;
+  }
+  console.log('3');
+  // Only root admins can promote other users to root admin
+  const newRole = getRole as UserPermissionFull;
+  console.log(newRole?.acp_super);
+  if (newRole?.acp_super) {
+    const rootPermit = await validatePermission(_request, 'acp_super');
+    if (!rootPermit) {
+      return ERR('userRootPermit');
+    }
+  }
+  return await updateUser(uid, { gid });
+}
 
 export async function deleteUser(_request: Request, uid: number) {
   // Ensure staff is logged in

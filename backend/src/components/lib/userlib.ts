@@ -6,7 +6,7 @@ import bcrypt from 'bcryptjs';
 import jwt, { VerifyErrors } from 'jsonwebtoken';
 
 import CF from '../../config';
-import ERR, { ErrorCodes, ErrorObj, isError } from '../../lib/error';
+import ERR, { ErrorObj, isError } from '../../lib/error';
 import { clientIP, objIntoArrays } from '../../lib/globallib';
 import UserQuery from '../../queries/userquery';
 import {
@@ -39,7 +39,6 @@ export async function checkLogin(_request: Request) {
           resolve(result);
         }
         const userHelper = result as User;
-        console.log(decoded);
         // Ensure cookie info match the DB
         if (
           userHelper?.uid === parseInt(decoded?.uid) &&

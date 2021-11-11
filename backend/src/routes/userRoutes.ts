@@ -13,6 +13,7 @@ import {
   deleteUser,
   updateOtherUser,
   updateRole,
+  updateUserRole,
 } from '../components/staff/userStaff';
 import {
   findUsersByName,
@@ -72,7 +73,7 @@ userRouter.get('/logout', (_, res) => {
 
 // GET "/:id" - Show specific user by ID | PARAM: id
 userRouter.get('/:id', async (req, res) => {
-  const id = parseInt(req.params.id) ?? 0;
+  const id = parseInt(req.params.id) || 0;
   const result = await showUserByID(id);
   httpStatus(res, result);
   res.send(result);
@@ -194,6 +195,20 @@ userRouter.patch('/email', async (req, res) => {
   res.send(result);
 });
 
+// PATCH "/changerole" - Update user's role [STAFF, ROOT FOR UPDATING OTHER USER TO ROOT]
+// BODY: uid, gid
+userRouter.patch('/changerole', async (req, res) => {
+  if (!validateRequiredParam(req, ['uid', 'gid'])) {
+    invalidParamResponse(res);
+    return;
+  }
+  const uid = parseInt(req.body?.uid) || 0;
+  const gid = parseInt(req.body?.gid) || 0;
+  const result = await updateUserRole(req, uid, gid);
+  httpStatus(res, result);
+  res.send(result);
+});
+
 // PATCH "/role/:id" - update role [STAFF]
 // PARAM: id, BODY: data
 userRouter.patch('/role/:id', async (req, res) => {
@@ -201,7 +216,7 @@ userRouter.patch('/role/:id', async (req, res) => {
     invalidParamResponse(res);
     return;
   }
-  const gid = parseInt(req.params.id) ?? 0;
+  const gid = parseInt(req.params.id) || 0;
   let data = {} as UserPermissionFull;
   if (isStringJSON(req.body?.data)) {
     data = JSON.parse(req.body?.data);
@@ -221,7 +236,7 @@ userRouter.patch('/:id', async (req, res) => {
     invalidParamResponse(res);
     return;
   }
-  const uid = parseInt(req.params.id) ?? 0;
+  const uid = parseInt(req.params.id) || 0;
   let data = {} as User;
   if (isStringJSON(req.body?.data)) {
     data = JSON.parse(req.body?.data);
@@ -286,7 +301,7 @@ userRouter.post('/role', async (req, res) => {
 // DELETE "/role/:id" - Delete a role [ROOT]
 // PARAM: id
 userRouter.delete('/role/:id', async (req, res) => {
-  const gid = parseInt(req.params.id) ?? 0; // user ID
+  const gid = parseInt(req.params.id) || 0; // user ID
   const result = await deleteRole(req, gid);
   httpStatus(res, result);
   res.send(result);
@@ -295,7 +310,7 @@ userRouter.delete('/role/:id', async (req, res) => {
 // DELETE "/:id" - Delete a user [ROOT]
 // PARAM: id
 userRouter.delete('/:id', async (req, res) => {
-  const uid = parseInt(req.params.id) ?? 0; // user ID
+  const uid = parseInt(req.params.id) || 0; // user ID
   const result = await deleteUser(req, uid);
   httpStatus(res, result);
   res.send(result);
