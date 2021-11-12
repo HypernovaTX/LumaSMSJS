@@ -23,6 +23,7 @@ export default class SQL {
   constructor() {
     this.DBCONFIG = {
       host: CF.DB_HOST,
+      port: CF.DB_PORT,
       user: CF.DB_USER,
       password: CF.DB_PASS,
       database: CF.DB_NAME,
@@ -59,7 +60,7 @@ export default class SQL {
     // run the query
     const getData = await new Promise<any>((resolve) => {
       (this.pool as Pool).getConnection((poolError, connection) => {
-        poolError && ERR('dbDisconnect', poolError.message);
+        poolError && resolve(ERR('dbConnect', poolError.message));
         CF.DEBUG_MODE &&
           console.log(`\x1b[36m[SQL QUERY] ${this.query}\x1b[0m`);
         try {

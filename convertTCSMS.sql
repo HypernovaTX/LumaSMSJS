@@ -2,6 +2,7 @@
   This SQL Query converts the existing DB from TCSMS (written by Retriever II) TO LumaSMS
   This query should be executed ONLY once, please aware some of the codes are messy but are the most efficient upon testing
 */
+USE `lumasms_test`;
 
 /** SECTION 1 - Generate new database for each of the submission by merging tsms_resources and tsms_res_TYPE */
 /* Sprites */
