@@ -186,17 +186,3 @@ export async function validatePermission(
   }
   return permissionResult.includes(permissions);
 }
-
-export const invalidUserUpdateKeys = [
-  'uid',
-  'email',
-  'gid',
-  'join_date',
-  'last_active',
-  'last_ip',
-  'last_visit',
-  'password',
-  'registered_ip',
-  'username',
-  'avatar_file',
-];

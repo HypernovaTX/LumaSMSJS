@@ -7,24 +7,27 @@ import bcrypt from 'bcryptjs';
 import CF from '../config';
 import ERR, { ErrorObj, isError } from '../lib/error';
 import { clientIP, sanitizeInput } from '../lib/globallib';
-import { noContentResponse, NoResponse } from '../lib/result';
+import { NoResponse } from '../lib/result';
 import {
   checkExistingUser,
   checkExistingUserAndEmail,
   checkLogin,
-  invalidUserUpdateKeys,
   updateLoginCookie,
   updateUser,
   validatePermission,
   verifyPassword,
 } from './lib/userlib';
 import UserQuery from '../queries/userquery';
-import { User } from '../schema/userTypes';
-import {
-  attachFileExtension,
-  unlinkFile,
-  verifyImageFile,
-} from '../lib/filemanager';
+import { invalidUserUpdateKeys, User } from '../schema/userTypes';
+import { unlinkFile, verifyImageFile } from '../lib/filemanager';
+
+/**
+ * Future to-dos for users
+ * - Reset password*
+ * - Account verification*
+ * - Social media authentication*
+ * *Needs email system
+ */
 
 // SAFE FUNCTIONS
 export async function listUsers(

@@ -82,3 +82,26 @@ export interface UsernameChange {
   new_username: string;
   date: number;
 }
+export const invalidUserUpdateKeys = [
+  'uid',
+  'email',
+  'gid',
+  'join_date',
+  'last_active',
+  'last_ip',
+  'last_visit',
+  'password',
+  'registered_ip',
+  'username',
+  'avatar_file',
+];
+export const invalidStaffUserUpdateKeys = [
+  'uid',
+  'gid',
+  'join_date',
+  'last_active',
+  'last_ip',
+  'last_visit',
+  'registered_ip',
+  'avatar_file',
+];

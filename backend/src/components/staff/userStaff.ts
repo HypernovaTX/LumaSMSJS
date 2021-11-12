@@ -7,7 +7,11 @@ import { checkLogin, updateUser, validatePermission } from '../lib/userlib';
 import ERR, { ErrorObj, isError } from '../../lib/error';
 import { objIntoArrays } from '../../lib/globallib';
 import UserQuery from '../../queries/userquery';
-import { User, UserPermissionFull } from '../../schema/userTypes';
+import {
+  invalidStaffUserUpdateKeys,
+  User,
+  UserPermissionFull,
+} from '../../schema/userTypes';
 
 export async function updateOtherUser(
   _request: Request,
@@ -160,15 +164,3 @@ export async function deleteRole(_request: Request, gid: number) {
   }
   return await query.deleteRole(gid);
 }
-
-// Variables
-const invalidStaffUserUpdateKeys = [
-  'uid',
-  'gid',
-  'join_date',
-  'last_active',
-  'last_ip',
-  'last_visit',
-  'registered_ip',
-  'avatar_file',
-];

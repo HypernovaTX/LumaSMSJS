@@ -34,6 +34,11 @@ export function httpStatus(res: Response, data: any) {
     case errors.userRoleNotFound:
       status = 'notfound';
       break;
+    case errors.userPermission:
+    case errors.userStaffPermit:
+    case errors.userRootPermit:
+      status = 'denied';
+      break;
   }
   res.status(resultCodes[status]);
 }
