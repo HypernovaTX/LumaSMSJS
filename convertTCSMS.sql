@@ -13,6 +13,7 @@ CREATE TABLE `tsms_submission_sprites` AS
 ;
 ALTER TABLE `tsms_submission_sprites` ADD `id` INT NOT NULL AUTO_INCREMENT FIRST, ADD PRIMARY KEY (`id`);
 ALTER TABLE `tsms_submission_sprites` DROP `eid`;
+ALTER TABLE `tsms_submission_sprites` CHANGE `old` `old` INT(1) NOT NULL DEFAULT '0';
 
 /* Games */
 CREATE TABLE `tsms_submission_games` AS
@@ -21,6 +22,7 @@ CREATE TABLE `tsms_submission_games` AS
   LEFT JOIN `tsms_resources` r ON r.eid = z.eid && r.type = 2
 ;
 ALTER TABLE `tsms_submission_games` ADD `id` INT NOT NULL AUTO_INCREMENT FIRST, ADD PRIMARY KEY (`id`);
+ALTER TABLE `tsms_submission_games` CHANGE `old` `old` INT(1) NOT NULL DEFAULT '0';
 
 /* Hacks */
 CREATE TABLE `tsms_submission_hacks` AS
@@ -29,6 +31,7 @@ CREATE TABLE `tsms_submission_hacks` AS
   LEFT JOIN `tsms_resources` r ON r.eid = z.eid && r.type = 7
 ;
 ALTER TABLE `tsms_submission_hacks` ADD `id` INT NOT NULL AUTO_INCREMENT FIRST, ADD PRIMARY KEY (`id`);
+ALTER TABLE `tsms_submission_hacks` CHANGE `old` `old` INT(1) NOT NULL DEFAULT '0';
 
 /* Reviews */
 CREATE TABLE `tsms_submission_reviews` AS
@@ -42,6 +45,7 @@ ALTER TABLE `tsms_submission_reviews` ADD `id` INT NOT NULL AUTO_INCREMENT FIRST
 ALTER TABLE `tsms_submission_reviews` ADD `type` INT NOT NULL DEFAULT '0' AFTER `score`;
 UPDATE `tsms_submission_reviews` SET type = 1;
 UPDATE `tsms_submission_reviews` SET type = 2 WHERE gid = 34891;
+ALTER TABLE `tsms_submission_reviews` CHANGE `old` `old` INT(1) NOT NULL DEFAULT '0';
 
 /* How-tos */
 CREATE TABLE `tsms_submission_howtos` AS
@@ -51,6 +55,7 @@ CREATE TABLE `tsms_submission_howtos` AS
 ;
 ALTER TABLE `tsms_submission_howtos` ADD `id` INT NOT NULL AUTO_INCREMENT FIRST, ADD PRIMARY KEY (`id`);
 ALTER TABLE `tsms_submission_howtos` DROP `eid`;
+ALTER TABLE `tsms_submission_howtos` CHANGE `old` `old` INT(1) NOT NULL DEFAULT '0';
 
 /* Sounds */
 CREATE TABLE `tsms_submission_sounds` AS
@@ -60,6 +65,7 @@ CREATE TABLE `tsms_submission_sounds` AS
 ;
 ALTER TABLE `tsms_submission_sounds` ADD `id` INT NOT NULL AUTO_INCREMENT FIRST, ADD PRIMARY KEY (`id`);
 ALTER TABLE `tsms_submission_sounds` DROP `eid`;
+ALTER TABLE `tsms_submission_sounds` CHANGE `old` `old` INT(1) NOT NULL DEFAULT '0';
 
 /* Misc */
 CREATE TABLE `tsms_submission_misc` AS
@@ -69,6 +75,7 @@ CREATE TABLE `tsms_submission_misc` AS
 ;
 ALTER TABLE `tsms_submission_misc` ADD `id` INT NOT NULL AUTO_INCREMENT FIRST, ADD PRIMARY KEY (`id`);
 ALTER TABLE `tsms_submission_misc` DROP `eid`;
+ALTER TABLE `tsms_submission_misc` CHANGE `old` `old` INT(1) NOT NULL DEFAULT '0';
 
 
 /** SECTION 2 - Update tables that relies on tsms_resources by adding type/sub_type (which submission table) and id (submittion ID, tied to submission type) */

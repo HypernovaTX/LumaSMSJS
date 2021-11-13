@@ -7,5 +7,5 @@ export const submissionRouter = express.Router();
 //const app = express();
 
 // ==================== Sprites ====================
-import { spriteRouter } from './submissions/sprite';
+import { spriteRouter } from './submissions/spriteRoutes';
 submissionRouter.use('/sprite', spriteRouter);

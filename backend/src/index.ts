@@ -12,7 +12,7 @@ import cors from 'cors';
 import helmet from 'helmet';
 import morgan from 'morgan';
 
-// import { submissionRouter } from "./routes/submission.js";
+import { submissionRouter } from './routes/submissionRoutes';
 import { userRouter } from './routes/userRoutes';
 
 const app: Application = express();
@@ -30,7 +30,7 @@ app.use(
 
 // ==================== Routes ====================
 app.use('/user', userRouter);
-// app.use("/submission", submissionRouter);
+app.use('/submission', submissionRouter);
 
 // ==================== Server ====================
 const server = app.listen(12026, () => {

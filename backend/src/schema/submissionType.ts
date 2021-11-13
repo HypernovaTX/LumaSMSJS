@@ -2,14 +2,23 @@ import { SpriteResponse } from './subSpritesType';
 
 export type AnySubmissionResponse = SpriteResponse;
 export const submissionList = {
-  sprite: 'sprites',
-  game: 'games',
-  hack: 'hacks',
-  review: 'reviews',
-  tutorial: 'howtos',
-  audio: 'sounds',
+  sprites: 'sprites',
+  games: 'games',
+  hacks: 'hacks',
+  reviews: 'reviews',
+  howtos: 'howtos',
+  sounds: 'sounds',
   misc: 'misc',
 };
+export interface SubmissionUpdateResponse {
+  vid?: number;
+  rid?: number;
+  version?: string;
+  change?: string;
+  date?: number;
+  type?: number;
+  old?: number;
+}
 export type submissionKinds = keyof typeof submissionList;
 export interface submissionFilter {
   column: string;

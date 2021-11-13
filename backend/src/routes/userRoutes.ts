@@ -74,7 +74,8 @@ userRouter.get('/logout', (_, res) => {
   res.send(result);
 });
 
-// GET "/:id" - Show specific user by ID | PARAM: id
+// GET "/:id" - Show specific user by ID
+// PARAM: id
 userRouter.get('/:id', async (req, res) => {
   const id = parseInt(req.params.id) || 0;
   const result = await showUserByID(id);

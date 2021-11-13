@@ -1,0 +1,25 @@
+User Comments for submission
+
+async showSubmissionComments(id = 0) {
+    const selects = ['c.*', 'u.*', 'g.name_prefix', 'g.name_suffix'];
+    this.DB.buildSelect(`${CF.DB_PREFIX}comments c`, selects);
+    this.DB.buildCustomQuery(
+      `LEFT JOIN ${CF.DB_PREFIX}users u ON u.uid = c.uid`
+    );
+    this.DB.buildCustomQuery(
+      `LEFT JOIN ${CF.DB_PREFIX}groups g ON g.gid = u.gid`
+    );
+    this.DB.buildWhere([`c.rid = ${sanitizeInput(id)}`, `c.type = 1`]);
+
+    let result = await this.DB.runQuery();
+    result.forEach((comment) => {
+      const hasPassword = Object.prototype.hasOwnProperty.call(
+        comment,
+        'password'
+      );
+      if (hasPassword) {
+        delete comment.password;
+      }
+    });
+    return result;
+  }

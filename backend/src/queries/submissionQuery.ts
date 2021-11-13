@@ -1,12 +1,13 @@
 import SQL from '../lib/sql';
 
 import CF from '../config';
-import ERR, { ErrorObj } from '../lib/error';
+import ERR, { ErrorObj, isError } from '../lib/error';
 import { sanitizeInput } from '../lib/globallib';
 import { NoResponse } from '../lib/result';
 import {
   AnySubmissionResponse,
   submissionKinds,
+  SubmissionUpdateResponse,
 } from '../schema/submissionType';
 
 const queue = {
@@ -44,7 +45,6 @@ export default class SubmissionQuery {
       `LEFT JOIN ${CF.DB_PREFIX}users u ON u.uid = z.uid`
     );
     const basicWhere = [`z.${queue[queueCode]}`, 'z.ghost = 0'];
-
     // Used for filter
     if (filter.length) {
       const statements = filter.map((item) => {
@@ -65,5 +65,33 @@ export default class SubmissionQuery {
       this.DB.buildCustomQuery(`LIMIT ${page * count}, ${count}`);
     }
     return (await this.DB.runQuery()) as ErrorObj | AnySubmissionResponse[];
+  }
+
+  async getSubmissionById(id: number) {
+    const selects = ['z.*', 'u.username', 'u.gid'];
+    this.DB.buildSelect(`${this.subTable} z`, selects);
+    this.DB.buildCustomQuery(
+      `LEFT JOIN ${CF.DB_PREFIX}users u ON u.uid = z.uid`
+    );
+    this.DB.buildWhere([`z.id = ${id}`]);
+    const queryResult = await this.DB.runQuery();
+    if (isError(queryResult)) {
+      return queryResult as ErrorObj;
+    }
+    if (!Array.isArray(queryResult) || !queryResult.length) {
+      return ERR('submissionNotFound');
+    }
+    const [submission] = queryResult as AnySubmissionResponse[];
+    return submission;
+  }
+
+  async getSubmissionUpdatesByRid(rid: number) {
+    this.DB.buildSelect(this.updateTable);
+    this.DB.buildWhere([`rid = ${rid}`]);
+    let queryResult = await this.DB.runQuery();
+    if (isError(queryResult)) {
+      return queryResult as ErrorObj;
+    }
+    return queryResult as SubmissionUpdateResponse[];
   }
 }

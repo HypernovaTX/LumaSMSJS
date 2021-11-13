@@ -37,6 +37,7 @@ export function httpStatus(res: Response, data: any) {
     case errors.userPermission:
     case errors.userStaffPermit:
     case errors.userRootPermit:
+    case errors.submissionNotFound:
       status = 'denied';
       break;
   }

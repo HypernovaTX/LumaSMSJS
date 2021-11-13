@@ -31,6 +31,9 @@ export const errors = {
   fileUnlink: 'File unlink error!',
   noFile: 'No file has been uploaded as per requirement!',
 
+  //submission - MAIN
+  submissionNotFound: 'The selected submission is not found!',
+
   // user
   userCookie: 'User cookie not found!',
   userCookieInvalid: 'User cookie is invalid!',

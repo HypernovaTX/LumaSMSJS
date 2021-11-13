@@ -3,6 +3,7 @@ import { staffVoteList } from './submissionType';
 export interface Sprite {
   id?: number;
   uid?: number;
+  gid?: number;
   title?: string;
   description?: string;
   author_override?: string;
