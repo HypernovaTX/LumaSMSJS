@@ -3,6 +3,7 @@
 // Quick note: Request param with ? is optional
 // ================================================================================
 import express from 'express';
+import { invalidJsonResponse, isStringJSON } from '../../lib/globallib';
 import { getPublicSprites, getSpriteDetails } from '../../components/subSprite';
 // import { isStringJSON } from '../../lib/globallib.js';
 // import multer from 'multer';
@@ -25,6 +26,28 @@ spriteRouter.get('/', async (_, res) => {
 spriteRouter.get('/:id', async (req, res) => {
   const id = parseInt(req.params.id) || 0;
   const result = await getSpriteDetails(id);
+  httpStatus(res, result);
+  res.send(result);
+});
+
+// PUT -------------------------------------------------------------------------------------------------------
+// PUT "/" - list sprites (with param for sort/filter)
+// BODY: ?page, ?count, ?row, ?dsc, ?filter
+spriteRouter.put('/', async (req, res) => {
+  const page = parseInt(req.body?.page) || 0;
+  const count = parseInt(req.body?.count) || 25;
+  const colSort = `${req.body?.column ?? ''}`;
+  const asc = req.body?.dsc ? false : true; // dsc - string (true if undefined)
+  let filter: [string, string][] = []; // filter - { columnName: value }[]
+
+  if (isStringJSON(req.body?.filter)) {
+    filter = JSON.parse(req.body?.filter);
+  } else if (req.body?.filter) {
+    invalidJsonResponse(res);
+    return;
+  }
+  const result = await getPublicSprites(page, count, colSort, asc, filter);
+
   httpStatus(res, result);
   res.send(result);
 });
