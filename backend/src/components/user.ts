@@ -26,6 +26,7 @@ import { unlinkFile, verifyImageFile } from '../lib/filemanager';
  * - Reset password*
  * - Account verification*
  * - Social media authentication*
+ * - badge system
  * *Needs email system
  */
 

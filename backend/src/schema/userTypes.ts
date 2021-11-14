@@ -39,6 +39,16 @@ export interface User {
   avatar_file?: string;
   banner?: string;
   banner_file?: string;
+  birthday?: string;
+  birthday_privacy?: number;
+  location?: string;
+  country?: string;
+  pronoun?: string;
+  title?: string;
+  bio?: string;
+  signature?: string;
+  favorite_game?: number;
+  switch_code?: string;
 }
 export type UserKeys = keyof User;
 export type UserList = User[];
