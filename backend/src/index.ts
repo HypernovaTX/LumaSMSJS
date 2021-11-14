@@ -11,9 +11,11 @@ import cookieParser from 'cookie-parser';
 import cors from 'cors';
 import helmet from 'helmet';
 import morgan from 'morgan';
+import path from 'path';
 
 import { submissionRouter } from './routes/submissionRoutes';
 import { userRouter } from './routes/userRoutes';
+import { invalidParamResponse, validateRequiredParam } from './lib/globallib';
 
 const app: Application = express();
 
@@ -31,6 +33,18 @@ app.use(
 // ==================== Routes ====================
 app.use('/user', userRouter);
 app.use('/submission', submissionRouter);
+
+// ==================== File ====================
+// GET '/' - Get file from 'upload'
+// BODY: path (do not put '/' at the front!)
+app.get('/file', (req, res) => {
+  if (!validateRequiredParam(req, ['path'])) {
+    invalidParamResponse(res);
+    return;
+  }
+  const filepath = `${req.body?.path ?? ''}`;
+  res.sendFile(path.resolve(`upload/${filepath}`));
+});
 
 // ==================== Server ====================
 const server = app.listen(12026, () => {
