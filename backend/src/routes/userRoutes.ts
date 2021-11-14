@@ -12,6 +12,8 @@ import {
   deleteRole,
   deleteUser,
   updateOtherUser,
+  updateOtherUserAvatar,
+  updateOtherUserBanner,
   updateRole,
   updateUserRole,
 } from '../components/staff/userStaff';
@@ -41,7 +43,13 @@ import {
 import { httpStatus } from '../lib/result';
 import { User, UserPermissionFull } from '../schema/userTypes';
 
+// Prepare route and file handling
 export const userRouter = express.Router();
+const uploadDir = CF.UPLOAD_DIRECTORY;
+const avatarStorage = diskStorage(`${uploadDir}/${CF.UPLOAD_AVATAR}/`);
+const bannerStorage = diskStorage(`${uploadDir}/${CF.UPLOAD_BANNER}/`);
+const avatarUpload = multer({ storage: avatarStorage });
+const bannerUpload = multer({ storage: bannerStorage });
 
 // GET -------------------------------------------------------------------------------------------------------
 // GET "/" - list users (default)
@@ -198,12 +206,8 @@ userRouter.patch('/email', async (req, res) => {
   res.send(result);
 });
 
-// PATCH "/avatar" - Upload avatar for a user
+// PATCH "/avatar" - Upload avatar for current user
 // FILE: avatar
-const avatarStorage = diskStorage(
-  `${CF.UPLOAD_DIRECTORY}/${CF.UPLOAD_AVATAR}/`
-);
-const avatarUpload = multer({ storage: avatarStorage });
 userRouter.patch('/avatar', avatarUpload.single('avatar'), async (req, res) => {
   if (!req.file) {
     invalidFileResponse(res);
@@ -215,12 +219,8 @@ userRouter.patch('/avatar', avatarUpload.single('avatar'), async (req, res) => {
   res.send(result);
 });
 
-// PATCH "/banner" - Upload banner for a user
+// PATCH "/banner" - Upload banner for current user
 // FILE: banner
-const bannerStorage = diskStorage(
-  `${CF.UPLOAD_DIRECTORY}/${CF.UPLOAD_BANNER}/`
-);
-const bannerUpload = multer({ storage: bannerStorage });
 userRouter.patch('/banner', bannerUpload.single('banner'), async (req, res) => {
   if (!req.file) {
     invalidFileResponse(res);
@@ -231,6 +231,42 @@ userRouter.patch('/banner', bannerUpload.single('banner'), async (req, res) => {
   httpStatus(res, result);
   res.send(result);
 });
+
+// PATCH "/avatar" - Upload avatar for a user [STAFF]
+// PARAM: id, FILE: avatar
+userRouter.patch(
+  '/avatar/:id',
+  avatarUpload.single('avatar'),
+  async (req, res) => {
+    if (!req.file) {
+      invalidFileResponse(res);
+      return;
+    }
+    const uid = parseInt(req.params.id) || 0;
+    const avatar = req.file;
+    const result = await updateOtherUserAvatar(req, uid, avatar);
+    httpStatus(res, result);
+    res.send(result);
+  }
+);
+
+// PATCH "/banner" - Upload banner for a user [STAFF]
+// PARAM: id, FILE: banner
+userRouter.patch(
+  '/banner/:id',
+  bannerUpload.single('banner'),
+  async (req, res) => {
+    if (!req.file) {
+      invalidFileResponse(res);
+      return;
+    }
+    const uid = parseInt(req.params.id) || 0;
+    const banner = req.file;
+    const result = await updateOtherUserBanner(req, uid, banner);
+    httpStatus(res, result);
+    res.send(result);
+  }
+);
 
 // PATCH "/changerole" - Update user's role [STAFF, ROOT FOR UPDATING OTHER USER TO ROOT]
 // BODY: uid, gid

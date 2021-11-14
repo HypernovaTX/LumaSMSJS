@@ -6,7 +6,7 @@ export const imageMIME = /image\/(gif|jpeg|png)$/i;
 export const isGif = /image\/gif$/i;
 export const fileExtension = /\.[0-9a-z]+$/;
 export const archiveFileMIME =
-  /application\/(x-7z-compressed|x-rar-compressed|zip)$/i;
+  /application\/(x-7z-compressed|x-apple-diskimage|x-rar-compressed|zip)$/i;
 
 export function diskStorage(destination: string) {
   return multer.diskStorage({
@@ -20,7 +20,6 @@ export function diskStorage(destination: string) {
 }
 
 export function attachFileExtension(file: Express.Multer.File) {
-  console.log(file);
   return file.filename + fileExtension.exec(file.originalname);
 }
 
