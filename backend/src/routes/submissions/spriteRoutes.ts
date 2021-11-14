@@ -3,8 +3,16 @@
 // Quick note: Request param with ? is optional
 // ================================================================================
 import express from 'express';
-import { invalidJsonResponse, isStringJSON } from '../../lib/globallib';
-import { getPublicSprites, getSpriteDetails } from '../../components/subSprite';
+import {
+  invalidJsonResponse,
+  invalidParamResponse,
+  isStringJSON,
+} from '../../lib/globallib';
+import {
+  getPublicSprites,
+  getSpriteDetails,
+  getSubmissionHistory,
+} from '../../components/subSprite';
 // import { isStringJSON } from '../../lib/globallib.js';
 // import multer from 'multer';
 import CF from '../../config';
@@ -21,7 +29,20 @@ spriteRouter.get('/', async (_, res) => {
   res.send(result);
 });
 
-// GET "/:id" - Show specific user by ID
+// GET "/history" - ERROR
+spriteRouter.get('/history', async (_, res) => {
+  invalidParamResponse(res);
+});
+
+// GET "/history/:id" - list of sprite updates
+spriteRouter.get('/history/:id', async (req, res) => {
+  const id = parseInt(req.params.id) || 0;
+  const result = await getSubmissionHistory(id);
+  httpStatus(res, result);
+  res.send(result);
+});
+
+// GET "/:id" - Show specific sprite by ID
 // PARAM: id
 spriteRouter.get('/:id', async (req, res) => {
   const id = parseInt(req.params.id) || 0;

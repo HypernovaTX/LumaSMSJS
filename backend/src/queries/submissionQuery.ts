@@ -7,6 +7,7 @@ import { NoResponse } from '../lib/result';
 import {
   AnySubmissionResponse,
   submissionKinds,
+  submissionList,
   SubmissionUpdateResponse,
 } from '../schema/submissionType';
 
@@ -19,6 +20,7 @@ type QueueCode = keyof typeof queue;
 
 export default class SubmissionQuery {
   DB: SQL;
+  submissionNumber: number;
   subTable: string;
   updateTable: string;
   usernameUpdateTable: string;
@@ -28,6 +30,7 @@ export default class SubmissionQuery {
     this.subTable = `${CF.DB_PREFIX}submission_${submissionKind}`;
     this.updateTable = `${CF.DB_PREFIX}version`;
     this.usernameUpdateTable = `${CF.DB_PREFIX}username_change`;
+    this.submissionNumber = submissionList[submissionKind];
   }
 
   async getSubmissionList(
@@ -87,7 +90,7 @@ export default class SubmissionQuery {
 
   async getSubmissionUpdatesByRid(rid: number) {
     this.DB.buildSelect(this.updateTable);
-    this.DB.buildWhere([`rid = ${rid}`]);
+    this.DB.buildWhere([`rid = ${rid}`, `type = ${this.submissionNumber}`]);
     let queryResult = await this.DB.runQuery();
     if (isError(queryResult)) {
       return queryResult as ErrorObj;

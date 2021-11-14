@@ -2,13 +2,13 @@ import { SpriteResponse } from './subSpritesType';
 
 export type AnySubmissionResponse = SpriteResponse;
 export const submissionList = {
-  sprites: 'sprites',
-  games: 'games',
-  hacks: 'hacks',
-  reviews: 'reviews',
-  howtos: 'howtos',
-  sounds: 'sounds',
-  misc: 'misc',
+  sprites: 1,
+  games: 2,
+  hacks: 7,
+  reviews: 3,
+  howtos: 4,
+  sounds: 5,
+  misc: 6,
 };
 export interface SubmissionUpdateResponse {
   vid?: number;
