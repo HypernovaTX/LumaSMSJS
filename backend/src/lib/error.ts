@@ -28,6 +28,7 @@ export const errors = {
   // file
   fileImageInvalid: 'Image is not in PNG, JPG, nor GIF format!',
   fileNameTooLong: 'File name is too long!',
+  fileNotFound: 'File not found!',
   fileUnlink: 'File unlink error!',
   noFile: 'No file has been uploaded as per requirement!',
 

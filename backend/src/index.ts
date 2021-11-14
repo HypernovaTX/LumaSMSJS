@@ -7,15 +7,20 @@
 // NOTE: ALL POST / PUT / PATCH / DELETE REQUESTS (besides file uploads) MUST BE application/x-www-form-urlencoded!
 
 import express, { Application } from 'express';
+import fs from 'fs';
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
 import helmet from 'helmet';
 import morgan from 'morgan';
 import path from 'path';
 
+import { invalidParamResponse, validateRequiredParam } from './lib/globallib';
+import ERR from './lib/error';
+import { httpStatus } from './lib/result';
+import { hasFile } from './lib/filemanager';
+
 import { submissionRouter } from './routes/submissionRoutes';
 import { userRouter } from './routes/userRoutes';
-import { invalidParamResponse, validateRequiredParam } from './lib/globallib';
 
 const app: Application = express();
 
@@ -35,15 +40,21 @@ app.use('/user', userRouter);
 app.use('/submission', submissionRouter);
 
 // ==================== File ====================
-// GET '/' - Get file from 'upload'
+// PUT '/' - Get file from 'upload'
 // BODY: path (do not put '/' at the front!)
-app.get('/file', (req, res) => {
+app.put('/file', async (req, res) => {
   if (!validateRequiredParam(req, ['path'])) {
     invalidParamResponse(res);
     return;
   }
-  const filepath = `${req.body?.path ?? ''}`;
-  res.sendFile(path.resolve(`upload/${filepath}`));
+  const filepath = path.resolve(`upload/${req.body?.path ?? ''}`);
+  const fileExists = await hasFile(filepath);
+  if (!fileExists) {
+    const error = ERR('fileNotFound');
+    httpStatus(res, error);
+    res.send(error);
+  }
+  res.sendFile(path.resolve(filepath));
 });
 
 // ==================== Server ====================

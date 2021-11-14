@@ -27,6 +27,18 @@ export function verifyImageFile(file: Express.Multer.File) {
   return imageMIME.test(file.mimetype);
 }
 
+export async function hasFile(path: string) {
+  return await new Promise<boolean>((resolve) => {
+    fs.access(path, fs.constants.F_OK, (err) => {
+      if (err) {
+        console.error(err);
+        resolve(false);
+      }
+      resolve(true);
+    });
+  });
+}
+
 export function unlinkFile(file: string, directory: string) {
   fs.unlink(directory + file, (err) => {
     if (err) {
