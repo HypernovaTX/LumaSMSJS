@@ -4,7 +4,9 @@
 import { Request } from 'express';
 
 import { checkLogin, updateUser, validatePermission } from '../lib/userlib';
+import CF from '../../config';
 import ERR, { ErrorObj, isError } from '../../lib/error';
+import { unlinkFile, verifyImageFile } from '../../lib/filemanager';
 import { objIntoArrays } from '../../lib/globallib';
 import UserQuery from '../../queries/userquery';
 import {
@@ -23,6 +25,12 @@ export async function updateOtherUser(
   if (!permitted) {
     return ERR('userStaffPermit');
   }
+  // Verify user exists
+  const query = new UserQuery();
+  const getUser = await query.getUserById(uid);
+  if (isError(getUser)) {
+    return getUser as ErrorObj;
+  }
   // Ensure `inputs` does not have keys that are not allowed to update to the DB
   const invalidKeys = Object.keys(inputs).filter((key) =>
     invalidStaffUserUpdateKeys.includes(key)
@@ -31,6 +39,78 @@ export async function updateOtherUser(
     return ERR('userUpdateInvalid');
   }
   return await updateUser(uid, inputs);
+}
+
+export async function updateOtherUserAvatar(
+  _request: Request,
+  uid: number,
+  file: Express.Multer.File
+) {
+  const directory = `${CF.UPLOAD_DIRECTORY}/${CF.UPLOAD_AVATAR}/`;
+  // File name too long
+  if (file.filename.length > CF.FILENAME_LIMIT) {
+    unlinkFile(file.filename, directory);
+    return ERR('fileNameTooLong');
+  }
+  // Verify permission
+  const permitted = await validatePermission(_request, 'acp_users');
+  if (!permitted) {
+    return ERR('userStaffPermit');
+  }
+  // Ensure it is an image, otherwise
+  if (!verifyImageFile(file)) {
+    unlinkFile(file.filename, directory);
+    return ERR('fileImageInvalid');
+  }
+  // Verify user exists
+  const query = new UserQuery();
+  const getUser = await query.getUserById(uid);
+  if (isError(getUser)) {
+    return getUser as ErrorObj;
+  }
+  // Remove user's old file
+  const selectedUser = getUser as User;
+  if (selectedUser?.avatar_file) {
+    unlinkFile(selectedUser.avatar_file, directory);
+  }
+  // Apply
+  return await updateUser(selectedUser?.uid, { avatar_file: file.filename });
+}
+
+export async function updateOtherUserBanner(
+  _request: Request,
+  uid: number,
+  file: Express.Multer.File
+) {
+  const directory = `${CF.UPLOAD_DIRECTORY}/${CF.UPLOAD_BANNER}/`;
+  // File name too long
+  if (file.filename.length > CF.FILENAME_LIMIT) {
+    unlinkFile(file.filename, directory);
+    return ERR('fileNameTooLong');
+  }
+  // Verify permission
+  const permitted = await validatePermission(_request, 'acp_users');
+  if (!permitted) {
+    return ERR('userStaffPermit');
+  }
+  // Ensure it is an image, otherwise
+  if (!verifyImageFile(file)) {
+    unlinkFile(file.filename, directory);
+    return ERR('fileImageInvalid');
+  }
+  // Verify user exists
+  const query = new UserQuery();
+  const getUser = await query.getUserById(uid);
+  if (isError(getUser)) {
+    return getUser as ErrorObj;
+  }
+  // Remove user's old file
+  const currentUser = getUser as User;
+  if (currentUser?.banner_file) {
+    unlinkFile(currentUser.banner_file, directory);
+  }
+  // Apply
+  return await updateUser(currentUser?.uid, { banner_file: file.filename });
 }
 
 export async function updateUserRole(
@@ -43,23 +123,19 @@ export async function updateUserRole(
   if (!permitted) {
     return ERR('userStaffPermit');
   }
-  console.log('1');
   // Verify role exists
   const query = new UserQuery();
   const getRole = await query.getRole(gid);
   if (isError(getRole)) {
     return getRole as ErrorObj;
   }
-  console.log('2');
   // Verify user exists
   const getUser = await query.getUserById(uid);
   if (isError(getUser)) {
     return getUser as ErrorObj;
   }
-  console.log('3');
   // Only root admins can promote other users to root admin
   const newRole = getRole as UserPermissionFull;
-  console.log(newRole?.acp_super);
   if (newRole?.acp_super) {
     const rootPermit = await validatePermission(_request, 'acp_super');
     if (!rootPermit) {
