@@ -22,6 +22,7 @@ import {
   updateEmail,
   updatePassword,
   updateUserAvatar,
+  updateUserBanner,
   updateUsername,
   updateUserProfile,
   userLogin,
@@ -41,8 +42,6 @@ import { httpStatus } from '../lib/result';
 import { User, UserPermissionFull } from '../schema/userTypes';
 
 export const userRouter = express.Router();
-const storage = diskStorage(`${CF.UPLOAD_DIRECTORY}/${CF.UPLOAD_AVATAR}/`);
-const upload = multer({ storage });
 
 // GET -------------------------------------------------------------------------------------------------------
 // GET "/" - list users (default)
@@ -201,13 +200,34 @@ userRouter.patch('/email', async (req, res) => {
 
 // PATCH "/avatar" - Upload avatar for a user
 // FILE: avatar
-userRouter.patch('/avatar', upload.single('avatar'), async (req, res) => {
+const avatarStorage = diskStorage(
+  `${CF.UPLOAD_DIRECTORY}/${CF.UPLOAD_AVATAR}/`
+);
+const avatarUpload = multer({ storage: avatarStorage });
+userRouter.patch('/avatar', avatarUpload.single('avatar'), async (req, res) => {
   if (!req.file) {
     invalidFileResponse(res);
     return;
   }
   const avatar = req.file;
   const result = await updateUserAvatar(req, avatar);
+  httpStatus(res, result);
+  res.send(result);
+});
+
+// PATCH "/banner" - Upload banner for a user
+// FILE: banner
+const bannerStorage = diskStorage(
+  `${CF.UPLOAD_DIRECTORY}/${CF.UPLOAD_BANNER}/`
+);
+const bannerUpload = multer({ storage: bannerStorage });
+userRouter.patch('/banner', bannerUpload.single('banner'), async (req, res) => {
+  if (!req.file) {
+    invalidFileResponse(res);
+    return;
+  }
+  const banner = req.file;
+  const result = await updateUserBanner(req, banner);
   httpStatus(res, result);
   res.send(result);
 });

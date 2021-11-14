@@ -14,6 +14,7 @@ CREATE TABLE `tsms_submission_sprites` AS
 ALTER TABLE `tsms_submission_sprites` ADD `id` INT NOT NULL AUTO_INCREMENT FIRST, ADD PRIMARY KEY (`id`);
 ALTER TABLE `tsms_submission_sprites` DROP `eid`;
 ALTER TABLE `tsms_submission_sprites` CHANGE `old` `old` INT(1) NOT NULL DEFAULT '0';
+ALTER TABLE `tsms_submission_sprites` CHANGE `file` `file` VARCHAR(256) CHARACTER SET latin1 COLLATE latin1_swedish_ci NULL DEFAULT NULL;
 
 /* Games */
 CREATE TABLE `tsms_submission_games` AS
@@ -23,6 +24,7 @@ CREATE TABLE `tsms_submission_games` AS
 ;
 ALTER TABLE `tsms_submission_games` ADD `id` INT NOT NULL AUTO_INCREMENT FIRST, ADD PRIMARY KEY (`id`);
 ALTER TABLE `tsms_submission_games` CHANGE `old` `old` INT(1) NOT NULL DEFAULT '0';
+ALTER TABLE `tsms_submission_games` CHANGE `file` `file` VARCHAR(256) CHARACTER SET latin1 COLLATE latin1_swedish_ci NULL DEFAULT NULL;
 
 /* Hacks */
 CREATE TABLE `tsms_submission_hacks` AS
@@ -32,6 +34,7 @@ CREATE TABLE `tsms_submission_hacks` AS
 ;
 ALTER TABLE `tsms_submission_hacks` ADD `id` INT NOT NULL AUTO_INCREMENT FIRST, ADD PRIMARY KEY (`id`);
 ALTER TABLE `tsms_submission_hacks` CHANGE `old` `old` INT(1) NOT NULL DEFAULT '0';
+ALTER TABLE `tsms_submission_hacks` CHANGE `file` `file` VARCHAR(256) CHARACTER SET latin1 COLLATE latin1_swedish_ci NULL DEFAULT NULL;
 
 /* Reviews */
 CREATE TABLE `tsms_submission_reviews` AS
@@ -56,6 +59,7 @@ CREATE TABLE `tsms_submission_howtos` AS
 ALTER TABLE `tsms_submission_howtos` ADD `id` INT NOT NULL AUTO_INCREMENT FIRST, ADD PRIMARY KEY (`id`);
 ALTER TABLE `tsms_submission_howtos` DROP `eid`;
 ALTER TABLE `tsms_submission_howtos` CHANGE `old` `old` INT(1) NOT NULL DEFAULT '0';
+ALTER TABLE `tsms_submission_howtos` CHANGE `file` `file` VARCHAR(256) CHARACTER SET latin1 COLLATE latin1_swedish_ci NULL DEFAULT NULL;
 
 /* Sounds */
 CREATE TABLE `tsms_submission_sounds` AS
@@ -66,6 +70,7 @@ CREATE TABLE `tsms_submission_sounds` AS
 ALTER TABLE `tsms_submission_sounds` ADD `id` INT NOT NULL AUTO_INCREMENT FIRST, ADD PRIMARY KEY (`id`);
 ALTER TABLE `tsms_submission_sounds` DROP `eid`;
 ALTER TABLE `tsms_submission_sounds` CHANGE `old` `old` INT(1) NOT NULL DEFAULT '0';
+ALTER TABLE `tsms_submission_sounds` CHANGE `file` `file` VARCHAR(256) CHARACTER SET latin1 COLLATE latin1_swedish_ci NULL DEFAULT NULL;
 
 /* Misc */
 CREATE TABLE `tsms_submission_misc` AS
@@ -76,7 +81,9 @@ CREATE TABLE `tsms_submission_misc` AS
 ALTER TABLE `tsms_submission_misc` ADD `id` INT NOT NULL AUTO_INCREMENT FIRST, ADD PRIMARY KEY (`id`);
 ALTER TABLE `tsms_submission_misc` DROP `eid`;
 ALTER TABLE `tsms_submission_misc` CHANGE `old` `old` INT(1) NOT NULL DEFAULT '0';
+ALTER TABLE `tsms_submission_misc` CHANGE `file` `file` VARCHAR(256) CHARACTER SET latin1 COLLATE latin1_swedish_ci NULL DEFAULT NULL;
 
+/****************************************************************/
 
 /** SECTION 2 - Update tables that relies on tsms_resources by adding type/sub_type (which submission table) and id (submittion ID, tied to submission type) */
 /* Comments */
@@ -158,6 +165,9 @@ UPDATE `tsms_bookmarks` c SET c.rid = (
 ) WHERE c.type > 0;
 DELETE FROM `tsms_bookmarks` WHERE rid = 0;
 
+/****************************************************************/
+
+/* SECTION 3 - User related items*/
 /* Create a table that is used to log username changes */
 CREATE TABLE `mfgg_mainsite`.`tsms_username_change` (
   `unrid` INT NOT NULL AUTO_INCREMENT , 
@@ -170,3 +180,5 @@ CREATE TABLE `mfgg_mainsite`.`tsms_username_change` (
 
 /* add a column to the user table for avatar file uploads */
 ALTER TABLE `tsms_users` ADD `avatar_file` VARCHAR(256) NULL DEFAULT NULL AFTER `new_password`;
+ALTER TABLE `tsms_users` ADD `banner` VARCHAR(256) NULL DEFAULT NULL AFTER `avatar_file`;
+ALTER TABLE `tsms_users` ADD `banner_file` VARCHAR(256) NULL DEFAULT NULL AFTER `banner`;

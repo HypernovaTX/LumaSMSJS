@@ -37,6 +37,8 @@ export interface User {
   new_password?: number;
   password?: string;
   avatar_file?: string;
+  banner?: string;
+  banner_file?: string;
 }
 export type UserKeys = keyof User;
 export type UserList = User[];
@@ -94,6 +96,7 @@ export const invalidUserUpdateKeys = [
   'registered_ip',
   'username',
   'avatar_file',
+  'banner_file',
 ];
 export const invalidStaffUserUpdateKeys = [
   'uid',
@@ -104,4 +107,5 @@ export const invalidStaffUserUpdateKeys = [
   'last_visit',
   'registered_ip',
   'avatar_file',
+  'banner_file',
 ];

@@ -284,3 +284,33 @@ export async function updateUserAvatar(
   // Apply
   return await updateUser(currentUser?.uid, { avatar_file: file.filename });
 }
+
+export async function updateUserBanner(
+  _request: Request,
+  file: Express.Multer.File
+) {
+  const directory = `${CF.UPLOAD_DIRECTORY}/${CF.UPLOAD_BANNER}/`;
+  // File name too long
+  if (file.filename.length > CF.FILENAME_LIMIT) {
+    unlinkFile(file.filename, directory);
+    return ERR('fileNameTooLong');
+  }
+  // Ensure user is logged in
+  const getLogin = await checkLogin(_request);
+  if (isError(getLogin)) {
+    unlinkFile(file.filename, directory);
+    return getLogin as ErrorObj;
+  }
+  // Ensure it is an image, otherwise
+  if (!verifyImageFile(file)) {
+    unlinkFile(file.filename, directory);
+    return ERR('fileImageInvalid');
+  }
+  // Remove user's old file
+  const currentUser = getLogin as User;
+  if (currentUser?.banner_file) {
+    unlinkFile(currentUser.banner_file, directory);
+  }
+  // Apply
+  return await updateUser(currentUser?.uid, { banner_file: file.filename });
+}
