@@ -1,6 +1,7 @@
-import { SpriteResponse } from './subSpritesType';
+import { Sprite, SpriteResponse } from './subSpritesType';
 
 export type AnySubmissionResponse = SpriteResponse;
+export type AnySubmission = Sprite;
 export const submissionList = {
   sprites: 1,
   games: 2,

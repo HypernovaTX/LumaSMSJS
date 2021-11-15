@@ -3,23 +3,37 @@
 // Quick note: Request param with ? is optional
 // ================================================================================
 import express from 'express';
+import multer from 'multer';
+
+import { diskStorage } from '../../lib/filemanager';
 import {
+  invalidFileResponse,
   invalidJsonResponse,
   invalidParamResponse,
   isStringJSON,
+  validateRequiredParam,
 } from '../../lib/globallib';
 import {
+  createSprite,
   getPublicSprites,
   getSpriteDetails,
-  getSubmissionHistory,
+  getSpriteHistory,
 } from '../../components/subSprite';
 // import { isStringJSON } from '../../lib/globallib.js';
-// import multer from 'multer';
 import CF from '../../config';
 import { httpStatus } from '../../lib/result';
+import { MulterFileFields } from '../../schema';
 
 export const spriteRouter = express.Router();
-// const upload = multer({ storage: multer.memoryStorage() });
+// Prepare route and file handling
+export const userRouter = express.Router();
+const mainUploadDir = `${CF.UPLOAD_DIRECTORY}/${CF.UPLOAD_SUB_SPRITE}/`;
+const spriteStorage = diskStorage(mainUploadDir);
+const spriteUpload = multer({ storage: spriteStorage });
+const uploadFields = [
+  { name: 'file', maxCount: 1 },
+  { name: 'thumb', maxCount: 1 },
+];
 
 // GET -------------------------------------------------------------------------------------------------------
 // GET "/" - list sprites (default)
@@ -29,24 +43,19 @@ spriteRouter.get('/', async (_, res) => {
   res.send(result);
 });
 
-// GET "/history" - ERROR
-spriteRouter.get('/history', async (_, res) => {
-  invalidParamResponse(res);
-});
-
-// GET "/history/:id" - list of sprite updates
-spriteRouter.get('/history/:id', async (req, res) => {
-  const id = parseInt(req.params.id) || 0;
-  const result = await getSubmissionHistory(id);
-  httpStatus(res, result);
-  res.send(result);
-});
-
 // GET "/:id" - Show specific sprite by ID
 // PARAM: id
 spriteRouter.get('/:id', async (req, res) => {
   const id = parseInt(req.params.id) || 0;
   const result = await getSpriteDetails(id);
+  httpStatus(res, result);
+  res.send(result);
+});
+
+// GET "/:id/history/" - list of sprite updates
+spriteRouter.get('/:id/history/', async (req, res) => {
+  const id = parseInt(req.params.id) || 0;
+  const result = await getSpriteHistory(id);
   httpStatus(res, result);
   res.send(result);
 });
@@ -68,32 +77,35 @@ spriteRouter.put('/', async (req, res) => {
     return;
   }
   const result = await getPublicSprites(page, count, colSort, asc, filter);
-
   httpStatus(res, result);
   res.send(result);
 });
 
 // POST -------------------------------------------------------------------------------------------------------
-// // "/create" - register | BODY: data, thumb, file
-// const uploadFields = [
-//   { name: 'thumb', maxCount: 1 },
-//   { name: 'file', maxCount: 1 },
-// ];
-// spriteRouter.post('/create', upload.fields(uploadFields), async (req, res) => {
-//   let _data = []; // string of { columnName: value }[]
-//   if (isStringJSON(req.body?.data)) {
-//     _data = JSON.parse(req.body?.data);
-//   }
-//   const files = {
-//     thumb: req.files.thumb[0] ?? {},
-//     file: req.files.file[0] ?? {},
-//   };
-//   const getData = await sprite.createSubmission(req, _data, files);
-//   if (getData === 'DONE') {
-//     res.status(201);
-//   }
-//   res.send(getData);
-// });
+// "/" - Create Sprite submission
+// BODY: data, FILE: thumb, file
+spriteRouter.post('/', spriteUpload.fields(uploadFields), async (req, res) => {
+  const getFiles = req.files as MulterFileFields;
+  if (!getFiles.file.length || !getFiles.thumb.length) {
+    invalidFileResponse(res);
+    return;
+  }
+  if (!validateRequiredParam(req, ['data'])) {
+    invalidParamResponse(res);
+    return;
+  }
+  let data = [];
+  if (isStringJSON(req.body?.data)) {
+    data = JSON.parse(req.body?.data);
+  } else if (req.body?.data) {
+    invalidJsonResponse(res);
+    return;
+  }
+  const [[file], [thumb]] = [getFiles.file, getFiles.thumb];
+  const getData = await createSprite(req, data, file, thumb);
+  httpStatus(res, getData);
+  res.send(getData);
+});
 
 // PUT -------------------------------------------------------------------------------------------------------
 // // "/update" - register | BODY: data

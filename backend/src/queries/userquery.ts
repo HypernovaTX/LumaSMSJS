@@ -191,7 +191,7 @@ export default class UserQuery {
     return queryResult as UsernameChange[] | ErrorObj;
   }
 
-  // RISKY STUFFS
+  // ------------ AFFECTS DB ----------------
   async updateLastActivity(uid: number, timestamp: string, ip: string) {
     this.DB.buildUpdate(
       this.userTable,

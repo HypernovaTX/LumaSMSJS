@@ -39,7 +39,11 @@ export async function hasFile(path: string) {
   });
 }
 
-export function unlinkFile(file: string, directory: string) {
+export async function unlinkFile(file: string, directory: string) {
+  const fileExists = await hasFile(directory + file);
+  if (!fileExists) {
+    return;
+  }
   fs.unlink(directory + file, (err) => {
     if (err) {
       ERR('fileUnlink', err.message);

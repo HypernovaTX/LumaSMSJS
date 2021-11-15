@@ -232,42 +232,6 @@ userRouter.patch('/banner', bannerUpload.single('banner'), async (req, res) => {
   res.send(result);
 });
 
-// PATCH "/avatar" - Upload avatar for a user [STAFF]
-// PARAM: id, FILE: avatar
-userRouter.patch(
-  '/avatar/:id',
-  avatarUpload.single('avatar'),
-  async (req, res) => {
-    if (!req.file) {
-      invalidFileResponse(res);
-      return;
-    }
-    const uid = parseInt(req.params.id) || 0;
-    const avatar = req.file;
-    const result = await updateOtherUserAvatar(req, uid, avatar);
-    httpStatus(res, result);
-    res.send(result);
-  }
-);
-
-// PATCH "/banner" - Upload banner for a user [STAFF]
-// PARAM: id, FILE: banner
-userRouter.patch(
-  '/banner/:id',
-  bannerUpload.single('banner'),
-  async (req, res) => {
-    if (!req.file) {
-      invalidFileResponse(res);
-      return;
-    }
-    const uid = parseInt(req.params.id) || 0;
-    const banner = req.file;
-    const result = await updateOtherUserBanner(req, uid, banner);
-    httpStatus(res, result);
-    res.send(result);
-  }
-);
-
 // PATCH "/changerole" - Update user's role [STAFF, ROOT FOR UPDATING OTHER USER TO ROOT]
 // BODY: uid, gid
 userRouter.patch('/changerole', async (req, res) => {
@@ -321,6 +285,42 @@ userRouter.patch('/:id', async (req, res) => {
   httpStatus(res, result);
   res.send(result);
 });
+
+// PATCH "/:id/avatar" - Upload avatar for a user [STAFF]
+// PARAM: id, FILE: avatar
+userRouter.patch(
+  '/:id/avatar',
+  avatarUpload.single('avatar'),
+  async (req, res) => {
+    if (!req.file) {
+      invalidFileResponse(res);
+      return;
+    }
+    const uid = parseInt(req.params.id) || 0;
+    const avatar = req.file;
+    const result = await updateOtherUserAvatar(req, uid, avatar);
+    httpStatus(res, result);
+    res.send(result);
+  }
+);
+
+// PATCH "/:id/banner" - Upload banner for a user [STAFF]
+// PARAM: id, FILE: banner
+userRouter.patch(
+  '/:id/banner',
+  bannerUpload.single('banner'),
+  async (req, res) => {
+    if (!req.file) {
+      invalidFileResponse(res);
+      return;
+    }
+    const uid = parseInt(req.params.id) || 0;
+    const banner = req.file;
+    const result = await updateOtherUserBanner(req, uid, banner);
+    httpStatus(res, result);
+    res.send(result);
+  }
+);
 
 // POST ------------------------------------------------------------------------------------------------------
 // POST "/" - create user

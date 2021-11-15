@@ -3,14 +3,14 @@
 // Extends from submissions.js
 // (primarily called by /routes/submissions/sprites.js)
 // ================================================================================
+import { Request } from 'express';
 
-import { archiveFileMIME } from '../lib/filemanager';
-// import { placeholderPromise, handleError } from '../lib/globallib.js';
 import Submission from './lib/submission';
-// import CF from '../config';
-import { Sprite } from '../schema/subSpritesType';
 import { ErrorObj } from '../lib/error';
+import { archiveFileMIME } from '../lib/filemanager';
+import { NoResponse } from '../lib/result';
 import { SubmissionUpdateResponse } from '../schema/submissionType';
+import { Sprite } from '../schema/subSpritesType';
 
 const spriteImageMIME = /image\/(gif|png)$/i;
 const submission = new Submission('sprites');
@@ -29,10 +29,23 @@ export const getPublicSprites = async (...args: ListPublicSpriteFunction) =>
 export const getSpriteDetails = async (id: number) =>
   (await submission.getSubmissionDetails(id)) as Sprite | ErrorObj;
 
-export const getSubmissionHistory = async (id: number) =>
+export const getSpriteHistory = async (id: number) =>
   (await submission.getSubmissionHistory(id)) as
     | SubmissionUpdateResponse[]
     | ErrorObj;
+
+export async function createSprite(
+  _request: Request,
+  payload: Sprite,
+  file: Express.Multer.File,
+  thumb: Express.Multer.File
+) {
+  payload.file = file.filename;
+  payload.thumbnail = thumb.filename;
+  return (await submission.createSubmission(_request, payload)) as
+    | NoResponse
+    | ErrorObj;
+}
 // TO DO
 // 1 - get file upload for createSubmission and updateSubmission working
 // 2 - npm install node-scheduler and make cron job to delete submission file and DB after 30 days
@@ -50,3 +63,4 @@ type ListPublicSpriteFunction = Parameters<
     filter: [string, string][]
   ) => Promise<Sprite | ErrorObj>
 >;
+type SpriteDataFunction = Parameters<() => Promise<NoResponse | ErrorObj>>;

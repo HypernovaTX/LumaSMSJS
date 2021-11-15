@@ -1,16 +1,19 @@
 // ================================================================================
 // SUBMISSION CLASS TEMPLATE
 // ================================================================================
+import { Request } from 'express';
+
+import { checkLogin, validatePermission } from './userlib';
+import CF from '../../config';
+import ERR, { ErrorObj, isError } from '../../lib/error';
+import { sanitizeInput, placeholderPromise } from '../../lib/globallib.js';
+import SubmissionQuery from '../../queries/submissionQuery';
 import {
+  AnySubmission,
   AnySubmissionResponse,
   submissionKinds,
   SubmissionUpdateResponse,
 } from '../../schema/submissionType';
-import SubmissionQuery from '../../queries/submissionQuery';
-import CF from '../../config';
-import { sanitizeInput, placeholderPromise } from '../../lib/globallib.js';
-import { checkLogin } from './userlib';
-import ERR, { ErrorObj, isError } from '../../lib/error';
 
 type ListPublicFunction = Parameters<
   (
@@ -73,37 +76,26 @@ export default class Submission {
     return getData as SubmissionUpdateResponse[];
   }
 
-  // Update submission view
-  // Download submission
   // USER-LEVEL METHODS ------------------------------------------------------------------------------------------------------------
-  // async createSubmission(_request, payload, files) {
-  //   const login = await checkLogin(_request);
-  //   const permission = await checkPermission(_request);
-  //   console.log(files);
-  //   if (!permission.can_submit || login === 'LOGGED OUT') {
-  //     handleError('re0');
-  //     return placeholderPromise('DENIED');
-  //   }
-  //   if (payload.length === 0) {
-  //     handleError('re1');
-  //     return placeholderPromise('EMPTY');
-  //   }
-
-  //   // Apply changes to the sub table first and get eid
-  //   const timestamp = Math.ceil(Date.now() / 1000);
-  //   let [finalColumn, finalValue] = [
-  //     ['views', 'uid', 'created', 'queue_code'],
-  //     [0, login.uid, timestamp, 1],
-  //   ];
-  //   payload.forEach((entrySub) => {
-  //     const [data] = Object.entries(entrySub);
-  //     finalColumn.push(data[0]);
-  //     finalValue.push(data[1]);
-  //   });
-  //   this.DB.buildInsert(this.specificTable, finalColumn, finalValue);
-  //   const firstResult = await this.DB.runQuery();
-  //   return firstResult;
-  // }
+  async createSubmission(_request: Request, payload: AnySubmission) {
+    // Ensure user is logged in
+    const getLogin = await checkLogin(_request);
+    if (isError(getLogin)) {
+      return getLogin as ErrorObj;
+    }
+    // Verify permission
+    const permitted = await validatePermission(_request, 'acp_users');
+    if (!permitted) {
+      return ERR('userStaffPermit');
+    }
+    // Validate payload
+    if (!this.validatePayloadKeys(payload)) {
+      return ERR('submissionMissingParam');
+    }
+    const { uid } = getLogin as AnySubmissionResponse;
+    const firstResult = await this.query.createSubmission(uid, payload);
+    return firstResult;
+  }
 
   // async updateSubmission(_request, id, payload) {
   //   const login = await checkLogin(_request);
@@ -191,4 +183,17 @@ export default class Submission {
   //   // UPDATE TABLE
   //   // RETURN
   // }
+
+  // PRIVATE METHODS
+  private validatePayloadKeys(payload: AnySubmission) {
+    const missingGeneralKeys =
+      !payload?.title ||
+      !payload?.description ||
+      !payload?.file ||
+      !payload?.thumbnail;
+    if (missingGeneralKeys) {
+      return false;
+    }
+    return true;
+  }
 }

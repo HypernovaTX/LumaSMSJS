@@ -5,6 +5,7 @@ import ERR, { ErrorObj, isError } from '../lib/error';
 import { sanitizeInput } from '../lib/globallib';
 import { NoResponse } from '../lib/result';
 import {
+  AnySubmission,
   AnySubmissionResponse,
   submissionKinds,
   submissionList,
@@ -60,7 +61,7 @@ export default class SubmissionQuery {
     } else {
       this.DB.buildWhere(basicWhere);
     }
-
+    // Sorting
     if (column) {
       this.DB.buildOrder([column], [asc]);
     }
@@ -76,6 +77,7 @@ export default class SubmissionQuery {
     this.DB.buildCustomQuery(
       `LEFT JOIN ${CF.DB_PREFIX}users u ON u.uid = z.uid`
     );
+    // Get by submission ID
     this.DB.buildWhere([`z.id = ${id}`]);
     const queryResult = await this.DB.runQuery();
     if (isError(queryResult)) {
@@ -91,10 +93,25 @@ export default class SubmissionQuery {
   async getSubmissionUpdatesByRid(rid: number) {
     this.DB.buildSelect(this.updateTable);
     this.DB.buildWhere([`rid = ${rid}`, `type = ${this.submissionNumber}`]);
-    let queryResult = await this.DB.runQuery();
-    if (isError(queryResult)) {
-      return queryResult as ErrorObj;
-    }
-    return queryResult as SubmissionUpdateResponse[];
+    const queryResult = await this.DB.runQuery();
+    return queryResult as ErrorObj | SubmissionUpdateResponse[];
+  }
+
+  // ------------ AFFECTS DB ----------------
+  async createSubmission(uid: number, payload: AnySubmission) {
+    // Apply changes to the sub table first and get eid
+    const timestamp = Math.ceil(Date.now() / 1000);
+    let [finalColumn, finalValue] = [
+      ['views', 'uid', 'created', 'queue_code'],
+      ['0', `${uid}`, `${timestamp}`, '1'],
+    ];
+    Object.entries(payload).forEach((entry) => {
+      const [key, value] = entry;
+      finalColumn.push(key);
+      finalValue.push(value.toString());
+    });
+
+    this.DB.buildInsert(this.subTable, finalColumn, finalValue);
+    return (await this.DB.runQuery(false)) as ErrorObj | NoResponse;
   }
 }
