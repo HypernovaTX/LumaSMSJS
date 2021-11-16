@@ -190,7 +190,8 @@ export default class Submission {
       !payload?.title ||
       !payload?.description ||
       !payload?.file ||
-      !payload?.thumbnail;
+      !payload?.thumbnail ||
+      !payload?.file_mime;
     if (missingGeneralKeys) {
       return false;
     }

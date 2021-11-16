@@ -6,8 +6,13 @@
 import { Request } from 'express';
 
 import Submission from './lib/submission';
-import { ErrorObj } from '../lib/error';
-import { archiveFileMIME } from '../lib/filemanager';
+import CF from '../config';
+import ERR, { ErrorObj } from '../lib/error';
+import {
+  archiveFileMIME,
+  unlinkFile,
+  verifyImageFile,
+} from '../lib/filemanager';
 import { NoResponse } from '../lib/result';
 import { SubmissionUpdateResponse } from '../schema/submissionType';
 import { Sprite } from '../schema/subSpritesType';
@@ -42,6 +47,14 @@ export async function createSprite(
 ) {
   payload.file = file.filename;
   payload.thumbnail = thumb.filename;
+  // Ensure file/thumb is an image
+  const directory = `${CF.UPLOAD_DIRECTORY}/${CF.UPLOAD_SUB_SPRITE}/`;
+  if (!verifyImageFile(file) || !verifyImageFile(thumb)) {
+    unlinkFile(file.filename, directory);
+    unlinkFile(thumb.filename, directory);
+    return ERR('fileImageInvalid');
+  }
+  payload.file_mime = file.mimetype;
   return (await submission.createSubmission(_request, payload)) as
     | NoResponse
     | ErrorObj;
