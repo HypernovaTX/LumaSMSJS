@@ -23,6 +23,7 @@ export default class UserQuery {
     this.usernameUpdateTable = `${CF.DB_PREFIX}username_change`;
   }
 
+  // READ METHODS
   async listUsers(
     page: number,
     count: number = 25,
@@ -191,7 +192,7 @@ export default class UserQuery {
     return queryResult as UsernameChange[] | ErrorObj;
   }
 
-  // ------------ AFFECTS DB ----------------
+  // WRITE METHODS
   async updateLastActivity(uid: number, timestamp: string, ip: string) {
     this.DB.buildUpdate(
       this.userTable,

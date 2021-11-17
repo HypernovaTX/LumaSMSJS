@@ -30,7 +30,7 @@ import { unlinkFile, verifyImageFile } from '../lib/filemanager';
  * *Needs email system
  */
 
-// SAFE FUNCTIONS
+// READ ONLY
 export async function listUsers(
   page: number = 0,
   count: number = CF.ROWS,
@@ -127,7 +127,7 @@ export function userLogout(_response: Response) {
   });
 }
 
-// RISKY FUNCTIONS
+// WRITE
 export async function userRegistration(
   _request: Request,
   username: string,

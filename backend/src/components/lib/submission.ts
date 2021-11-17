@@ -34,17 +34,7 @@ export default class Submission {
     this.query = new SubmissionQuery(submissionKind);
   }
 
-  removeSensitiveSubProp(submission: AnySubmissionResponse) {
-    if (submission?.queue_code) {
-      delete submission?.queue_code;
-    }
-    if (submission?.decision) {
-      delete submission?.decision;
-    }
-    return submission;
-  }
-
-  // PUBLIC METHODS ------------------------------------------------------------------------------------------------------------
+  // READ ONLY METHODS
   async getPublicList(...args: ListPublicFunction) {
     const getData = await this.query.getSubmissionList('accepted', ...args);
     if (isError(getData)) {
@@ -76,7 +66,7 @@ export default class Submission {
     return getData as SubmissionUpdateResponse[];
   }
 
-  // USER-LEVEL METHODS ------------------------------------------------------------------------------------------------------------
+  // WRITE METHODS
   async createSubmission(_request: Request, payload: AnySubmission) {
     // Ensure user is logged in
     const getLogin = await checkLogin(_request);
@@ -185,6 +175,16 @@ export default class Submission {
   // }
 
   // PRIVATE METHODS
+  private removeSensitiveSubProp(submission: AnySubmissionResponse) {
+    if (submission?.queue_code) {
+      delete submission?.queue_code;
+    }
+    if (submission?.decision) {
+      delete submission?.decision;
+    }
+    return submission;
+  }
+
   private validatePayloadKeys(payload: AnySubmission) {
     const missingGeneralKeys =
       !payload?.title ||

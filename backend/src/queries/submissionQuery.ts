@@ -112,6 +112,6 @@ export default class SubmissionQuery {
     });
 
     this.DB.buildInsert(this.subTable, finalColumn, finalValue);
-    return (await this.DB.runQuery(false)) as ErrorObj | NoResponse;
+    return (await this.DB.runQuery(true)) as ErrorObj | NoResponse;
   }
 }

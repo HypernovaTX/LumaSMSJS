@@ -20,6 +20,8 @@ import { Sprite } from '../schema/subSpritesType';
 const spriteImageMIME = /image\/(gif|png)$/i;
 const submission = new Submission('sprites');
 
+// Easily passable functions
+// READ ONLY
 export function checkSpriteFile(files: Express.Multer.File[]) {
   const results = files.map(
     (file) =>
@@ -39,6 +41,10 @@ export const getSpriteHistory = async (id: number) =>
     | SubmissionUpdateResponse[]
     | ErrorObj;
 
+// WRITE
+
+// Complex validatons
+// WRITE
 export async function createSprite(
   _request: Request,
   payload: Sprite,

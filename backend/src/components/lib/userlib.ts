@@ -17,7 +17,7 @@ import {
   PermissionKind,
 } from '../../schema/userTypes';
 
-// ---- CHECKS ----
+// CHECKS
 export async function checkLogin(_request: Request) {
   // No cookie found
   if (!_request.cookies?.Login) {
@@ -130,7 +130,7 @@ export async function checkExistingEmail(email: string) {
   return true;
 }
 
-// ---- UPDATES / CREATE ----
+// UPDATES / CREATE
 export async function updateLastActivity(uid: number, ip: string) {
   const timestamp = Math.ceil(Date.now() / 1000);
   const query = new UserQuery();
@@ -169,7 +169,7 @@ export async function updateUser(uid: number, inputs: User) {
   return await query.updateUser(uid, columns, values);
 }
 
-// ---- CONSTANTS / UTIL ----
+// CONSTANTS / UTIL
 export async function validatePermission(
   _request: Request,
   permissions: PermissionKind | PermissionArray
