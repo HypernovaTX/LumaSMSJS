@@ -46,10 +46,13 @@ export function verifyImageFile(file: Express.Multer.File) {
   return imageMIME.test(file.mimetype);
 }
 
-export function isAnimatedGif(file: Express.Multer.File) {
+export function isAnimatedGif(directory: string, file: Express.Multer.File) {
   if (isGif.test(file.mimetype)) {
-    return !!animated(file);
+    directory = path.resolve(`./${directory}`);
+    const readFile = fs.readFileSync(`${directory}/${file.filename}`);
+    return !!animated(readFile);
   }
+  return false;
 }
 
 export async function hasFile(path: string) {

@@ -34,6 +34,7 @@ export const errors = {
   noFile: 'No file has been uploaded as per requirement!',
 
   //submission - MAIN
+  submissionAnimatedThumb: 'Animated GIF is not allowed for thumbnails!',
   submissionMissingParam: 'Invalid parameters to create / update submission!',
   submissionNotFound: 'The selected submission is not found!',
 

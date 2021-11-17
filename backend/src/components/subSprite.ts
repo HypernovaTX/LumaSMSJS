@@ -10,6 +10,7 @@ import CF from '../config';
 import ERR, { ErrorObj } from '../lib/error';
 import {
   archiveFileMIME,
+  isAnimatedGif,
   unlinkFile,
   verifyImageFile,
 } from '../lib/filemanager';
@@ -53,6 +54,7 @@ export async function createSprite(
 ) {
   payload.file = file.filename;
   payload.thumbnail = thumb.filename;
+  payload.file_mime = file.mimetype;
   // Ensure file/thumb is an image
   const directory = `${CF.UPLOAD_DIRECTORY}/${CF.UPLOAD_SUB_SPRITE}/`;
   if (!verifyImageFile(file) || !verifyImageFile(thumb)) {
@@ -60,7 +62,10 @@ export async function createSprite(
     unlinkFile(thumb.filename, directory);
     return ERR('fileImageInvalid');
   }
-  payload.file_mime = file.mimetype;
+  // Detect if thumb is an animated GIF or not
+  if (isAnimatedGif(directory, thumb)) {
+    return ERR('submissionAnimatedThumb');
+  }
   return (await submission.createSubmission(_request, payload)) as
     | NoResponse
     | ErrorObj;
