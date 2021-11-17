@@ -23,6 +23,7 @@ import {
 import CF from '../../config';
 import { httpStatus } from '../../lib/result';
 import { MulterFileFields } from '../../schema';
+import rateLimits from '../rateLimiter';
 
 export const spriteRouter = express.Router();
 // Prepare route and file handling
@@ -37,7 +38,7 @@ const uploadFields = [
 
 // GET -------------------------------------------------------------------------------------------------------
 // GET "/" - list sprites (default)
-spriteRouter.get('/', async (_, res) => {
+spriteRouter.get('/', rateLimits.general, async (_, res) => {
   const result = await getPublicSprites(0, CF.ROWS, '', false, []);
   httpStatus(res, result);
   res.send(result);
@@ -45,7 +46,7 @@ spriteRouter.get('/', async (_, res) => {
 
 // GET "/:id" - Show specific sprite by ID
 // PARAM: id
-spriteRouter.get('/:id', async (req, res) => {
+spriteRouter.get('/:id', rateLimits.general, async (req, res) => {
   const id = parseInt(req.params.id) || 0;
   const result = await getSpriteDetails(id);
   httpStatus(res, result);
@@ -53,7 +54,7 @@ spriteRouter.get('/:id', async (req, res) => {
 });
 
 // GET "/:id/history/" - list of sprite updates
-spriteRouter.get('/:id/history/', async (req, res) => {
+spriteRouter.get('/:id/history/', rateLimits.general, async (req, res) => {
   const id = parseInt(req.params.id) || 0;
   const result = await getSpriteHistory(id);
   httpStatus(res, result);
@@ -63,7 +64,7 @@ spriteRouter.get('/:id/history/', async (req, res) => {
 // PUT -------------------------------------------------------------------------------------------------------
 // PUT "/" - list sprites (with param for sort/filter)
 // BODY: ?page, ?count, ?row, ?dsc, ?filter
-spriteRouter.put('/', async (req, res) => {
+spriteRouter.put('/', rateLimits.general, async (req, res) => {
   const page = parseInt(req.body?.page) || 0;
   const count = parseInt(req.body?.count) || 25;
   const colSort = `${req.body?.column ?? ''}`;
@@ -84,28 +85,33 @@ spriteRouter.put('/', async (req, res) => {
 // POST -------------------------------------------------------------------------------------------------------
 // "/" - Create Sprite submission
 // BODY: data, FILE: thumb, file
-spriteRouter.post('/', spriteUpload.fields(uploadFields), async (req, res) => {
-  const getFiles = req.files as MulterFileFields;
-  if (!getFiles.file.length || !getFiles.thumb.length) {
-    invalidFileResponse(res);
-    return;
+spriteRouter.post(
+  '/',
+  rateLimits.creation,
+  spriteUpload.fields(uploadFields),
+  async (req, res) => {
+    const getFiles = req.files as MulterFileFields;
+    if (!getFiles.file.length || !getFiles.thumb.length) {
+      invalidFileResponse(res);
+      return;
+    }
+    if (!validateRequiredParam(req, ['data'])) {
+      invalidParamResponse(res);
+      return;
+    }
+    let data = [];
+    if (isStringJSON(req.body?.data)) {
+      data = JSON.parse(req.body?.data);
+    } else if (req.body?.data) {
+      invalidJsonResponse(res);
+      return;
+    }
+    const [[file], [thumb]] = [getFiles.file, getFiles.thumb];
+    const getData = await createSprite(req, data, file, thumb);
+    httpStatus(res, getData);
+    res.send(getData);
   }
-  if (!validateRequiredParam(req, ['data'])) {
-    invalidParamResponse(res);
-    return;
-  }
-  let data = [];
-  if (isStringJSON(req.body?.data)) {
-    data = JSON.parse(req.body?.data);
-  } else if (req.body?.data) {
-    invalidJsonResponse(res);
-    return;
-  }
-  const [[file], [thumb]] = [getFiles.file, getFiles.thumb];
-  const getData = await createSprite(req, data, file, thumb);
-  httpStatus(res, getData);
-  res.send(getData);
-});
+);
 
 // PUT -------------------------------------------------------------------------------------------------------
 // // "/update" - register | BODY: data

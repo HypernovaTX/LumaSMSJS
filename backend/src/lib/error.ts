@@ -16,6 +16,7 @@ export const errors = {
   default: 'An unknown error has occured.',
   invalidJson: 'Invalid JSON format used within the request!',
   invalidParam: 'Invalid parameters used in the request!',
+  tooManyRequests: 'Too many requests were made from a single IP!',
 
   // database
   dbConnect: 'SQL Connection fail!',

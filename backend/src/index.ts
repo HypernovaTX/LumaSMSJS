@@ -3,62 +3,52 @@
 // Written by - Hypernova
 // MFGG - 2021
 // ================================================================================
-
-// NOTE: ALL POST / PUT / PATCH / DELETE REQUESTS (besides file uploads) MUST BE application/x-www-form-urlencoded!
-
 import express, { Application } from 'express';
+
 import cookieParser from 'cookie-parser';
+import csurf from 'csurf';
 import cors from 'cors';
 import helmet from 'helmet';
 import morgan from 'morgan';
-import path from 'path';
 
-import { invalidParamResponse, validateRequiredParam } from './lib/globallib';
-import ERR from './lib/error';
-import { httpStatus } from './lib/result';
-import { hasFile } from './lib/filemanager';
-
+import { directorySetup } from './lib/filemanager';
+import { fileRouter } from './routes/fileRoutes';
 import { submissionRouter } from './routes/submissionRoutes';
 import { userRouter } from './routes/userRoutes';
 
+// ==================== Init ====================
 const app: Application = express();
+const morganEntity = morgan('combined', {
+  skip: (_, res) => res.statusCode < 400,
+});
+const csrfProtection = csurf({ cookie: true });
+const parseForm = express.urlencoded({ extended: false });
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 app.use(cors());
 app.use(helmet());
-app.use(
-  morgan('combined', {
-    skip: (_, res) => res.statusCode < 400,
-  })
-);
+app.use(morganEntity);
+directorySetup();
 
 // ==================== Routes ====================
+// NOTE: ALL REQUESTS (besides file uploads) MUST BE application/x-www-form-urlencoded!
+app.use('/file', fileRouter);
 app.use('/user', userRouter);
 app.use('/submission', submissionRouter);
 
-// ==================== File ====================
-// PUT '/' - Get file from 'upload'
-// BODY: path (do not put '/' at the front!)
-app.put('/file', async (req, res) => {
-  if (!validateRequiredParam(req, ['path'])) {
-    invalidParamResponse(res);
-    return;
-  }
-  const filepath = path.resolve(`upload/${req.body?.path ?? ''}`);
-  const fileExists = await hasFile(filepath);
-  if (!fileExists) {
-    const error = ERR('fileNotFound');
-    httpStatus(res, error);
-    res.send(error);
-  }
-  res.sendFile(path.resolve(filepath));
+// ==================== Cookie Security ====================
+app.get('/form', csrfProtection, (req, res) => {
+  res.render('send', { csrfToken: req.csrfToken() });
+});
+app.post('/process', parseForm, csrfProtection, (_, res) => {
+  res.send('data is being processed');
 });
 
 // ==================== Server ====================
 const server = app.listen(12026, () => {
-  const getAddress = server.address() ?? '(null)';
+  const getAddress = server.address();
   const connection =
     typeof getAddress === 'string'
       ? getAddress

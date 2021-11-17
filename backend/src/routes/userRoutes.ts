@@ -5,6 +5,7 @@
 import express from 'express';
 import multer from 'multer';
 
+import rateLimits from './rateLimiter';
 import CF from '../config';
 import { checkLogin, getPermission } from '../components/lib/userlib';
 import {
@@ -50,24 +51,26 @@ const avatarStorage = diskStorage(`${uploadDir}/${CF.UPLOAD_AVATAR}/`);
 const bannerStorage = diskStorage(`${uploadDir}/${CF.UPLOAD_BANNER}/`);
 const avatarUpload = multer({ storage: avatarStorage });
 const bannerUpload = multer({ storage: bannerStorage });
+const avatarProp = avatarUpload.single('avatar');
+const bannerProp = bannerUpload.single('banner');
 
 // GET -------------------------------------------------------------------------------------------------------
 // GET "/" - list users (default)
-userRouter.get('/', async (_, res) => {
+userRouter.get('/', rateLimits.general, async (_, res) => {
   const result = await listUsers(0, CF.ROWS, '', false, []);
   httpStatus(res, result);
   res.send(result);
 });
 
 // GET "/verify" - verify login
-userRouter.get('/verify', async (req, res) => {
+userRouter.get('/verify', rateLimits.general, async (req, res) => {
   const result = await checkLogin(req);
   httpStatus(res, result);
   res.send(result);
 });
 
 // GET "/permission" - return current user's permissions
-userRouter.get('/permission', async (req, res) => {
+userRouter.get('/permission', rateLimits.general, async (req, res) => {
   const result = await getPermission(req);
   httpStatus(res, result);
   res.send(result);
@@ -83,7 +86,7 @@ userRouter.get('/logout', (_, res) => {
 
 // GET "/:id" - Show specific user by ID
 // PARAM: id
-userRouter.get('/:id', async (req, res) => {
+userRouter.get('/:id', rateLimits.general, async (req, res) => {
   const id = parseInt(req.params.id) || 0;
   const result = await showUserByID(id);
   httpStatus(res, result);
@@ -93,7 +96,7 @@ userRouter.get('/:id', async (req, res) => {
 // PUT -------------------------------------------------------------------------------------------------------
 // PUT "/" - list users (with param for sort/filter)
 // BODY: ?page, ?count, ?row, ?dsc, ?filter
-userRouter.put('/', async (req, res) => {
+userRouter.put('/', rateLimits.general, async (req, res) => {
   const page = parseInt(req.body?.page) || 0;
   const count = parseInt(req.body?.count) || 25;
   const colSort = `${req.body?.column ?? ''}`;
@@ -114,7 +117,7 @@ userRouter.put('/', async (req, res) => {
 
 // PUT "/find" - Find user by username query
 // BODY: query, ?page, ?count, ?row, ?dsc, ?filter
-userRouter.put('/find', async (req, res) => {
+userRouter.put('/find', rateLimits.general, async (req, res) => {
   if (!validateRequiredParam(req, ['query'])) {
     invalidParamResponse(res);
     return;
@@ -131,7 +134,7 @@ userRouter.put('/find', async (req, res) => {
 
 // PUT "/login" - login
 // BODY: username, password, "remember
-userRouter.put('/login', async (req, res) => {
+userRouter.put('/login', rateLimits.login, async (req, res) => {
   if (!validateRequiredParam(req, ['username', 'password'])) {
     invalidParamResponse(res);
     return;
@@ -147,7 +150,7 @@ userRouter.put('/login', async (req, res) => {
 // PATCH ------------------------------------------------------------------------------------------------------
 // PATCH "/" - update current user profile settings
 // BODY: data
-userRouter.patch('/', async (req, res) => {
+userRouter.patch('/', rateLimits.update, async (req, res) => {
   if (!validateRequiredParam(req, ['data'])) {
     invalidParamResponse(res);
     return;
@@ -166,7 +169,7 @@ userRouter.patch('/', async (req, res) => {
 
 // PATCH "/username" - Update username for current user
 // BODY: username, password
-userRouter.patch('/username', async (req, res) => {
+userRouter.patch('/username', rateLimits.update, async (req, res) => {
   if (!validateRequiredParam(req, ['username', 'password'])) {
     invalidParamResponse(res);
     return;
@@ -180,7 +183,7 @@ userRouter.patch('/username', async (req, res) => {
 
 // PATCH "/password" - Update password for current user
 // BODY: oldpassword, newpassword
-userRouter.patch('/password', async (req, res) => {
+userRouter.patch('/password', rateLimits.update, async (req, res) => {
   if (!validateRequiredParam(req, ['oldpassword', 'newpassword'])) {
     invalidParamResponse(res);
     return;
@@ -194,7 +197,7 @@ userRouter.patch('/password', async (req, res) => {
 
 // PATCH "/email" - Update email for current user
 // BODY: password, email
-userRouter.patch('/email', async (req, res) => {
+userRouter.patch('/email', rateLimits.update, async (req, res) => {
   if (!validateRequiredParam(req, ['password', 'email'])) {
     invalidParamResponse(res);
     return;
@@ -208,7 +211,7 @@ userRouter.patch('/email', async (req, res) => {
 
 // PATCH "/avatar" - Upload avatar for current user
 // FILE: avatar
-userRouter.patch('/avatar', avatarUpload.single('avatar'), async (req, res) => {
+userRouter.patch('/avatar', rateLimits.update, avatarProp, async (req, res) => {
   if (!req.file) {
     invalidFileResponse(res);
     return;
@@ -221,7 +224,7 @@ userRouter.patch('/avatar', avatarUpload.single('avatar'), async (req, res) => {
 
 // PATCH "/banner" - Upload banner for current user
 // FILE: banner
-userRouter.patch('/banner', bannerUpload.single('banner'), async (req, res) => {
+userRouter.patch('/banner', rateLimits.update, bannerProp, async (req, res) => {
   if (!req.file) {
     invalidFileResponse(res);
     return;
@@ -234,7 +237,7 @@ userRouter.patch('/banner', bannerUpload.single('banner'), async (req, res) => {
 
 // PATCH "/changerole" - Update user's role [STAFF, ROOT FOR UPDATING OTHER USER TO ROOT]
 // BODY: uid, gid
-userRouter.patch('/changerole', async (req, res) => {
+userRouter.patch('/changerole', rateLimits.update, async (req, res) => {
   if (!validateRequiredParam(req, ['uid', 'gid'])) {
     invalidParamResponse(res);
     return;
@@ -248,7 +251,7 @@ userRouter.patch('/changerole', async (req, res) => {
 
 // PATCH "/role/:id" - update role [STAFF]
 // PARAM: id, BODY: data
-userRouter.patch('/role/:id', async (req, res) => {
+userRouter.patch('/role/:id', rateLimits.update, async (req, res) => {
   if (!validateRequiredParam(req, ['data'])) {
     invalidParamResponse(res);
     return;
@@ -268,7 +271,7 @@ userRouter.patch('/role/:id', async (req, res) => {
 
 // PATCH "/:id" - update any user profile settings [STAFF]
 // PARAM: id, BODY: data
-userRouter.patch('/:id', async (req, res) => {
+userRouter.patch('/:id', rateLimits.update, async (req, res) => {
   if (!validateRequiredParam(req, ['data'])) {
     invalidParamResponse(res);
     return;
@@ -290,7 +293,8 @@ userRouter.patch('/:id', async (req, res) => {
 // PARAM: id, FILE: avatar
 userRouter.patch(
   '/:id/avatar',
-  avatarUpload.single('avatar'),
+  rateLimits.update,
+  avatarProp,
   async (req, res) => {
     if (!req.file) {
       invalidFileResponse(res);
@@ -308,7 +312,8 @@ userRouter.patch(
 // PARAM: id, FILE: banner
 userRouter.patch(
   '/:id/banner',
-  bannerUpload.single('banner'),
+  rateLimits.update,
+  bannerProp,
   async (req, res) => {
     if (!req.file) {
       invalidFileResponse(res);
@@ -325,7 +330,7 @@ userRouter.patch(
 // POST ------------------------------------------------------------------------------------------------------
 // POST "/" - create user
 // BODY: username, password, email
-userRouter.post('/', async (req, res) => {
+userRouter.post('/', rateLimits.creation, async (req, res) => {
   if (!validateRequiredParam(req, ['username', 'password', 'email'])) {
     invalidParamResponse(res);
     return;
@@ -340,7 +345,7 @@ userRouter.post('/', async (req, res) => {
 
 // POST "/role" - create role [STAFF]
 // BODY: data
-userRouter.post('/role', async (req, res) => {
+userRouter.post('/role', rateLimits.update, async (req, res) => {
   if (!validateRequiredParam(req, ['data'])) {
     invalidParamResponse(res);
     return;
@@ -360,7 +365,7 @@ userRouter.post('/role', async (req, res) => {
 // DELETE -------------------------------------------------------------------------------------------------------
 // DELETE "/role/:id" - Delete a role [ROOT]
 // PARAM: id
-userRouter.delete('/role/:id', async (req, res) => {
+userRouter.delete('/role/:id', rateLimits.update, async (req, res) => {
   const gid = parseInt(req.params.id) || 0; // user ID
   const result = await deleteRole(req, gid);
   httpStatus(res, result);
@@ -369,7 +374,7 @@ userRouter.delete('/role/:id', async (req, res) => {
 
 // DELETE "/:id" - Delete a user [ROOT]
 // PARAM: id
-userRouter.delete('/:id', async (req, res) => {
+userRouter.delete('/:id', rateLimits.update, async (req, res) => {
   const uid = parseInt(req.params.id) || 0; // user ID
   const result = await deleteUser(req, uid);
   httpStatus(res, result);

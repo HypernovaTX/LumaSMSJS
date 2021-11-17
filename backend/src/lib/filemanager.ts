@@ -1,6 +1,11 @@
 import multer from 'multer';
 import fs from 'fs';
+import path from 'path';
+//@ts-ignore
+import animated from 'animated-gif-detector';
+
 import ERR from './error';
+import CF from '../config';
 
 export const imageMIME = /image\/(gif|jpeg|png)$/i;
 export const isGif = /image\/gif$/i;
@@ -19,12 +24,32 @@ export function diskStorage(destination: string) {
   });
 }
 
+export function directorySetup() {
+  const rootUpload = `${CF.UPLOAD_DIRECTORY}`;
+  [
+    `${CF.UPLOAD_AVATAR}`,
+    `${CF.UPLOAD_BANNER}`,
+    `${CF.UPLOAD_SUB_SPRITE}`,
+  ].forEach((dir) => {
+    const definedDir = path.resolve(`./${rootUpload}/${dir}`);
+    if (!fs.existsSync(definedDir)) {
+      fs.mkdirSync(definedDir);
+    }
+  });
+}
+
 export function attachFileExtension(file: Express.Multer.File) {
   return file.filename + fileExtension.exec(file.originalname);
 }
 
 export function verifyImageFile(file: Express.Multer.File) {
   return imageMIME.test(file.mimetype);
+}
+
+export function isAnimatedGif(file: Express.Multer.File) {
+  if (isGif.test(file.mimetype)) {
+    return !!animated(file);
+  }
 }
 
 export async function hasFile(path: string) {
