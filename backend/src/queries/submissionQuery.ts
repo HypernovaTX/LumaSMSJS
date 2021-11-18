@@ -2,14 +2,14 @@ import SQL from '../lib/sql';
 
 import CF from '../config';
 import ERR, { ErrorObj, isError } from '../lib/error';
-import { sanitizeInput } from '../lib/globallib';
+import { objIntoArrays, sanitizeInput } from '../lib/globallib';
 import { NoResponse } from '../lib/result';
 import {
   AnySubmission,
   AnySubmissionResponse,
   submissionKinds,
   submissionList,
-  SubmissionUpdateResponse,
+  SubmissionVersionResponse,
 } from '../schema/submissionType';
 
 const queue = {
@@ -25,6 +25,7 @@ export default class SubmissionQuery {
   subTable: string;
   updateTable: string;
   usernameUpdateTable: string;
+  submissionKind: submissionKinds;
 
   constructor(submissionKind: submissionKinds) {
     this.DB = new SQL();
@@ -32,6 +33,7 @@ export default class SubmissionQuery {
     this.updateTable = `${CF.DB_PREFIX}version`;
     this.usernameUpdateTable = `${CF.DB_PREFIX}username_change`;
     this.submissionNumber = submissionList[submissionKind];
+    this.submissionKind = submissionKind;
   }
 
   async getSubmissionList(
@@ -90,11 +92,14 @@ export default class SubmissionQuery {
     return submission;
   }
 
-  async getSubmissionUpdatesByRid(rid: number) {
+  async getSubmissionUpdatesByRid(rid: number, sortVersion?: boolean) {
     this.DB.buildSelect(this.updateTable);
     this.DB.buildWhere([`rid = ${rid}`, `type = ${this.submissionNumber}`]);
+    if (sortVersion) {
+      this.DB.buildOrder(['version'], [false]);
+    }
     const queryResult = await this.DB.runQuery();
-    return queryResult as ErrorObj | SubmissionUpdateResponse[];
+    return queryResult as ErrorObj | SubmissionVersionResponse[];
   }
 
   // ------------ AFFECTS DB ----------------
@@ -105,13 +110,49 @@ export default class SubmissionQuery {
       ['views', 'uid', 'created', 'queue_code'],
       ['0', `${uid}`, `${timestamp}`, '1'],
     ];
-    Object.entries(payload).forEach((entry) => {
-      const [key, value] = entry;
-      finalColumn.push(key);
-      finalValue.push(value.toString());
-    });
-
+    const { columns, values } = objIntoArrays(payload);
+    finalColumn.push(...columns);
+    finalValue.push(...(values as string[]));
+    // Object.entries(payload).forEach((entry) => {
+    //   const [key, value] = entry;
+    //   finalColumn.push(key);
+    //   finalValue.push(value.toString());
+    // });
     this.DB.buildInsert(this.subTable, finalColumn, finalValue);
     return (await this.DB.runQuery(true)) as ErrorObj | NoResponse;
+  }
+
+  async updateSubmission(
+    id: number,
+    payload: AnySubmission,
+    message: string,
+    version: string
+  ) {
+    // First prepare and update the submission table
+    const timestamp = Math.ceil(Date.now() / 1000);
+    let [updateColumn, updateValue] = [
+      ['updated', 'queue_code'],
+      [`${timestamp}`, '2'],
+    ];
+    const { columns, values } = objIntoArrays(payload);
+    updateColumn.push(...columns);
+    updateValue.push(...(values as string[]));
+    this.DB.buildUpdate(this.subTable, updateColumn, updateValue);
+    this.DB.buildWhere(`id = ${id}`);
+    const resultUpdate = await this.DB.runQuery(true);
+    if (isError(resultUpdate)) {
+      return resultUpdate as ErrorObj;
+    }
+    // Second, prepare and push the update to the `version` database
+    const [versionColumn, versionValue] = [
+      [`message`, `rid`, `type`, `version`],
+      [message, `${id}`, `${submissionList[this.submissionKind]}`, version],
+    ];
+    this.DB.buildInsert(this.updateTable, versionColumn, versionValue);
+    const result = await this.DB.runQuery(true);
+    if (isError(result)) {
+      return result as ErrorObj;
+    }
+    return result as NoResponse;
   }
 }

@@ -11,14 +11,17 @@ export const submissionList = {
   sounds: 5,
   misc: 6,
 };
-export interface SubmissionUpdateResponse {
+export interface SubmissionVersionResponse {
   vid?: number;
   rid?: number;
   version?: string;
-  change?: string;
+  message?: string;
   date?: number;
   type?: number;
   old?: number;
+  data?: AnySubmissionResponse;
+  decision?: string;
+  in_queue?: number;
 }
 export type submissionKinds = keyof typeof submissionList;
 export interface submissionFilter {

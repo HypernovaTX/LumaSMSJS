@@ -83,6 +83,12 @@ ALTER TABLE `tsms_submission_misc` DROP `eid`;
 ALTER TABLE `tsms_submission_misc` CHANGE `old` `old` INT(1) NOT NULL DEFAULT '0';
 ALTER TABLE `tsms_submission_misc` CHANGE `file` `file` VARCHAR(256) CHARACTER SET latin1 COLLATE latin1_swedish_ci NULL DEFAULT NULL;
 
+/* Updates (version) */
+ALTER TABLE `tsms_version` ADD `data` TEXT NOT NULL AFTER `old`, ADD `decision` VARCHAR(128) NOT NULL AFTER `data`;
+ALTER TABLE `tsms_version` CHANGE `old` `old` INT(11) NOT NULL DEFAULT '0';
+ALTER TABLE `tsms_version` CHANGE `change` `message` VARCHAR(255) CHARACTER SET latin1 COLLATE latin1_swedish_ci NULL DEFAULT NULL;
+ALTER TABLE `tsms_version` ADD `in_queue` INT(2) NOT NULL DEFAULT '0' AFTER `decision`;
+
 /****************************************************************/
 
 /** SECTION 2 - Update tables that relies on tsms_resources by adding type/sub_type (which submission table) and id (submittion ID, tied to submission type) */

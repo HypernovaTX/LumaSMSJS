@@ -15,7 +15,10 @@ import {
   verifyImageFile,
 } from '../lib/filemanager';
 import { NoResponse } from '../lib/result';
-import { SubmissionUpdateResponse } from '../schema/submissionType';
+import {
+  AnySubmission,
+  SubmissionVersionResponse,
+} from '../schema/submissionType';
 import { Sprite } from '../schema/subSpritesType';
 
 const spriteImageMIME = /image\/(gif|png)$/i;
@@ -39,7 +42,7 @@ export const getSpriteDetails = async (id: number) =>
 
 export const getSpriteHistory = async (id: number) =>
   (await submission.getSubmissionHistory(id)) as
-    | SubmissionUpdateResponse[]
+    | SubmissionVersionResponse[]
     | ErrorObj;
 
 // WRITE
@@ -70,6 +73,9 @@ export async function createSprite(
     | NoResponse
     | ErrorObj;
 }
+
+export const updateSprite = async (...args: SpriteUpdateFunction) =>
+  (await submission.updateSubmission(...args)) as NoResponse | ErrorObj;
 // TO DO
 // 1 - get file upload for createSubmission and updateSubmission working
 // 2 - npm install node-scheduler and make cron job to delete submission file and DB after 30 days
@@ -87,4 +93,12 @@ type ListPublicSpriteFunction = Parameters<
     filter: [string, string][]
   ) => Promise<Sprite | ErrorObj>
 >;
-type SpriteDataFunction = Parameters<() => Promise<NoResponse | ErrorObj>>;
+type SpriteUpdateFunction = Parameters<
+  (
+    _request: Request,
+    id: number,
+    payload: AnySubmission,
+    message: string,
+    version: string
+  ) => Promise<NoResponse | ErrorObj>
+>;

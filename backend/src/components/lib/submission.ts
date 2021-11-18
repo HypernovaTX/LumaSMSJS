@@ -4,15 +4,14 @@
 import { Request } from 'express';
 
 import { checkLogin, validatePermission } from './userlib';
-import CF from '../../config';
 import ERR, { ErrorObj, isError } from '../../lib/error';
-import { sanitizeInput, placeholderPromise } from '../../lib/globallib.js';
+import { NoResponse } from '../../lib/result';
 import SubmissionQuery from '../../queries/submissionQuery';
 import {
   AnySubmission,
   AnySubmissionResponse,
   submissionKinds,
-  SubmissionUpdateResponse,
+  SubmissionVersionResponse,
 } from '../../schema/submissionType';
 
 type ListPublicFunction = Parameters<
@@ -22,7 +21,7 @@ type ListPublicFunction = Parameters<
     column: string,
     asc: boolean,
     filter: [string, string][]
-  ) => Promise<ErrorObj | SubmissionUpdateResponse[]>
+  ) => Promise<ErrorObj | SubmissionVersionResponse[]>
 >;
 
 export default class Submission {
@@ -63,7 +62,7 @@ export default class Submission {
     if (isError(getData)) {
       return getData as ErrorObj;
     }
-    return getData as SubmissionUpdateResponse[];
+    return getData as SubmissionVersionResponse[];
   }
 
   // WRITE METHODS
@@ -74,9 +73,9 @@ export default class Submission {
       return getLogin as ErrorObj;
     }
     // Verify permission
-    const permitted = await validatePermission(_request, 'acp_users');
+    const permitted = await validatePermission(_request, 'can_submit');
     if (!permitted) {
-      return ERR('userStaffPermit');
+      return ERR('userPermission');
     }
     // Validate payload
     if (!this.validatePayloadKeys(payload)) {
@@ -87,38 +86,39 @@ export default class Submission {
     return firstResult;
   }
 
-  // async updateSubmission(_request, id, payload) {
-  //   const login = await checkLogin(_request);
-  //   const getPermission = await checkPermission(_request);
-  //   if (!getPermission.can_submit || login === 'LOGGED OUT') {
-  //     handleError('re0');
-  //     return placeholderPromise('DENIED');
-  //   }
-  //   if (!id || payload.length === 0) {
-  //     handleError('re1');
-  //     return placeholderPromise('ERROR');
-  //   }
-  //   const getExistingSubmission = await this.showSubmissionDetails(id);
-  //   if (!getExistingSubmission) {
-  //     handleError('re2');
-  //     return placeholderPromise('INVALID');
-  //   }
-
-  //   // Apply changes to the sub table first and get eid
-  //   const timestamp = Math.ceil(Date.now() / 1000);
-  //   let [finalColumn, finalValue] = [
-  //     ['views', 'uid', 'created', 'queue_code', 'ghost'],
-  //     [0, login.uid, timestamp, 2, id],
-  //   ];
-  //   payload.forEach((entrySub) => {
-  //     const [data] = Object.entries(entrySub);
-  //     finalColumn.push(data[0]);
-  //     finalValue.push(data[1]);
-  //   });
-  //   this.DB.buildInsert(this.specificTable, finalColumn, finalValue);
-  //   const firstResult = await this.DB.runQuery();
-  //   return firstResult;
-  // }
+  async updateSubmission(
+    _request: Request,
+    id: number,
+    payload: AnySubmission,
+    message: string,
+    version: string
+  ) {
+    // Ensure user is logged in
+    const getLogin = await checkLogin(_request);
+    if (isError(getLogin)) {
+      return getLogin as ErrorObj;
+    }
+    // Verify permission
+    const permitted = await validatePermission(_request, 'can_submit');
+    if (!permitted) {
+      return ERR('userPermission');
+    }
+    // Verify submission exists
+    const checkSubmission = await this.getSubmissionDetails(id);
+    if (isError(checkSubmission)) {
+      return checkSubmission as ErrorObj;
+    }
+    const result = await this.query.updateSubmission(
+      id,
+      payload,
+      message,
+      version
+    );
+    if (isError(result)) {
+      return result as ErrorObj;
+    }
+    return result as NoResponse;
+  }
 
   // async deleteSubmission(_request, id) {
   //   const getPermission = await checkPermission(_request);

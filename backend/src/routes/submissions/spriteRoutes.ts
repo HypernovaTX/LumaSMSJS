@@ -5,6 +5,7 @@
 import express from 'express';
 import multer from 'multer';
 
+import rateLimits from '../rateLimiter';
 import { diskStorage } from '../../lib/filemanager';
 import {
   invalidFileResponse,
@@ -18,12 +19,13 @@ import {
   getPublicSprites,
   getSpriteDetails,
   getSpriteHistory,
+  updateSprite,
 } from '../../components/subSprite';
 // import { isStringJSON } from '../../lib/globallib.js';
 import CF from '../../config';
 import { httpStatus } from '../../lib/result';
 import { MulterFileFields } from '../../schema';
-import rateLimits from '../rateLimiter';
+import { Sprite } from '../../schema/subSpritesType';
 
 export const spriteRouter = express.Router();
 // Prepare route and file handling
@@ -78,6 +80,29 @@ spriteRouter.put('/', rateLimits.general, async (req, res) => {
     return;
   }
   const result = await getPublicSprites(page, count, colSort, asc, filter);
+  httpStatus(res, result);
+  res.send(result);
+});
+
+// PATCH ------------------------------------------------------------------------------------------------------
+// PATCH "/:id" - update submission (no files, user end)
+// PARAM: id, BODY: payload, message, version
+spriteRouter.patch('/:id', rateLimits.update, async (req, res) => {
+  if (!validateRequiredParam(req, ['data', 'message', 'version'])) {
+    invalidParamResponse(res);
+    return;
+  }
+  const id = parseInt(req.params?.id) || 0;
+  const message = `${req.body?.message ?? ''}`;
+  const version = `${req.body?.version ?? ''}`;
+  let data = {} as Sprite;
+  if (isStringJSON(req.body?.data)) {
+    data = JSON.parse(req.body?.data);
+  } else if (req.body?.data) {
+    invalidJsonResponse(res);
+    return;
+  }
+  const result = await updateSprite(req, id, data, message, version);
   httpStatus(res, result);
   res.send(result);
 });
