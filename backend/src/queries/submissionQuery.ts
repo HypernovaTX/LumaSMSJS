@@ -145,8 +145,43 @@ export default class SubmissionQuery {
     }
     // Second, prepare and push the update to the `version` database
     const [versionColumn, versionValue] = [
-      [`message`, `rid`, `type`, `version`],
-      [message, `${id}`, `${submissionList[this.submissionKind]}`, version],
+      [`message`, `rid`, `type`, `version`, `date`],
+      [
+        message,
+        `${id}`,
+        `${submissionList[this.submissionKind]}`,
+        version,
+        `${timestamp}`,
+      ],
+    ];
+    this.DB.buildInsert(this.updateTable, versionColumn, versionValue);
+    const result = await this.DB.runQuery(true);
+    if (isError(result)) {
+      return result as ErrorObj;
+    }
+    return result as NoResponse;
+  }
+
+  async updateSubmissionQueue(
+    id: number,
+    payload: AnySubmission,
+    message: string,
+    version: string
+  ) {
+    // First prepare and update the submission table
+    const timestamp = Math.ceil(Date.now() / 1000);
+    // Second, prepare and push the update to the `version` database
+    const [versionColumn, versionValue] = [
+      [`date`, `message`, `rid`, `type`, `version`, `data`, `in_queue`],
+      [
+        `${timestamp}`,
+        message,
+        `${id}`,
+        `${submissionList[this.submissionKind]}`,
+        version,
+        JSON.stringify(payload),
+        '1',
+      ],
     ];
     this.DB.buildInsert(this.updateTable, versionColumn, versionValue);
     const result = await this.DB.runQuery(true);

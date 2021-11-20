@@ -91,7 +91,8 @@ export default class Submission {
     id: number,
     payload: AnySubmission,
     message: string,
-    version: string
+    version: string,
+    queue?: boolean
   ) {
     // Ensure user is logged in
     const getLogin = await checkLogin(_request);
@@ -108,12 +109,9 @@ export default class Submission {
     if (isError(checkSubmission)) {
       return checkSubmission as ErrorObj;
     }
-    const result = await this.query.updateSubmission(
-      id,
-      payload,
-      message,
-      version
-    );
+    const result = await (queue
+      ? this.query.updateSubmissionQueue(id, payload, message, version)
+      : this.query.updateSubmission(id, payload, message, version));
     if (isError(result)) {
       return result as ErrorObj;
     }
