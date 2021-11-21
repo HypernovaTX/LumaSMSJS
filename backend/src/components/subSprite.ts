@@ -7,7 +7,7 @@ import { Request } from 'express';
 
 import Submission from './lib/submission';
 import CF from '../config';
-import ERR, { ErrorObj } from '../lib/error';
+import ERR, { ErrorObj, isError } from '../lib/error';
 import {
   archiveFileMIME,
   isAnimatedGif,
@@ -46,11 +46,62 @@ export const getSpriteHistory = async (id: number) =>
     | ErrorObj;
 
 // WRITE
+export const updateSprite = async (...args: SpriteUpdateFunction) =>
+  (await submission.updateSubmission(...args)) as NoResponse | ErrorObj;
 
-// Complex validatons
+// Complex functions
 // WRITE
-export async function createSprite(
+export const createSprite = async (
   _request: Request,
+  payload: Sprite,
+  file: Express.Multer.File,
+  thumb: Express.Multer.File
+) => {
+  const processedPayload = processPayloadAndFiles(payload, file, thumb);
+  if (isError(processedPayload)) {
+    return processedPayload as ErrorObj;
+  }
+  payload = processedPayload as Sprite;
+  return (await submission.createSubmission(_request, payload)) as
+    | NoResponse
+    | ErrorObj;
+};
+
+export const updateSpriteFile = async (
+  _request: Request,
+  id: number,
+  payload: Sprite,
+  message: string,
+  version: string,
+  file: Express.Multer.File,
+  thumb: Express.Multer.File
+) => {
+  const processedPayload = processPayloadAndFiles(payload, file, thumb);
+  if (isError(processedPayload)) {
+    return processedPayload as ErrorObj;
+  }
+  payload = processedPayload as Sprite;
+  return (await submission.updateSubmission(
+    _request,
+    id,
+    payload,
+    message,
+    version,
+    true
+  )) as NoResponse | ErrorObj;
+};
+
+// TO DO
+// 1 - get file upload for createSubmission and updateSubmission working
+// 2 - npm install node-scheduler and make cron job to delete submission file and DB after 30 days
+// 3 - download submission and update view/downloads
+// 4 - Staff vote
+// 5 - Move on to Reviews, then games, then hacks, then howtos/sounds/misc
+// 6 - Comment section
+
+// Sprite specific lib
+
+function processPayloadAndFiles(
   payload: Sprite,
   file: Express.Multer.File,
   thumb: Express.Multer.File
@@ -69,20 +120,8 @@ export async function createSprite(
   if (isAnimatedGif(directory, thumb)) {
     return ERR('submissionAnimatedThumb');
   }
-  return (await submission.createSubmission(_request, payload)) as
-    | NoResponse
-    | ErrorObj;
+  return payload;
 }
-
-export const updateSprite = async (...args: SpriteUpdateFunction) =>
-  (await submission.updateSubmission(...args)) as NoResponse | ErrorObj;
-// TO DO
-// 1 - get file upload for createSubmission and updateSubmission working
-// 2 - npm install node-scheduler and make cron job to delete submission file and DB after 30 days
-// 3 - download submission and update view/downloads
-// 4 - Staff vote
-// 5 - Move on to Reviews, then games, then hacks, then howtos/sounds/misc
-// 6 - Comment section
 
 type ListPublicSpriteFunction = Parameters<
   (

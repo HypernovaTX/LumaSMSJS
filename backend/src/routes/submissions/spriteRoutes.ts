@@ -20,6 +20,7 @@ import {
   getSpriteDetails,
   getSpriteHistory,
   updateSprite,
+  updateSpriteFile,
 } from '../../components/subSprite';
 // import { isStringJSON } from '../../lib/globallib.js';
 import CF from '../../config';
@@ -107,6 +108,47 @@ spriteRouter.patch('/:id', rateLimits.update, async (req, res) => {
   res.send(result);
 });
 
+// PATCH "/:id/file" - update submission (has files, user end)
+// PARAM: id, BODY: payload, message, version
+spriteRouter.patch(
+  '/:id/file',
+  rateLimits.update,
+  spriteUpload.fields(uploadFields),
+  async (req, res) => {
+    const getFiles = req.files as MulterFileFields;
+    if (!getFiles?.file?.length || !getFiles?.thumb?.length) {
+      invalidFileResponse(res);
+      return;
+    }
+    if (!validateRequiredParam(req, ['data', 'message', 'version'])) {
+      invalidParamResponse(res);
+      return;
+    }
+    const id = parseInt(req.params?.id) || 0;
+    const message = `${req.body?.message ?? ''}`;
+    const version = `${req.body?.version ?? ''}`;
+    let data = {} as Sprite;
+    if (isStringJSON(req.body?.data)) {
+      data = JSON.parse(req.body?.data);
+    } else if (req.body?.data) {
+      invalidJsonResponse(res);
+      return;
+    }
+    const [[file], [thumb]] = [getFiles.file, getFiles.thumb];
+    const result = await updateSpriteFile(
+      req,
+      id,
+      data,
+      message,
+      version,
+      file,
+      thumb
+    );
+    httpStatus(res, result);
+    res.send(result);
+  }
+);
+
 // POST -------------------------------------------------------------------------------------------------------
 // "/" - Create Sprite submission
 // BODY: data, FILE: thumb, file
@@ -116,7 +158,7 @@ spriteRouter.post(
   spriteUpload.fields(uploadFields),
   async (req, res) => {
     const getFiles = req.files as MulterFileFields;
-    if (!getFiles.file.length || !getFiles.thumb.length) {
+    if (!getFiles?.file?.length || !getFiles?.thumb?.length) {
       invalidFileResponse(res);
       return;
     }

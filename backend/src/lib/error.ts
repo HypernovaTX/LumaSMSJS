@@ -36,6 +36,7 @@ export const errors = {
   //submission - MAIN
   submissionAnimatedThumb: 'Animated GIF is not allowed for thumbnails!',
   submissionMissingParam: 'Invalid parameters to create / update submission!',
+  submissionNotAllowed: 'Users can only update their own submission.',
   submissionNotFound: 'The selected submission is not found!',
 
   // user

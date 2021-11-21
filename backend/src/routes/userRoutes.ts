@@ -212,7 +212,7 @@ userRouter.patch('/email', rateLimits.update, async (req, res) => {
 // PATCH "/avatar" - Upload avatar for current user
 // FILE: avatar
 userRouter.patch('/avatar', rateLimits.update, avatarProp, async (req, res) => {
-  if (!req.file) {
+  if (!req?.file) {
     invalidFileResponse(res);
     return;
   }
@@ -225,7 +225,7 @@ userRouter.patch('/avatar', rateLimits.update, avatarProp, async (req, res) => {
 // PATCH "/banner" - Upload banner for current user
 // FILE: banner
 userRouter.patch('/banner', rateLimits.update, bannerProp, async (req, res) => {
-  if (!req.file) {
+  if (!req?.file) {
     invalidFileResponse(res);
     return;
   }
@@ -296,7 +296,7 @@ userRouter.patch(
   rateLimits.update,
   avatarProp,
   async (req, res) => {
-    if (!req.file) {
+    if (!req?.file) {
       invalidFileResponse(res);
       return;
     }
@@ -315,7 +315,7 @@ userRouter.patch(
   rateLimits.update,
   bannerProp,
   async (req, res) => {
-    if (!req.file) {
+    if (!req?.file) {
       invalidFileResponse(res);
       return;
     }

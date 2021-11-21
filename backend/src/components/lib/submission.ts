@@ -13,6 +13,7 @@ import {
   submissionKinds,
   SubmissionVersionResponse,
 } from '../../schema/submissionType';
+import { User } from '../../schema/userTypes';
 
 type ListPublicFunction = Parameters<
   (
@@ -108,6 +109,12 @@ export default class Submission {
     const checkSubmission = await this.getSubmissionDetails(id);
     if (isError(checkSubmission)) {
       return checkSubmission as ErrorObj;
+    }
+    // Verify the submission is created by the same user
+    const currentUser = getLogin as User;
+    const getSubmission = checkSubmission as AnySubmissionResponse;
+    if (currentUser?.uid !== getSubmission?.uid) {
+      return ERR('submissionNotAllowed');
     }
     const result = await (queue
       ? this.query.updateSubmissionQueue(id, payload, message, version)
