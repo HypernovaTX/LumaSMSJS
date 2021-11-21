@@ -48,7 +48,7 @@ export function verifyImageFile(file: Express.Multer.File) {
 
 export function isAnimatedGif(directory: string, file: Express.Multer.File) {
   if (isGif.test(file.mimetype)) {
-    directory = path.resolve(`./${directory}`);
+    directory = path.resolve(`./${directory}/`);
     const readFile = fs.readFileSync(`${directory}/${file.filename}`);
     return !!animated(readFile);
   }
@@ -67,12 +67,12 @@ export async function hasFile(path: string) {
   });
 }
 
-export async function unlinkFile(file: string, directory: string) {
-  const fileExists = await hasFile(directory + file);
+export async function unlinkFile(directory: string, file: string) {
+  const fileExists = await hasFile(`${directory}/${file}`);
   if (!fileExists) {
     return;
   }
-  fs.unlink(directory + file, (err) => {
+  fs.unlink(`${directory}/${file}`, (err) => {
     if (err) {
       ERR('fileUnlink', err.message);
     }

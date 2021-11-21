@@ -19,10 +19,11 @@ import {
   AnySubmission,
   SubmissionVersionResponse,
 } from '../schema/submissionType';
-import { Sprite } from '../schema/subSpritesType';
+import { Sprite, SpriteResponse } from '../schema/subSpritesType';
 
 const spriteImageMIME = /image\/(gif|png)$/i;
 const submission = new Submission('sprites');
+const directory = `${CF.UPLOAD_DIRECTORY}/${CF.UPLOAD_SUB_SPRITE}`;
 
 // Easily passable functions
 // READ ONLY
@@ -59,12 +60,17 @@ export const createSprite = async (
 ) => {
   const processedPayload = processPayloadAndFiles(payload, file, thumb);
   if (isError(processedPayload)) {
+    deleteFile(file, thumb);
     return processedPayload as ErrorObj;
   }
   payload = processedPayload as Sprite;
-  return (await submission.createSubmission(_request, payload)) as
+  const result = (await submission.createSubmission(_request, payload)) as
     | NoResponse
     | ErrorObj;
+  if (isError(result)) {
+    deleteFile(file, thumb);
+  }
+  return result;
 };
 
 export const updateSpriteFile = async (
@@ -78,10 +84,11 @@ export const updateSpriteFile = async (
 ) => {
   const processedPayload = processPayloadAndFiles(payload, file, thumb);
   if (isError(processedPayload)) {
+    deleteFile(file, thumb);
     return processedPayload as ErrorObj;
   }
   payload = processedPayload as Sprite;
-  return (await submission.updateSubmission(
+  const result = (await submission.updateSubmission(
     _request,
     id,
     payload,
@@ -89,6 +96,10 @@ export const updateSpriteFile = async (
     version,
     true
   )) as NoResponse | ErrorObj;
+  if (isError(result)) {
+    deleteFile(file, thumb);
+  }
+  return result;
 };
 
 // TO DO
@@ -110,10 +121,7 @@ function processPayloadAndFiles(
   payload.thumbnail = thumb.filename;
   payload.file_mime = file.mimetype;
   // Ensure file/thumb is an image
-  const directory = `${CF.UPLOAD_DIRECTORY}/${CF.UPLOAD_SUB_SPRITE}/`;
   if (!verifyImageFile(file) || !verifyImageFile(thumb)) {
-    unlinkFile(file.filename, directory);
-    unlinkFile(thumb.filename, directory);
     return ERR('fileImageInvalid');
   }
   // Detect if thumb is an animated GIF or not
@@ -121,6 +129,11 @@ function processPayloadAndFiles(
     return ERR('submissionAnimatedThumb');
   }
   return payload;
+}
+
+function deleteFile(file: Express.Multer.File, thumb: Express.Multer.File) {
+  unlinkFile(directory, file.filename);
+  unlinkFile(directory, thumb.filename);
 }
 
 type ListPublicSpriteFunction = Parameters<

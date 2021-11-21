@@ -260,27 +260,27 @@ export async function updateUserAvatar(
   _request: Request,
   file: Express.Multer.File
 ) {
-  const directory = `${CF.UPLOAD_DIRECTORY}/${CF.UPLOAD_AVATAR}/`;
+  const directory = `${CF.UPLOAD_DIRECTORY}/${CF.UPLOAD_AVATAR}`;
   // File name too long
   if (file.filename.length > CF.FILENAME_LIMIT) {
-    unlinkFile(file.filename, directory);
+    unlinkFile(directory, file.filename);
     return ERR('fileNameTooLong');
   }
   // Ensure user is logged in
   const getLogin = await checkLogin(_request);
   if (isError(getLogin)) {
-    unlinkFile(file.filename, directory);
+    unlinkFile(directory, file.filename);
     return getLogin as ErrorObj;
   }
   // Ensure it is an image, otherwise
   if (!verifyImageFile(file)) {
-    unlinkFile(file.filename, directory);
+    unlinkFile(directory, file.filename);
     return ERR('fileImageInvalid');
   }
   // Remove user's old file
   const currentUser = getLogin as User;
   if (currentUser?.avatar_file) {
-    unlinkFile(currentUser.avatar_file, directory);
+    unlinkFile(directory, currentUser.avatar_file);
   }
   // Apply
   return await updateUser(currentUser?.uid, { avatar_file: file.filename });
@@ -290,27 +290,27 @@ export async function updateUserBanner(
   _request: Request,
   file: Express.Multer.File
 ) {
-  const directory = `${CF.UPLOAD_DIRECTORY}/${CF.UPLOAD_BANNER}/`;
+  const directory = `${CF.UPLOAD_DIRECTORY}/${CF.UPLOAD_BANNER}`;
   // File name too long
   if (file.filename.length > CF.FILENAME_LIMIT) {
-    unlinkFile(file.filename, directory);
+    unlinkFile(directory, file.filename);
     return ERR('fileNameTooLong');
   }
   // Ensure user is logged in
   const getLogin = await checkLogin(_request);
   if (isError(getLogin)) {
-    unlinkFile(file.filename, directory);
+    unlinkFile(directory, file.filename);
     return getLogin as ErrorObj;
   }
   // Ensure it is an image, otherwise
   if (!verifyImageFile(file)) {
-    unlinkFile(file.filename, directory);
+    unlinkFile(directory, file.filename);
     return ERR('fileImageInvalid');
   }
   // Remove user's old file
   const currentUser = getLogin as User;
   if (currentUser?.banner_file) {
-    unlinkFile(currentUser.banner_file, directory);
+    unlinkFile(directory, currentUser.banner_file);
   }
   // Apply
   return await updateUser(currentUser?.uid, { banner_file: file.filename });

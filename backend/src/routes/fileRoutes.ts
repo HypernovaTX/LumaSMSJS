@@ -4,8 +4,8 @@ import path from 'path';
 import rateLimits from './rateLimiter';
 import ERR from '../lib/error';
 import { hasFile } from '../lib/filemanager';
-import { httpStatus } from '../lib/result';
 import { invalidParamResponse, validateRequiredParam } from '../lib/globallib';
+import { httpStatus } from '../lib/result';
 
 export const fileRouter = express.Router();
 

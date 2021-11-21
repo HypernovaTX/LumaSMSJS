@@ -1,1 +1,1 @@
-declare module "animated-gif-detector";
+declare module 'animated-gif-detector';

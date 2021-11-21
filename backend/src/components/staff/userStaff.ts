@@ -46,10 +46,10 @@ export async function updateOtherUserAvatar(
   uid: number,
   file: Express.Multer.File
 ) {
-  const directory = `${CF.UPLOAD_DIRECTORY}/${CF.UPLOAD_AVATAR}/`;
+  const directory = `${CF.UPLOAD_DIRECTORY}/${CF.UPLOAD_AVATAR}`;
   // File name too long
   if (file.filename.length > CF.FILENAME_LIMIT) {
-    unlinkFile(file.filename, directory);
+    unlinkFile(directory, file.filename);
     return ERR('fileNameTooLong');
   }
   // Verify permission
@@ -59,7 +59,7 @@ export async function updateOtherUserAvatar(
   }
   // Ensure it is an image, otherwise
   if (!verifyImageFile(file)) {
-    unlinkFile(file.filename, directory);
+    unlinkFile(directory, file.filename);
     return ERR('fileImageInvalid');
   }
   // Verify user exists
@@ -71,7 +71,7 @@ export async function updateOtherUserAvatar(
   // Remove user's old file
   const selectedUser = getUser as User;
   if (selectedUser?.avatar_file) {
-    unlinkFile(selectedUser.avatar_file, directory);
+    unlinkFile(directory, selectedUser.avatar_file);
   }
   // Apply
   return await updateUser(selectedUser?.uid, { avatar_file: file.filename });
@@ -82,10 +82,10 @@ export async function updateOtherUserBanner(
   uid: number,
   file: Express.Multer.File
 ) {
-  const directory = `${CF.UPLOAD_DIRECTORY}/${CF.UPLOAD_BANNER}/`;
+  const directory = `${CF.UPLOAD_DIRECTORY}/${CF.UPLOAD_BANNER}`;
   // File name too long
   if (file.filename.length > CF.FILENAME_LIMIT) {
-    unlinkFile(file.filename, directory);
+    unlinkFile(directory, file.filename);
     return ERR('fileNameTooLong');
   }
   // Verify permission
@@ -95,7 +95,7 @@ export async function updateOtherUserBanner(
   }
   // Ensure it is an image, otherwise
   if (!verifyImageFile(file)) {
-    unlinkFile(file.filename, directory);
+    unlinkFile(directory, file.filename);
     return ERR('fileImageInvalid');
   }
   // Verify user exists
@@ -107,7 +107,7 @@ export async function updateOtherUserBanner(
   // Remove user's old file
   const currentUser = getUser as User;
   if (currentUser?.banner_file) {
-    unlinkFile(currentUser.banner_file, directory);
+    unlinkFile(directory, currentUser.banner_file);
   }
   // Apply
   return await updateUser(currentUser?.uid, { banner_file: file.filename });
