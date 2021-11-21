@@ -2,7 +2,7 @@ import SQL from '../lib/sql';
 
 import CF from '../config';
 import ERR, { ErrorObj, isError } from '../lib/error';
-import { objIntoArrays, sanitizeInput } from '../lib/globallib';
+import { isStringJSON, objIntoArrays, sanitizeInput } from '../lib/globallib';
 import { NoResponse } from '../lib/result';
 import {
   AnySubmission,
@@ -122,6 +122,33 @@ export default class SubmissionQuery {
     return (await this.DB.runQuery(true)) as ErrorObj | NoResponse;
   }
 
+  async updateSubmissionLazy(id: number, payload: AnySubmission) {
+    // prepare and update the submission table
+    const updateColumn: string[] = [];
+    const updateValue: string[] = [];
+    const { columns, values } = objIntoArrays(payload);
+    const processedValue = values.map((val) => {
+      if (typeof val === 'string') {
+        return val;
+      }
+      if (typeof val === 'object') {
+        return JSON.stringify(val);
+      }
+      return `${val}`;
+    });
+    updateColumn.push(...columns);
+    updateValue.push(...processedValue);
+    // Query
+    this.DB.buildUpdate(this.subTable, updateColumn, updateValue);
+    this.DB.buildWhere(`id = ${id}`);
+    // Execute
+    const result = await this.DB.runQuery(true);
+    if (isError(result)) {
+      return result as ErrorObj;
+    }
+    return result as NoResponse;
+  }
+
   async updateSubmission(
     id: number,
     payload: AnySubmission,
@@ -189,5 +216,10 @@ export default class SubmissionQuery {
       return result as ErrorObj;
     }
     return result as NoResponse;
+  }
+
+  async deleteSubmission(id: number) {
+    this.DB.buildDelete(this.submissionKind, `id = ${id}`);
+    return (await this.DB.runQuery(true)) as NoResponse | ErrorObj;
   }
 }

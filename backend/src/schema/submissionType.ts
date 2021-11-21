@@ -30,7 +30,7 @@ export interface submissionFilter {
 }
 export interface staffVote {
   uid: number;
-  accept: boolean;
+  decision: number;
   reason: string;
 }
 export type staffVoteList = staffVote[];

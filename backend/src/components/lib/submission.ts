@@ -4,12 +4,15 @@
 import { Request } from 'express';
 
 import { checkLogin, validatePermission } from './userlib';
+import CF from '../../config';
 import ERR, { ErrorObj, isError } from '../../lib/error';
+import { isStringJSON } from '../../lib/globallib';
 import { NoResponse } from '../../lib/result';
 import SubmissionQuery from '../../queries/submissionQuery';
 import {
   AnySubmission,
   AnySubmissionResponse,
+  staffVoteList,
   submissionKinds,
   SubmissionVersionResponse,
 } from '../../schema/submissionType';
@@ -82,6 +85,7 @@ export default class Submission {
     if (!this.validatePayloadKeys(payload)) {
       return ERR('submissionMissingParam');
     }
+    // Execute
     const { uid } = getLogin as AnySubmissionResponse;
     const firstResult = await this.query.createSubmission(uid, payload);
     return firstResult;
@@ -116,6 +120,7 @@ export default class Submission {
     if (currentUser?.uid !== getSubmission?.uid) {
       return ERR('submissionNotAllowed');
     }
+    // Execute
     const result = await (queue
       ? this.query.updateSubmissionQueue(id, payload, message, version)
       : this.query.updateSubmission(id, payload, message, version));
@@ -123,6 +128,43 @@ export default class Submission {
       return result as ErrorObj;
     }
     return result as NoResponse;
+  }
+
+  // STAFF METHODS
+  async voteSubmission(
+    _request: Request,
+    id: number,
+    decision: number,
+    reason: string
+  ) {
+    // Ensure user is logged in
+    const getLogin = await checkLogin(_request);
+    if (isError(getLogin)) {
+      return getLogin as ErrorObj;
+    }
+    const uid = (getLogin as User)?.uid ?? 0;
+    // Verify permission
+    const permitted = await validatePermission(_request, 'acp_modq');
+    if (!permitted) {
+      return ERR('userStaffPermit');
+    }
+    // Grab the existing submission, ensure there is no error
+    const getSubmission = await this.query.getSubmissionById(id);
+    if (isError(getSubmission)) {
+      return getSubmission;
+    }
+    // Grab the submission votes
+    const submission = getSubmission as AnySubmissionResponse;
+    const existingVote: staffVoteList = isStringJSON(submission?.decision || '')
+      ? JSON.parse(submission?.decision)
+      : [];
+    // Determine if the user has voted already
+    const findUser = existingVote.filter((data) => data.uid === uid);
+    if (findUser.length > 0) {
+      return ERR('submissionAlreadyVoted');
+    }
+    // Add the current vote
+    existingVote.push({ uid, decision, reason });
   }
 
   // async deleteSubmission(_request, id) {
@@ -158,27 +200,6 @@ export default class Submission {
   // npm install node-schedule
   //}
 
-  // STAFF METHODS ------------------------------------------------------------------------------------------------------------
-
-  // async voteSubmission(_request) {
-  //   const getPermission = await checkPermission(_request);
-  //   if (getPermission === 'LOGGED OUT') {
-  //     handleError('re0');
-  //     return placeholderPromise('DENIED');
-  //   }
-  //   if (getPermission?.staff_qc) {
-  //     handleError('re2');
-  //     return placeholderPromise('QC ONLY');
-  //   }
-
-  //   // READ TABLE
-  //   // TURN RESULT INTO ARRAY
-  //   // PUSH ARRAY
-  //   // CHECK ARRAY FOR SUBMISSION STAT
-  //   // UPDATE TABLE
-  //   // RETURN
-  // }
-
   // PRIVATE METHODS
   private removeSensitiveSubProp(submission: AnySubmissionResponse) {
     if (submission?.queue_code) {
@@ -201,5 +222,25 @@ export default class Submission {
       return false;
     }
     return true;
+  }
+
+  private async processVotes(
+    id: number,
+    votes: staffVoteList,
+    isUpdate?: boolean
+  ) {
+    // count the number of votes
+    const accepts = votes.filter((vote) => vote.decision >= 1).length;
+    const declines = votes.filter((vote) => vote.decision === 0).length;
+    // Process new submission
+    if (!isUpdate) {
+      if (accepts >= CF.QC_VOTES_NEW) {
+        const payload: AnySubmission = { queue_code: 0, decision: [] };
+        const result = await this.query.updateSubmissionLazy(id, payload);
+      } else if (declines >= CF.QC_VOTES_NEW) {
+        // DECLINING PROCESS
+      }
+    }
+    // Process update submission
   }
 }

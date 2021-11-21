@@ -120,6 +120,13 @@ function processPayloadAndFiles(
   payload.file = file.filename;
   payload.thumbnail = thumb.filename;
   payload.file_mime = file.mimetype;
+  // File name too long
+  if (
+    file.filename.length > CF.FILENAME_LIMIT ||
+    thumb.filename.length > CF.FILENAME_LIMIT
+  ) {
+    return ERR('fileNameTooLong');
+  }
   // Ensure file/thumb is an image
   if (!verifyImageFile(file) || !verifyImageFile(thumb)) {
     return ERR('fileImageInvalid');
