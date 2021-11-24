@@ -167,38 +167,20 @@ export default class Submission {
     existingVote.push({ uid, decision, reason });
   }
 
-  // async deleteSubmission(_request, id) {
-  //   const getPermission = await checkPermission(_request);
-  //   if (getPermission === 'LOGGED OUT') {
-  //     // Not logged in
-  //     handleError('re0');
-  //     return placeholderPromise('DENIED');
-  //   }
-  //   if (!id) {
-  //     handleError('re1');
-  //     return placeholderPromise('ERROR');
-  //   }
-  //   const getExistingSubmission = await this.showSubmissionDetails(id);
-  //   if (
-  //     !getPermission.staff_qc &&
-  //     getExistingSubmission.uid !== getPermission.uid
-  //   ) {
-  //     // Only root admin can delete other user
-  //     handleError('re2');
-  //     return placeholderPromise('QC ONLY');
-  //   }
-
-  //   id = typeof id === 'string' ? `'${sanitizeInput(id)}'` : id;
-  //   this.DB.buildDelete(this.specificTable, `id = ${id}`);
-  //   const getResult = await this.DB.runQuery();
-  //   if (!getResult?.affectedRows) {
-  //     return placeholderPromise('FAIL');
-  //   }
-  //   return placeholderPromise('DONE');
-
-  // THIS IS A TEMPORARY PLACEHOLDER, IT WOULD BE BETTER IF THE SUBMISSION IS PLACED IN A PENDIng DELETION STATE
-  // npm install node-schedule
-  //}
+  // Only root admin can delete submissions
+  async deleteSubmission(_request: Request, id: number) {
+    // Ensure user is logged in
+    const getLogin = await checkLogin(_request);
+    if (isError(getLogin)) {
+      return getLogin as ErrorObj;
+    }
+    // Verify permission
+    const permitted = await validatePermission(_request, 'acp_super');
+    if (!permitted) {
+      return ERR('userStaffPermit');
+    }
+    return await this.query.deleteSubmission(id);
+  }
 
   // PRIVATE METHODS
   private removeSensitiveSubProp(submission: AnySubmissionResponse) {
@@ -236,9 +218,12 @@ export default class Submission {
     if (!isUpdate) {
       if (accepts >= CF.QC_VOTES_NEW) {
         const payload: AnySubmission = { queue_code: 0, decision: [] };
-        const result = await this.query.updateSubmissionLazy(id, payload);
+        return await this.query.updateSubmissionLazy(id, payload);
       } else if (declines >= CF.QC_VOTES_NEW) {
         // DECLINING PROCESS
+      } else {
+        const payload: AnySubmission = { decision: votes };
+        return await this.query.updateSubmissionLazy(id, payload);
       }
     }
     // Process update submission
