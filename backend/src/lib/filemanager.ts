@@ -1,8 +1,7 @@
 import multer from 'multer';
 import fs from 'fs';
 import path from 'path';
-//@ts-ignore
-import animated from 'animated-gif-detector';
+import { isAnimatedGif } from 'is-animated-gif';
 
 import ERR from './error';
 import CF from '../config';
@@ -46,11 +45,11 @@ export function verifyImageFile(file: Express.Multer.File) {
   return imageMIME.test(file.mimetype);
 }
 
-export function isAnimatedGif(directory: string, file: Express.Multer.File) {
+export function checkAnimatedGif(directory: string, file: Express.Multer.File) {
   if (isGif.test(file.mimetype)) {
     directory = path.resolve(`./${directory}/`);
     const readFile = fs.readFileSync(`${directory}/${file.filename}`);
-    return !!animated(readFile);
+    return isAnimatedGif(readFile);
   }
   return false;
 }

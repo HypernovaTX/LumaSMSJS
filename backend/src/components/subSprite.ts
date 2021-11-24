@@ -10,7 +10,7 @@ import CF from '../config';
 import ERR, { ErrorObj, isError } from '../lib/error';
 import {
   archiveFileMIME,
-  isAnimatedGif,
+  checkAnimatedGif,
   unlinkFile,
   verifyImageFile,
 } from '../lib/filemanager';
@@ -132,7 +132,7 @@ function processPayloadAndFiles(
     return ERR('fileImageInvalid');
   }
   // Detect if thumb is an animated GIF or not
-  if (isAnimatedGif(directory, thumb)) {
+  if (checkAnimatedGif(directory, thumb)) {
     return ERR('submissionAnimatedThumb');
   }
   return payload;
