@@ -2,16 +2,18 @@
 // SUBMISSION CLASS TEMPLATE
 // ================================================================================
 import { Request } from 'express';
+import schedule from 'node-schedule';
 
 import { checkLogin, validatePermission } from './userlib';
 import CF from '../../config';
 import ERR, { ErrorObj, isError } from '../../lib/error';
 import { isStringJSON } from '../../lib/globallib';
-import { NoResponse } from '../../lib/result';
+import { noContentResponse, NoResponse } from '../../lib/result';
 import SubmissionQuery from '../../queries/submissionQuery';
 import {
   AnySubmission,
   AnySubmissionResponse,
+  queue_code,
   staffVoteList,
   submissionKinds,
   SubmissionVersionResponse,
@@ -220,12 +222,27 @@ export default class Submission {
         const payload: AnySubmission = { queue_code: 0, decision: [] };
         return await this.query.updateSubmissionLazy(id, payload);
       } else if (declines >= CF.QC_VOTES_NEW) {
-        // DECLINING PROCESS
+        this.declineSubmission(id);
+        return noContentResponse();
       } else {
         const payload: AnySubmission = { decision: votes };
         return await this.query.updateSubmissionLazy(id, payload);
       }
     }
     // Process update submission
+  }
+
+  private declineSubmission(id: number) {
+    // Set to delete submission in one month
+    const job = schedule.scheduleJob('* * * * 1 *', async () => {
+      const data = await this.query.getSubmissionById(id);
+      if (isError(data)) {
+        return;
+      }
+      const validSubmission = data as AnySubmissionResponse;
+      if (validSubmission.queue_code === queue_code.declined) {
+        this.query.deleteSubmission(id);
+      }
+    });
   }
 }

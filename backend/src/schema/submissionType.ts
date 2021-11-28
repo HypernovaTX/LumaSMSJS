@@ -38,4 +38,5 @@ export const queue_code = {
   accepted: 0,
   new: 1,
   updated: 2,
+  declined: 3,
 };
