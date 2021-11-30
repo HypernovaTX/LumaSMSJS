@@ -9,6 +9,7 @@ import {
   AnySubmissionResponse,
   submissionKinds,
   submissionList,
+  submissionToDelete,
   SubmissionVersionResponse,
 } from '../schema/submissionType';
 
@@ -24,14 +25,14 @@ export default class SubmissionQuery {
   submissionNumber: number;
   subTable: string;
   updateTable: string;
-  usernameUpdateTable: string;
+  deleteTable: string;
   submissionKind: submissionKinds;
 
-  constructor(submissionKind: submissionKinds) {
+  constructor(submissionKind: submissionKinds = 'sprites') {
     this.DB = new SQL();
     this.subTable = `${CF.DB_PREFIX}submission_${submissionKind}`;
     this.updateTable = `${CF.DB_PREFIX}version`;
-    this.usernameUpdateTable = `${CF.DB_PREFIX}username_change`;
+    this.deleteTable = `${CF.DB_PREFIX}submission_delete`;
     this.submissionNumber = submissionList[submissionKind];
     this.submissionKind = submissionKind;
   }
@@ -102,6 +103,11 @@ export default class SubmissionQuery {
     return queryResult as ErrorObj | SubmissionVersionResponse[];
   }
 
+  async getSubmissionToDeleteList() {
+    this.DB.buildSelect(this.deleteTable);
+    return (await this.DB.runQuery()) as ErrorObj | submissionToDelete[];
+  }
+
   // ------------ AFFECTS DB ----------------
   async createSubmission(uid: number, payload: AnySubmission) {
     // Apply changes to the sub table first and get eid
@@ -113,11 +119,6 @@ export default class SubmissionQuery {
     const { columns, values } = objIntoArrays(payload);
     finalColumn.push(...columns);
     finalValue.push(...(values as string[]));
-    // Object.entries(payload).forEach((entry) => {
-    //   const [key, value] = entry;
-    //   finalColumn.push(key);
-    //   finalValue.push(value.toString());
-    // });
     this.DB.buildInsert(this.subTable, finalColumn, finalValue);
     return (await this.DB.runQuery(true)) as ErrorObj | NoResponse;
   }
@@ -219,7 +220,33 @@ export default class SubmissionQuery {
   }
 
   async deleteSubmission(id: number) {
-    this.DB.buildDelete(this.submissionKind, `id = ${id}`);
+    this.DB.buildDelete(this.subTable, `id = ${id}`);
+    return (await this.DB.runQuery(true)) as NoResponse | ErrorObj;
+  }
+
+  async createScheduledDeletion(id: number) {
+    // First prepare the date for deletion
+    const deleteDate =
+      Math.ceil(Date.now() / 1000) + CF.DECLINE_DELETION_CUTOFF;
+    // Second, prepare and push the update to the `version` database
+    const [deleteColumn, deleteValue] = [
+      [`time`, `type`, `id`],
+      [`${deleteDate}`, `${submissionList[this.submissionKind]}`, `${id}`],
+    ];
+    this.DB.buildInsert(this.deleteTable, deleteColumn, deleteValue);
+    const result = await this.DB.runQuery(true);
+    if (isError(result)) {
+      return result as ErrorObj;
+    }
+    return result as NoResponse;
+  }
+
+  async deleteScheduledDeletion(cronid: number) {
+    const conditions = [
+      `cronid = ${cronid}`,
+      `type = ${submissionList[this.submissionKind]}`,
+    ];
+    this.DB.buildDelete(this.deleteTable, conditions);
     return (await this.DB.runQuery(true)) as NoResponse | ErrorObj;
   }
 }

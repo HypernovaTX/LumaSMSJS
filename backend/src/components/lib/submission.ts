@@ -2,7 +2,6 @@
 // SUBMISSION CLASS TEMPLATE
 // ================================================================================
 import { Request } from 'express';
-import schedule from 'node-schedule';
 
 import { checkLogin, validatePermission } from './userlib';
 import CF from '../../config';
@@ -218,31 +217,50 @@ export default class Submission {
     const declines = votes.filter((vote) => vote.decision === 0).length;
     // Process new submission
     if (!isUpdate) {
+      // Accept
       if (accepts >= CF.QC_VOTES_NEW) {
         const payload: AnySubmission = { queue_code: 0, decision: [] };
         return await this.query.updateSubmissionLazy(id, payload);
-      } else if (declines >= CF.QC_VOTES_NEW) {
+      }
+      // Decline
+      else if (declines >= CF.QC_VOTES_NEW) {
         this.declineSubmission(id);
         return noContentResponse();
-      } else {
+      }
+      // Apply votes
+      else {
         const payload: AnySubmission = { decision: votes };
         return await this.query.updateSubmissionLazy(id, payload);
       }
     }
     // Process update submission
+    if (accepts >= CF.QC_VOTES_UPDATE) {
+      // Grab the update details
+      const data = await this.query.getSubmissionUpdatesByRid(id);
+      if (isError(data)) {
+        return data as ErrorObj;
+      }
+      // Prepare the data
+      const updatePayload = {
+        ...(data as SubmissionVersionResponse).data,
+        queue_code: 0,
+        decision: [],
+      } as AnySubmission;
+      return await this.query.updateSubmissionLazy(id, updatePayload);
+    }
+    // Decline
+    else if (declines >= CF.QC_VOTES_NEW) {
+      this.declineSubmission(id);
+      return noContentResponse();
+    }
+    // Apply votes
+    else {
+      const payload: AnySubmission = { decision: votes };
+      return await this.query.updateSubmissionLazy(id, payload);
+    }
   }
 
   private declineSubmission(id: number) {
-    // Set to delete submission in one month
-    const job = schedule.scheduleJob('* * * * 1 *', async () => {
-      const data = await this.query.getSubmissionById(id);
-      if (isError(data)) {
-        return;
-      }
-      const validSubmission = data as AnySubmissionResponse;
-      if (validSubmission.queue_code === queue_code.declined) {
-        this.query.deleteSubmission(id);
-      }
-    });
+    console.log(id);
   }
 }

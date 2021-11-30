@@ -24,6 +24,10 @@ export interface SubmissionVersionResponse {
   in_queue?: number;
 }
 export type submissionKinds = keyof typeof submissionList;
+export const submissionKindArray: submissionKinds[] = [
+  'sprites',
+  ...(Object.keys(submissionList) as submissionKinds[]),
+];
 export interface submissionFilter {
   column: string;
   value: string;
@@ -40,3 +44,9 @@ export const queue_code = {
   updated: 2,
   declined: 3,
 };
+export interface submissionToDelete {
+  cronid: number;
+  type: number;
+  id: number;
+  time: number;
+}

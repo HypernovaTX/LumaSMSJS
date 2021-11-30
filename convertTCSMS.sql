@@ -89,6 +89,15 @@ ALTER TABLE `tsms_version` CHANGE `old` `old` INT(11) NOT NULL DEFAULT '0';
 ALTER TABLE `tsms_version` CHANGE `change` `message` VARCHAR(255) CHARACTER SET latin1 COLLATE latin1_swedish_ci NULL DEFAULT NULL;
 ALTER TABLE `tsms_version` ADD `in_queue` INT(2) NOT NULL DEFAULT '0' AFTER `decision`;
 
+/* Scheduled for deletion */
+CREATE TABLE `tsms_submission_delete` ( 
+  `cronid` INT NOT NULL AUTO_INCREMENT , 
+  `type` INT(10) NOT NULL , 
+  `id` INT(10) NOT NULL , 
+  `time` INT(10) NOT NULL , 
+  PRIMARY KEY (`cronid`)
+);
+
 /****************************************************************/
 
 /** SECTION 2 - Update tables that relies on tsms_resources by adding type/sub_type (which submission table) and id (submittion ID, tied to submission type) */

@@ -11,6 +11,7 @@ import cors from 'cors';
 import helmet from 'helmet';
 import morgan from 'morgan';
 
+import Cron from './lib/cron';
 import { directorySetup } from './lib/filemanager';
 import { fileRouter } from './routes/fileRoutes';
 import { submissionRouter } from './routes/submissionRoutes';
@@ -23,6 +24,8 @@ const morganEntity = morgan('combined', {
 });
 const csrfProtection = csurf({ cookie: true });
 const parseForm = express.urlencoded({ extended: false });
+const cron = new Cron();
+cron.job.start();
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
