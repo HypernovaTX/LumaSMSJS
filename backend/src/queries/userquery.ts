@@ -2,7 +2,7 @@ import SQL from '../lib/sql';
 
 import CF from '../config';
 import ERR, { ErrorObj } from '../lib/error';
-import { sanitizeInput } from '../lib/globallib';
+import { objIntoArrays, sanitizeInput } from '../lib/globallib';
 import { NoResponse } from '../lib/result';
 import { User, UsernameChange, UserPermissionFull } from '../schema/userTypes';
 
@@ -209,28 +209,18 @@ export default class UserQuery {
     password: string,
     ip: string
   ) {
-    const columnNames = [
-      'username',
-      'email',
-      'password',
-      'join_date',
-      'items_per_page',
-      'gid',
-      'registered_ip',
-      'last_activity',
-    ];
     const timestamp = Math.ceil(Date.now() / 1000);
-    const columnValues = [
+    const { columns, values } = objIntoArrays({
       username,
       email,
       password,
-      `${timestamp}`,
-      `${CF.ROWS}`,
-      `${CF.DEFAULT_GROUP}`,
-      ip,
-      `${timestamp}`,
-    ];
-    this.DB.buildInsert(this.userTable, columnNames, columnValues);
+      registered_ip: ip,
+      join_date: `${timestamp}`,
+      last_activity: `${timestamp}`,
+      items_per_page: `${CF.ROWS}`,
+      gid: `${CF.DEFAULT_GROUP}`,
+    });
+    this.DB.buildInsert(this.userTable, columns, values);
     return (await this.DB.runQuery(true)) as NoResponse | ErrorObj;
   }
 
@@ -270,8 +260,8 @@ export default class UserQuery {
   }
 
   async usernameUpdate(uid: number, oldUsername: string, newusername: string) {
-    const columnNames = ['uid', 'old_username', 'new_username', 'date'];
     const timestamp = Math.ceil(Date.now() / 1000);
+    const columnNames = ['uid', 'old_username', 'new_username', 'date'];
     const columnValues = [`${uid}`, oldUsername, newusername, `${timestamp}`];
     this.DB.buildInsert(this.usernameUpdateTable, columnNames, columnValues);
     return (await this.DB.runQuery(true)) as NoResponse | ErrorObj;

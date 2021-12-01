@@ -56,7 +56,7 @@ export const createSprite = async (
   // Check and process files
   const processedPayload = processPayloadAndFiles(payload, file, thumb);
   if (isError(processedPayload)) {
-    deleteFile(file, thumb);
+    deleteFile(file.filename, thumb.filename);
     return processedPayload as ErrorObj;
   }
 
@@ -65,7 +65,7 @@ export const createSprite = async (
   const result = (await submission.createSubmission(_request, payload)) as
     | NoResponse
     | ErrorObj;
-  if (isError(result)) deleteFile(file, thumb);
+  if (isError(result)) deleteFile(file.filename, thumb.filename);
   return result;
 };
 
@@ -81,7 +81,7 @@ export const updateSpriteFile = async (
   // Check and process files
   const processedPayload = processPayloadAndFiles(payload, file, thumb);
   if (isError(processedPayload)) {
-    deleteFile(file, thumb);
+    deleteFile(file.filename, thumb.filename);
     return processedPayload as ErrorObj;
   }
 
@@ -95,7 +95,7 @@ export const updateSpriteFile = async (
     version,
     true
   )) as NoResponse | ErrorObj;
-  if (isError(result)) deleteFile(file, thumb);
+  if (isError(result)) deleteFile(file.filename, thumb.filename);
   return result;
 };
 
@@ -138,9 +138,9 @@ function processPayloadAndFiles(
   return payload;
 }
 
-function deleteFile(file: Express.Multer.File, thumb: Express.Multer.File) {
-  unlinkFile(directory, file.filename);
-  unlinkFile(directory, thumb.filename);
+export function deleteFile(file: string, thumb: string) {
+  unlinkFile(directory, file);
+  unlinkFile(directory, thumb);
 }
 
 type ListPublicSpriteFunction = Parameters<

@@ -2,11 +2,12 @@ import SQL from '../lib/sql';
 
 import CF from '../config';
 import ERR, { ErrorObj, isError } from '../lib/error';
-import { isStringJSON, objIntoArrays, sanitizeInput } from '../lib/globallib';
+import { objIntoArrays, sanitizeInput } from '../lib/globallib';
 import { NoResponse } from '../lib/result';
 import {
   AnySubmission,
   QueueCode,
+  queue_code,
   StaffVote,
   SubmissionKinds,
   submissionList,
@@ -111,6 +112,16 @@ export default class SubmissionQuery {
     return queryResult as ErrorObj | SubmissionVersion[];
   }
 
+  async getSubmissionUpdatesByVid(vid: number) {
+    this.DB.buildSelect(this.updateTable);
+    this.DB.buildWhere(`vid = ${vid}`);
+
+    const queryResult = await this.DB.runQuery();
+    if (isError(queryResult)) return queryResult as ErrorObj;
+    const [result] = queryResult as SubmissionVersion[];
+    return result;
+  }
+
   async getAllVotes(
     count?: number,
     page?: number,
@@ -125,9 +136,18 @@ export default class SubmissionQuery {
     return (await this.DB.runQuery()) as ErrorObj | StaffVote[];
   }
 
-  async getVotesById(id: number) {
+  async getVotesById(id: number, update?: boolean) {
+    const where = [`id = ${id}`, `type = ${this.subType}`];
+    switch (update) {
+      case true:
+        where.push('update = 1');
+        break;
+      case false:
+        where.push('update = 0');
+        break;
+    }
     this.DB.buildSelect(`${this.voteTable}`);
-    this.DB.buildWhere([`id = ${id}`, `type = ${this.subType}`]);
+    this.DB.buildWhere(where);
     return (await this.DB.runQuery()) as ErrorObj | StaffVote[];
   }
 
@@ -135,10 +155,8 @@ export default class SubmissionQuery {
   async createSubmission(uid: number, payload: AnySubmission) {
     // Prepare data
     const timestamp = Math.ceil(Date.now() / 1000);
-    let [finalColumn, finalValue] = [
-      ['views', 'uid', 'created', 'queue_code'],
-      ['0', `${uid}`, `${timestamp}`, '1'],
-    ];
+    let finalColumn = ['views', 'uid', 'created', 'queue_code'];
+    let finalValue = ['0', `${uid}`, `${timestamp}`, '1'];
 
     // Process data for insert
     const { columns, values } = objIntoArrays(payload);
@@ -150,8 +168,34 @@ export default class SubmissionQuery {
     return (await this.DB.runQuery(true)) as ErrorObj | NoResponse;
   }
 
+  async createSubmissionVersion(
+    id: number,
+    payload: AnySubmission,
+    message: string,
+    version: string
+  ) {
+    // First prepare and update the submission table
+    const timestamp = Math.ceil(Date.now() / 1000);
+
+    // Second, prepare and push the update to the `version` database
+    const { columns, values } = objIntoArrays({
+      type: `${submissionList[this.submissionKind]}`,
+      data: JSON.stringify(payload),
+      date: `${timestamp}`,
+      rid: `${id}`,
+      in_queue: '1',
+      version,
+      message,
+    });
+    this.DB.buildInsert(this.updateTable, columns, values);
+
+    // Execute
+    return (await this.DB.runQuery(true)) as ErrorObj | NoResponse;
+  }
+
   async addVote(
     uid: number,
+    id: number,
     decision: number,
     message: string,
     update?: boolean
@@ -159,20 +203,18 @@ export default class SubmissionQuery {
     // Prepare data
     const timestamp = Math.ceil(Date.now() / 1000);
     const updateValue = update ? '1' : '0';
-    const [voteColumn, voteValue] = [
-      ['type', 'uid', 'date', 'decision', 'update', 'message'],
-      [
-        `${this.subType}`,
-        `${uid}`,
-        `${timestamp}`,
-        `${decision}`,
-        updateValue,
-        message,
-      ],
-    ];
+    const { columns, values } = objIntoArrays({
+      id: `${id}`,
+      type: `${this.subType}`,
+      uid: `${uid}`,
+      date: `${timestamp}`,
+      decision: `${decision}`,
+      update: updateValue,
+      message,
+    });
 
     // Resolve
-    this.DB.buildInsert(this.subTable, voteColumn, voteValue);
+    this.DB.buildInsert(this.subTable, columns, values);
     return (await this.DB.runQuery(true)) as ErrorObj | NoResponse;
   }
 
@@ -205,10 +247,8 @@ export default class SubmissionQuery {
   ) {
     // Prepare and update the submission table
     const timestamp = Math.ceil(Date.now() / 1000);
-    let [updateColumn, updateValue] = [
-      ['updated', 'queue_code'],
-      [`${timestamp}`, '2'],
-    ];
+    let updateColumn = ['updated', 'queue_code'];
+    let updateValue = [`${timestamp}`, '2'];
 
     // Update the submission table
     const { columns, values } = objIntoArrays(payload);
@@ -238,6 +278,17 @@ export default class SubmissionQuery {
     return (await this.DB.runQuery(true)) as ErrorObj | NoResponse;
   }
 
+  async updateSubmissionVersion(vid: number, accept: boolean) {
+    // prepare and push the update to the `version` database
+    const acceptCode = accept ? queue_code.accepted : queue_code.declined;
+    const versionColumn = [`data`, `in_queue`];
+    const versionValue = [`{}`, `${acceptCode}`];
+    this.DB.buildUpdate(this.updateTable, versionColumn, versionValue);
+    this.DB.buildWhere(`vid = ${vid}`);
+    // Execute
+    return (await this.DB.runQuery(true)) as ErrorObj | NoResponse;
+  }
+
   async updateVote(
     id: number,
     decision: number,
@@ -247,10 +298,8 @@ export default class SubmissionQuery {
     // Prepare data
     const timestamp = Math.ceil(Date.now() / 1000);
     const checkUpdate = update ? '1' : '0';
-    const [voteColumn, voteValue] = [
-      ['date', 'decision', 'message'],
-      [`${timestamp}`, `${decision}`, message],
-    ];
+    const voteColumn = ['date', 'decision', 'message'];
+    const voteValue = [`${timestamp}`, `${decision}`, message];
 
     // Prepare query
     this.DB.buildUpdate(this.subTable, voteColumn, voteValue);
@@ -261,32 +310,6 @@ export default class SubmissionQuery {
     ]);
 
     // Update
-    return (await this.DB.runQuery(true)) as ErrorObj | NoResponse;
-  }
-
-  async updateSubmissionQueue(
-    id: number,
-    payload: AnySubmission,
-    message: string,
-    version: string
-  ) {
-    // First prepare and update the submission table
-    const timestamp = Math.ceil(Date.now() / 1000);
-    // Second, prepare and push the update to the `version` database
-    const [versionColumn, versionValue] = [
-      [`date`, `message`, `rid`, `type`, `version`, `data`, `in_queue`],
-      [
-        `${timestamp}`,
-        message,
-        `${id}`,
-        `${submissionList[this.submissionKind]}`,
-        version,
-        JSON.stringify(payload),
-        '1',
-      ],
-    ];
-    this.DB.buildInsert(this.updateTable, versionColumn, versionValue);
-    // Execute
     return (await this.DB.runQuery(true)) as ErrorObj | NoResponse;
   }
 

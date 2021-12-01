@@ -2,12 +2,10 @@
 // SUBMISSION CLASS TEMPLATE
 // ================================================================================
 import { Request } from 'express';
-import fs from 'fs';
 
 import { checkLogin, validatePermission } from './userlib';
 import CF from '../../config';
 import ERR, { ErrorObj, isError } from '../../lib/error';
-import { isStringJSON } from '../../lib/globallib';
 import { noContentResponse, NoResponse } from '../../lib/result';
 import SubmissionQuery from '../../queries/submissionQuery';
 import {
@@ -19,6 +17,9 @@ import {
 } from '../../schema/submissionType';
 import { User } from '../../schema/userTypes';
 
+import { deleteFile as deleteSpriteFile } from '../subSprite';
+
+// Types/constants
 type ListPublicFunction = Parameters<
   (
     page: number,
@@ -38,7 +39,7 @@ export default class Submission {
     this.query = new SubmissionQuery(submissionKind);
   }
 
-  // READ ONLY METHODS
+  // ----- READ ONLY METHODS -----
   async getPublicList(...args: ListPublicFunction) {
     const getData = await this.query.getSubmissionList('accepted', ...args);
     if (isError(getData)) return getData as ErrorObj;
@@ -62,7 +63,7 @@ export default class Submission {
     return getData as SubmissionVersion[];
   }
 
-  // WRITE METHODS
+  // ----- WRITE METHODS -----
   async createSubmission(_request: Request, payload: AnySubmission) {
     // Ensure user is logged in
     const getLogin = await checkLogin(_request);
@@ -110,13 +111,13 @@ export default class Submission {
 
     // Execute & resolve
     const result = await (queue
-      ? this.query.updateSubmissionQueue(id, payload, message, version)
+      ? this.query.createSubmissionVersion(id, payload, message, version)
       : this.query.updateSubmission(id, payload, message, version));
     if (isError(result)) return result as ErrorObj;
     return result as NoResponse;
   }
 
-  // STAFF METHODS
+  // ----- STAFF METHODS -----
   async voteSubmission(
     _request: Request,
     id: number,
@@ -142,20 +143,8 @@ export default class Submission {
       return ERR('submissionNotInQueue');
     }
 
-    // Grab the submission votes
-    const existingVote: StaffVote[] = isStringJSON(submission?.decision || '')
-      ? JSON.parse(submission?.decision)
-      : [];
-
-    // Determine if the user has voted already
-    const findUser = existingVote.filter((data) => data.uid === uid);
-    if (findUser.length > 0) return ERR('submissionAlreadyVoted');
-
-    // Add the current vote
-    existingVote.push({ uid, decision, message });
-
     // Process submission votes
-    return await this.processVotes(id, existingVote);
+    return await this.processVotes(uid, submission, decision, message);
   }
 
   // Only root admin can delete submissions
@@ -172,7 +161,7 @@ export default class Submission {
     return await this.query.deleteSubmission(id);
   }
 
-  // PRIVATE METHODS
+  // !!!!! PRIVATE METHODS !!!!!
   private removeSensitiveSubProp(submission: AnySubmission) {
     if (submission?.queue_code) delete submission?.queue_code;
     if (submission?.decision) delete submission?.decision;
@@ -191,62 +180,111 @@ export default class Submission {
   }
 
   private async processVotes(
-    id: number,
-    votes: StaffVote[],
-    isUpdate?: boolean
+    uid: number,
+    submission: AnySubmission,
+    decision: number,
+    message: string
   ) {
-    // count the number of votes
-    const accepts = votes.filter((vote) => vote.decision >= 1).length;
-    const declines = votes.filter((vote) => vote.decision === 0).length;
-    // Process new submission
-    if (!isUpdate) {
-      // Accept
-      if (accepts >= CF.QC_VOTES_NEW) {
-        const payload: AnySubmission = {
-          queue_code: queue_code.accepted,
-          //decision: [],
-        };
-        return await this.query.updateSubmissionLazy(id, payload);
-      }
-      // Decline
-      else if (declines >= CF.QC_VOTES_NEW) {
-        const payload: AnySubmission = { queue_code: queue_code.declined };
-        return await this.query.updateSubmissionLazy(id, payload);
-      }
-      // Apply votes
-      else {
-        //const payload: AnySubmission = { decision: votes };
-        // return await this.query.updateSubmissionLazy(id, payload);
-      }
-    }
-    // Process update submission
-    if (accepts >= CF.QC_VOTES_UPDATE) {
-      // Grab the update details
-      const data = await this.query.getSubmissionUpdatesByRid(id);
-      if (isError(data)) {
-        return data as ErrorObj;
-      }
-      // Prepare the data
-      // const updatePayload = {
-      //   ...(data as SubmissionVersion).data,
-      //   queue_code: 0,
-      //   decision: [],
-      // } as AnySubmission;
-      // return await this.query.updateSubmissionLazy(id, updatePayload);
+    // Grab the submission votes
+    const { id } = submission;
+    const getVotes = await this.query.getVotesById(id, false);
+    if (isError(getVotes)) return getVotes;
+
+    // Determine if the user has voted already
+    const existingVote = getVotes as StaffVote[];
+    const findUser = existingVote.filter((data) => data.uid === uid);
+    if (findUser.length > 0) return ERR('submissionAlreadyVoted');
+
+    // count the number of votes including the current decision
+    const accepts =
+      existingVote.filter((vote) => vote.decision >= 1).length +
+      (decision ? 1 : 0);
+    const declines =
+      existingVote.filter((vote) => vote.decision === 0).length +
+      (decision ? 0 : 1);
+
+    // Register vote
+    const vote = await this.query.addVote(uid, id, decision, message);
+    if (isError(vote)) return vote as ErrorObj;
+
+    // Accept
+    if (accepts >= CF.QC_VOTES_NEW) {
+      const payload = this.queueUpdatePayload(queue_code.accepted);
+      return await this.query.updateSubmissionLazy(id, payload);
     }
     // Decline
     else if (declines >= CF.QC_VOTES_NEW) {
-      this.declineSubmission(id);
-      return noContentResponse();
+      const payload = this.queueUpdatePayload(queue_code.declined);
+      this.deleteSubmissionFiles(submission);
+      return await this.query.updateSubmissionLazy(id, payload);
     }
-    // Apply votes
-    else {
-      // const payload: AnySubmission = { decision: votes };
-      // return await this.query.updateSubmissionLazy(id, payload);
-    }
+    return vote;
   }
 
-  private declineSubmission(id: number) {
-    console.log(id);
+  private async processVotesUpdate(
+    uid: number,
+    update: SubmissionVersion,
+    decision: number,
+    message: string
+  ) {
+    // Grab the submission votes
+    const { vid, rid } = update;
+    const getVotes = await this.query.getVotesById(vid, true);
+    if (isError(getVotes)) return getVotes;
+
+    // Determine if the user has voted already
+    const existingVote = getVotes as StaffVote[];
+    const findUser = existingVote.filter((data) => data.uid === uid);
+    if (findUser.length > 0) return ERR('submissionAlreadyVoted');
+
+    // count the number of votes including the current decision
+    const accepts =
+      existingVote.filter((vote) => vote.decision >= 1).length +
+      (decision ? 1 : 0);
+    const declines =
+      existingVote.filter((vote) => vote.decision === 0).length +
+      (decision ? 0 : 1);
+
+    // Register vote
+    const vote = await this.query.addVote(uid, vid, decision, message, true);
+    if (isError(vote)) return vote as ErrorObj;
+
+    // Accept
+    if (accepts >= CF.QC_VOTES_UPDATE) {
+      // Update the vid row in versions table
+      const updateVer = await this.query.updateSubmissionVersion(vid, true);
+      if (isError(updateVer)) return updateVer as ErrorObj;
+      // Prepare data to update the real submission
+      const accept = this.queueUpdatePayload(queue_code.accepted);
+      const payload = { ...accept, ...update.data };
+      return await this.query.updateSubmissionLazy(rid, payload);
+    }
+    // Decline
+    else if (declines >= CF.QC_VOTES_UPDATE) {
+      // Update the vid row in versions table
+      const updateVer = await this.query.updateSubmissionVersion(vid, false);
+      if (isError(updateVer)) return updateVer as ErrorObj;
+      // Prepare data to update the real submission
+      // Will put this as accepted since the original submission is already accepted
+      const payload = this.queueUpdatePayload(queue_code.accepted);
+      this.deleteSubmissionFiles(update.data as AnySubmission);
+      return await this.query.updateSubmissionLazy(rid, payload);
+    }
+    return vote;
+  }
+
+  private queueUpdatePayload(queue_code: number) {
+    return {
+      queue_code,
+      decision: '',
+    };
+  }
+
+  private deleteSubmissionFiles(submission: AnySubmission) {
+    switch (this.kind) {
+      case 'sprites':
+        deleteSpriteFile(submission.file, submission.thumbnail);
+        break;
+    }
   }
 }
