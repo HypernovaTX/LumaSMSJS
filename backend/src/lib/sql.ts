@@ -59,9 +59,10 @@ export default class SQL {
     // run the query
     const getData = await new Promise<any>((resolve) => {
       (this.pool as Pool).getConnection((poolError, connection) => {
-        poolError && resolve(ERR('dbConnect', poolError.message));
-        CF.DEBUG_MODE &&
-          console.log(`\x1b[36m[SQL QUERY] ${this.query}\x1b[0m`);
+        if (poolError) resolve(ERR('dbConnect', poolError.message));
+        if (CF.DEBUG_MODE) {
+          console.log(`\x1b[36m[SQL QUERY] \x1b[90m${this.query}\x1b[0m`);
+        }
         try {
           connection.query(this.query, (error, result) => {
             connection.release();

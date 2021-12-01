@@ -75,7 +75,9 @@ export default function ERR(error: ErrorCodes, reason?: string): ErrorObj {
   const message = errors[error];
 
   // Only calls if it's not blank
-  console.log(`\x1b[41m[LUMASMS API ERROR] - (${error}) ${message}\x1b[0m`);
+  console.log(
+    `\x1b[41m[LUMASMS API ERROR]\x1b[0m\x1b[31m - (${error}) ${message}\x1b[0m`
+  );
   if (reason) {
     console.log(`\x1b[33m[Reason] - ${reason}\x1b[0m`);
   }
