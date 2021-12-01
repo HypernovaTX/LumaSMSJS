@@ -4,12 +4,7 @@ import CF from '../config';
 import ERR, { ErrorObj } from '../lib/error';
 import { sanitizeInput } from '../lib/globallib';
 import { NoResponse } from '../lib/result';
-import {
-  User,
-  UserList,
-  UsernameChange,
-  UserPermissionFull,
-} from '../schema/userTypes';
+import { User, UsernameChange, UserPermissionFull } from '../schema/userTypes';
 
 export default class UserQuery {
   DB: SQL;
@@ -32,6 +27,7 @@ export default class UserQuery {
     filter: [string, string][] = []
   ) {
     this.DB.buildSelect(this.userTable);
+
     // Apply filter
     if (filter.length > 0) {
       const statements = filter.map((item) => {
@@ -42,14 +38,13 @@ export default class UserQuery {
       });
       this.DB.buildWhere(statements);
     }
+
     // Order and limit
-    if (column) {
-      this.DB.buildOrder([column], [asc]);
-    }
-    if (count) {
-      this.DB.buildCustomQuery(`LIMIT ${page * count}, ${count}`);
-    }
-    return (await this.DB.runQuery()) as UserList | ErrorObj;
+    if (column) this.DB.buildOrder([column], [asc]);
+    if (count) this.DB.buildCustomQuery(`LIMIT ${page * count}, ${count}`);
+
+    // Execute and resolve
+    return (await this.DB.runQuery()) as User[] | ErrorObj;
   }
 
   async findUserByUsername(
@@ -61,6 +56,7 @@ export default class UserQuery {
   ) {
     this.DB.buildSelect(this.userTable);
     this.DB.buildCustomQuery(`WHERE username LIKE '${sanitizeInput(input)}%'`);
+
     // Order and limit
     if (column) {
       this.DB.buildOrder([column], [asc]);
@@ -83,8 +79,10 @@ export default class UserQuery {
     };
     this.DB.buildSelect(`${this.userTable} u`, [
       `u.*`,
-      countQuery(`${CF.DB_PREFIX}comments`, uidWhere, `comments`), // Number of comments made by the user
-      `(SELECT ` + // Count all of the active submissions by this user
+      // ⬇️ Number of comments made by the user
+      countQuery(`${CF.DB_PREFIX}comments`, uidWhere, `comments`),
+      // ⬇️ Count all of the active submissions by this user
+      `(SELECT ` +
         countQuery(`${CF.DB_PREFIX}submission_games`, subWhere) +
         `+` +
         countQuery(`${CF.DB_PREFIX}submission_hacks`, subWhere) +
@@ -102,6 +100,7 @@ export default class UserQuery {
     ]);
     this.DB.buildWhere(`u.uid = ${id.toString()}`);
     const queryResult = await this.DB.runQuery();
+
     if (!Array.isArray(queryResult) || !queryResult.length) {
       return ERR('userNotFound');
     }
@@ -117,6 +116,7 @@ export default class UserQuery {
     if (!Array.isArray(queryResult) || !queryResult.length) {
       return ERR('userNotFound');
     }
+
     // Only return the 1st result if there's more
     const [user] = queryResult;
     return user as User | ErrorObj;

@@ -31,9 +31,7 @@ export function directorySetup() {
     `${CF.UPLOAD_SUB_SPRITE}`,
   ].forEach((dir) => {
     const definedDir = path.resolve(`./${rootUpload}/${dir}`);
-    if (!fs.existsSync(definedDir)) {
-      fs.mkdirSync(definedDir);
-    }
+    if (!fs.existsSync(definedDir)) fs.mkdirSync(definedDir);
   });
 }
 
@@ -58,7 +56,7 @@ export async function hasFile(path: string) {
   return await new Promise<boolean>((resolve) => {
     fs.access(path, fs.constants.F_OK, (err) => {
       if (err) {
-        console.error(err);
+        if (CF.DEBUG_MODE) console.error(err);
         resolve(false);
       }
       resolve(true);
@@ -68,12 +66,8 @@ export async function hasFile(path: string) {
 
 export async function unlinkFile(directory: string, file: string) {
   const fileExists = await hasFile(`${directory}/${file}`);
-  if (!fileExists) {
-    return;
-  }
+  if (!fileExists) return;
   fs.unlink(`${directory}/${file}`, (err) => {
-    if (err) {
-      ERR('fileUnlink', err.message);
-    }
+    if (err) ERR('fileUnlink', err.message);
   });
 }

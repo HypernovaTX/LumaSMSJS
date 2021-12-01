@@ -90,12 +90,15 @@ ALTER TABLE `tsms_version` CHANGE `change` `message` VARCHAR(255) CHARACTER SET 
 ALTER TABLE `tsms_version` ADD `in_queue` INT(2) NOT NULL DEFAULT '0' AFTER `decision`;
 
 /* Scheduled for deletion */
-CREATE TABLE `tsms_submission_delete` ( 
-  `cronid` INT NOT NULL AUTO_INCREMENT , 
-  `type` INT(10) NOT NULL , 
-  `id` INT(10) NOT NULL , 
-  `time` INT(10) NOT NULL , 
-  PRIMARY KEY (`cronid`)
+CREATE TABLE `tsms_votes` ( 
+  `voteid` INT NOT NULL AUTO_INCREMENT , 
+  `type` INT(2) NOT NULL , 
+  `update` INT(1) NOT NULL , 
+  `uid` INT(10) NOT NULL , 
+  `decision` INT(1) NOT NULL , 
+  `message` TEXT NOT NULL , 
+  `date` INT(10) NOT NULL , 
+  PRIMARY KEY (`voteid`)
 );
 
 /****************************************************************/

@@ -39,6 +39,7 @@ export const errors = {
   submissionMissingParam: 'Invalid parameters to create / update submission!',
   submissionNotAllowed: 'Users can only update their own submission.',
   submissionNotFound: 'The selected submission is not found!',
+  submissionNotInQueue: 'The selected submission is not in queue!',
 
   // user
   userCookie: 'User cookie not found!',
@@ -72,11 +73,13 @@ export function isError(x: any) {
 
 export default function ERR(error: ErrorCodes, reason?: string): ErrorObj {
   const message = errors[error];
+
   // Only calls if it's not blank
   console.log(`\x1b[41m[LUMASMS API ERROR] - (${error}) ${message}\x1b[0m`);
   if (reason) {
     console.log(`\x1b[33m[Reason] - ${reason}\x1b[0m`);
   }
+
   // Log files
   const date = new Date().toUTCString();
   const data = `${date} - [${error}] ${message}\n`;

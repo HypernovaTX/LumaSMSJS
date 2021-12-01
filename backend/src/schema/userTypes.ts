@@ -51,7 +51,6 @@ export interface User {
   switch_code?: string;
 }
 export type UserKeys = keyof User;
-export type UserList = User[];
 export interface UserPermissions {
   moderator: number;
   acp_access: number;

@@ -36,7 +36,7 @@ export default class SQL {
   connect() {
     this.pool = mysql.createPool(this.DBCONFIG);
   }
-  release() {
+  release(): void {
     if (!this.checkPool()) {
       ERR('dbDisconnect');
       return;
@@ -54,9 +54,8 @@ export default class SQL {
    */
   async runQuery(noReturn: boolean | undefined = false) {
     // Start the connection
-    if (!this.checkPool()) {
-      this.connect();
-    }
+    if (!this.checkPool()) this.connect();
+
     // run the query
     const getData = await new Promise<any>((resolve) => {
       (this.pool as Pool).getConnection((poolError, connection) => {
@@ -66,11 +65,8 @@ export default class SQL {
         try {
           connection.query(this.query, (error, result) => {
             connection.release();
-            if (error) {
-              resolve(ERR('dbQuery', error.message));
-            } else {
-              resolve(noReturn ? noContentResponse() : result);
-            }
+            if (error) resolve(ERR('dbQuery', error.message));
+            else resolve(noReturn ? noContentResponse() : result);
           });
         } catch (error) {
           // MySQL errors
@@ -113,9 +109,7 @@ export default class SQL {
   // ORDER BY query
   // Note: both param must have the same number of arrays
   buildOrder(column: string[], ascending: boolean[]) {
-    if (column.length !== ascending.length) {
-      return ERR('dbOrderNumber');
-    }
+    if (column.length !== ascending.length) return ERR('dbOrderNumber');
     const list = ascending.map((value, index) => {
       const cleanColumn = sanitizeInput(column[index]);
       const orderDirection = value ? 'ASC' : 'DESC';
@@ -128,9 +122,7 @@ export default class SQL {
   // INSERT INTO query
   // Note: both 'columns' and 'values' param must have the same number of arrays
   buildInsert(table: string, columns: string[], values: string[]) {
-    if (columns.length !== values.length) {
-      return ERR('dbInsertNumber');
-    }
+    if (columns.length !== values.length) return ERR('dbInsertNumber');
     table = sanitizeInput(table);
     const outputColumns = columns
       .map((eachColumn) => sanitizeInput(eachColumn))
@@ -145,9 +137,7 @@ export default class SQL {
   // UPDATE query
   // Note: both 'columns' and 'values' param must have the same number of arrays
   buildUpdate(table: string, columns: string[], values: string[]) {
-    if (columns.length !== values.length) {
-      return ERR('dbUpdateNumber');
-    }
+    if (columns.length !== values.length) return ERR('dbUpdateNumber');
     const updateArray = columns.map((column, index) => {
       const value = `'${sanitizeInput(values[index])}'`;
       column = sanitizeInput(column);

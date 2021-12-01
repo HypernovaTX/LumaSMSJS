@@ -17,11 +17,8 @@ export type NoResponse = { noContent: true };
 
 export function httpStatus(res: Response, data: any) {
   if (!isError(data)) {
-    if (data?.noContent) {
-      res.status(resultCodes.noContent);
-    } else {
-      res.status(resultCodes.pass);
-    }
+    if (data?.noContent) res.status(resultCodes.noContent);
+    else res.status(resultCodes.pass);
     return;
   }
   const errorData = data as ErrorObj;

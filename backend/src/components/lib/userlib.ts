@@ -23,32 +23,28 @@ export async function checkLogin(_request: Request) {
   if (!_request.cookies?.Login) {
     return ERR('userCookie');
   }
+
   return await new Promise<ErrorObj | User>((resolve) => {
     //Use the JWT to verify the cookie with secret code
     jwt.verify(
       _request.cookies.Login,
       CF.JWT_SECRET,
       async (err: VerifyErrors, decoded: { uid: string; username: string }) => {
-        if (err) {
-          resolve(ERR('userJwt', err?.message));
-        }
+        if (err) resolve(ERR('userJwt', err?.message));
         const query = new UserQuery();
         const result = await query.getUserByIdLazy(parseInt(decoded?.uid));
         const ip = clientIP(_request);
-        if (isError(result)) {
-          resolve(result);
-        }
-        const userHelper = result as User;
+        if (isError(result)) resolve(result);
+
         // Ensure cookie info match the DB
+        const userHelper = result as User;
         if (
           userHelper?.uid === parseInt(decoded?.uid) &&
           userHelper?.username === decoded?.username
         ) {
           //If matches - confirm
           updateLastActivity(userHelper.uid, ip);
-          if (userHelper?.password) {
-            delete userHelper.password;
-          }
+          if (userHelper?.password) delete userHelper.password;
           resolve(userHelper);
         } else {
           resolve(ERR('userCookieInvalid'));
@@ -61,11 +57,10 @@ export async function checkLogin(_request: Request) {
 export async function verifyPassword(uid: number, password: string) {
   const query = new UserQuery();
   const queryResult = await query.getUserByIdLazy(uid);
-  if (isError(queryResult)) {
-    return false;
-  }
-  const userHelper = queryResult as User;
+  if (isError(queryResult)) return false;
+
   // Ensure password is a string
+  const userHelper = queryResult as User;
   if (typeof userHelper?.password !== 'string') {
     userHelper.password = '';
   }
@@ -76,17 +71,18 @@ export async function verifyPassword(uid: number, password: string) {
 export async function getPermission(
   _request: Request
 ): Promise<PermissionArray> {
+  // Check login
   const loginStatus = await checkLogin(_request);
-  if (isError(loginStatus)) {
-    return [];
-  }
+  if (isError(loginStatus)) return [];
+
+  // Check role by role ID
   const userHelper = loginStatus as User;
   const groupID = userHelper.gid;
   const query = new UserQuery();
   const result = await query.getRole(groupID);
-  if (isError(result)) {
-    return [];
-  }
+  if (isError(result)) return [];
+
+  // Process data
   const groupHelper = result as UserPermissions;
   const permissions = Object.entries(groupHelper).map((each) => {
     const [name, value] = each;
@@ -94,10 +90,30 @@ export async function getPermission(
       return name;
     }
   });
+
+  // Resolve
   const output = (permissions as PermissionArray).filter(
     (findNull) => !!findNull
   );
   return output;
+}
+
+export async function validatePermission(
+  _request: Request,
+  permissions: PermissionKind | PermissionArray
+) {
+  // Get permission list
+  const permissionResult = await getPermission(_request);
+  if (!permissionResult.length) return false;
+
+  // Match permissions
+  if (Array.isArray(permissions)) {
+    const intersection = permissionResult.filter((permit) =>
+      permissions.includes(permit)
+    );
+    return !!(intersection.length === permissions.length);
+  }
+  return permissionResult.includes(permissions);
 }
 
 export async function checkExistingUserAndEmail(
@@ -106,27 +122,21 @@ export async function checkExistingUserAndEmail(
 ) {
   const query = new UserQuery();
   const result = await query.getUserByUsernameAndEmail(username, email);
-  if (isError(result)) {
-    return false;
-  }
+  if (isError(result)) return false;
   return true;
 }
 
 export async function checkExistingUser(username: string) {
   const query = new UserQuery();
   const result = await query.getUserByUsername(username);
-  if (isError(result)) {
-    return false;
-  }
+  if (isError(result)) return false;
   return true;
 }
 
 export async function checkExistingEmail(email: string) {
   const query = new UserQuery();
   const result = await query.getUserByEmail(email);
-  if (isError(result)) {
-    return false;
-  }
+  if (isError(result)) return false;
   return true;
 }
 
@@ -167,22 +177,4 @@ export async function updateUser(uid: number, inputs: User) {
   const { columns, values } = objIntoArrays(inputs);
   const query = new UserQuery();
   return await query.updateUser(uid, columns, values);
-}
-
-// CONSTANTS / UTIL
-export async function validatePermission(
-  _request: Request,
-  permissions: PermissionKind | PermissionArray
-) {
-  const permissionResult = await getPermission(_request);
-  if (!permissionResult.length) {
-    return false;
-  }
-  if (Array.isArray(permissions)) {
-    const intersection = permissionResult.filter((permit) =>
-      permissions.includes(permit)
-    );
-    return !!(intersection.length === permissions.length);
-  }
-  return permissionResult.includes(permissions);
 }

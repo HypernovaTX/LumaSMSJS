@@ -15,11 +15,8 @@ import {
   verifyImageFile,
 } from '../lib/filemanager';
 import { NoResponse } from '../lib/result';
-import {
-  AnySubmission,
-  SubmissionVersionResponse,
-} from '../schema/submissionType';
-import { Sprite, SpriteResponse } from '../schema/subSpritesType';
+import { AnySubmission, SubmissionVersion } from '../schema/submissionType';
+import { Sprite } from '../schema/submissionType';
 
 const spriteImageMIME = /image\/(gif|png)$/i;
 const submission = new Submission('sprites');
@@ -42,9 +39,7 @@ export const getSpriteDetails = async (id: number) =>
   (await submission.getSubmissionDetails(id)) as Sprite | ErrorObj;
 
 export const getSpriteHistory = async (id: number) =>
-  (await submission.getSubmissionHistory(id)) as
-    | SubmissionVersionResponse[]
-    | ErrorObj;
+  (await submission.getSubmissionHistory(id)) as SubmissionVersion[] | ErrorObj;
 
 // WRITE
 export const updateSprite = async (...args: SpriteUpdateFunction) =>
@@ -58,18 +53,19 @@ export const createSprite = async (
   file: Express.Multer.File,
   thumb: Express.Multer.File
 ) => {
+  // Check and process files
   const processedPayload = processPayloadAndFiles(payload, file, thumb);
   if (isError(processedPayload)) {
     deleteFile(file, thumb);
     return processedPayload as ErrorObj;
   }
+
+  // Prepare, execute, and resolve
   payload = processedPayload as Sprite;
   const result = (await submission.createSubmission(_request, payload)) as
     | NoResponse
     | ErrorObj;
-  if (isError(result)) {
-    deleteFile(file, thumb);
-  }
+  if (isError(result)) deleteFile(file, thumb);
   return result;
 };
 
@@ -82,11 +78,14 @@ export const updateSpriteFile = async (
   file: Express.Multer.File,
   thumb: Express.Multer.File
 ) => {
+  // Check and process files
   const processedPayload = processPayloadAndFiles(payload, file, thumb);
   if (isError(processedPayload)) {
     deleteFile(file, thumb);
     return processedPayload as ErrorObj;
   }
+
+  // Prepare, execute, and resolve
   payload = processedPayload as Sprite;
   const result = (await submission.updateSubmission(
     _request,
@@ -96,9 +95,7 @@ export const updateSpriteFile = async (
     version,
     true
   )) as NoResponse | ErrorObj;
-  if (isError(result)) {
-    deleteFile(file, thumb);
-  }
+  if (isError(result)) deleteFile(file, thumb);
   return result;
 };
 
@@ -117,9 +114,11 @@ function processPayloadAndFiles(
   file: Express.Multer.File,
   thumb: Express.Multer.File
 ) {
+  // Prepare
   payload.file = file.filename;
   payload.thumbnail = thumb.filename;
   payload.file_mime = file.mimetype;
+
   // File name too long
   if (
     file.filename.length > CF.FILENAME_LIMIT ||
@@ -127,14 +126,15 @@ function processPayloadAndFiles(
   ) {
     return ERR('fileNameTooLong');
   }
+
   // Ensure file/thumb is an image
   if (!verifyImageFile(file) || !verifyImageFile(thumb)) {
     return ERR('fileImageInvalid');
   }
+
   // Detect if thumb is an animated GIF or not
-  if (checkAnimatedGif(directory, thumb)) {
-    return ERR('submissionAnimatedThumb');
-  }
+  if (checkAnimatedGif(directory, thumb)) return ERR('submissionAnimatedThumb');
+
   return payload;
 }
 

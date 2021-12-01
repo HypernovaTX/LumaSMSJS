@@ -38,20 +38,17 @@ export async function listUsers(
   asc: boolean = true,
   filter: [string, string][] = []
 ) {
+  // Run the query
   const query = new UserQuery();
   const result = await query.listUsers(page, count, column, asc, filter);
-  if (isError(result)) {
-    return result;
-  }
-  let output = result;
-  if (Array.isArray(result)) {
-    output = result.map((user) => {
-      if (user.password) {
-        delete user.password;
-      }
-      return user;
-    });
-  }
+  if (isError(result)) return result as ErrorObj;
+
+  // Delete passwords
+  const output = (result as User[]).map((user) => {
+    if (user.password) delete user.password;
+    return user;
+  });
+
   return output;
 }
 
@@ -62,33 +59,29 @@ export async function findUsersByName(
   column: string = '',
   asc: boolean = true
 ) {
+  // Run the query
   const query = new UserQuery();
   const result = await query.findUserByUsername(find, page, count, column, asc);
-  if (isError(result)) {
-    return result;
-  }
-  let output = result;
-  if (Array.isArray(result)) {
-    output = result.map((user) => {
-      if (user.password) {
-        delete user.password;
-      }
-      return user;
-    });
-  }
+  if (isError(result)) return result as ErrorObj;
+
+  // Delete passwords
+  const output = (result as User[]).map((user) => {
+    if (user.password) delete user.password;
+    return user;
+  });
+
   return output;
 }
 
 export async function showUserByID(id: number) {
   const query = new UserQuery();
   const result = await query.getUserById(id);
-  if (isError(result)) {
-    return result;
-  }
+  if (isError(result)) return result as Error;
+
   // Delete password
-  if ((result as User).password) {
-    delete (result as User).password;
-  }
+  const userResult = result as User;
+  if (userResult.password) delete userResult.password;
+
   return result;
 }
 
@@ -98,25 +91,24 @@ export async function userLogin(
   remember: boolean,
   _response: Response
 ) {
+  // Get requested username
   const query = new UserQuery();
   const queryResult = await query.getUserByUsername(username);
-  if (isError(queryResult)) {
-    return queryResult;
-  }
-  const userHelper = queryResult as User;
+  if (isError(queryResult)) return queryResult;
+
   // Ensure password is a string
-  if (typeof userHelper?.password !== 'string') {
-    userHelper.password = '';
-  }
+  const userHelper = queryResult as User;
+  if (typeof userHelper?.password !== 'string') userHelper.password = '';
   const result = await bcrypt.compare(password, userHelper.password);
+
+  // Process and resolve data
   if (result) {
     updateLoginCookie(userHelper.uid, userHelper.username, _response, remember);
-    // Delete password
-    if (userHelper.password) {
-      delete userHelper.password;
-    }
+    if (userHelper.password) delete userHelper.password;
     return userHelper;
   }
+
+  // If bcrypt failed
   return ERR('userLogin');
 }
 
@@ -141,10 +133,7 @@ export async function userRegistration(
     const ip = clientIP(_request);
     const query = new UserQuery();
     const result = await query.createUser(username, email, hashedPassword, ip);
-    if (isError(result)) {
-      return result as ErrorObj;
-    }
-    return result as NoResponse;
+    return result;
   }
   return ERR('userExists');
 }
@@ -182,25 +171,22 @@ export async function updateUsername(
 ) {
   // Ensure user is logged in
   const getLogin = await checkLogin(_request);
-  if (isError(getLogin)) {
-    return getLogin as ErrorObj;
-  }
+  if (isError(getLogin)) return getLogin as ErrorObj;
+
   // Username is the same as before
   const currentUser = getLogin as User;
-  if (currentUser?.username === username) {
-    return ERR('userNameSame');
-  }
+  if (currentUser?.username === username) return ERR('userNameSame');
+
   // Verify password
   const uid = currentUser?.uid ?? 0;
   const correctPassword = await verifyPassword(uid, sanitizeInput(password));
-  if (!correctPassword) {
-    return ERR('userPasswordWrong');
-  }
+  if (!correctPassword) return ERR('userPasswordWrong');
+
   // Check if username exists
   const checkExistingUsername = await checkExistingUser(username);
-  if (checkExistingUsername) {
-    return ERR('userNameExists');
-  }
+  if (checkExistingUsername) return ERR('userNameExists');
+
+  // Execute and resolve
   const query = new UserQuery();
   query.usernameUpdate(uid, currentUser?.username, username);
   return await updateUser(uid, { username });
@@ -212,22 +198,19 @@ export async function updatePassword(
   newPassword: string
 ) {
   // Passwords are the same
-  if (oldPassword === newPassword) {
-    return ERR('userPasswordSame');
-  }
+  if (oldPassword === newPassword) return ERR('userPasswordSame');
+
   // Ensure user is logged in
   const getLogin = await checkLogin(_request);
-  if (isError(getLogin)) {
-    return getLogin as ErrorObj;
-  }
-  const currentUser = getLogin as User;
+  if (isError(getLogin)) return getLogin as ErrorObj;
+
   // Verify old password
+  const currentUser = getLogin as User;
   const uid = currentUser?.uid ?? 0;
   const correctPassword = await verifyPassword(uid, sanitizeInput(oldPassword));
-  if (!correctPassword) {
-    return ERR('userPasswordOldWrong');
-  }
-  // Encrypt the password
+  if (!correctPassword) return ERR('userPasswordOldWrong');
+
+  // Encrypt the password and resolve
   const hashedNewPassword = await bcrypt.hash(newPassword, CF.PASSWORD_SALT);
   return await updateUser(uid, { password: hashedNewPassword });
 }
@@ -239,20 +222,18 @@ export async function updateEmail(
 ) {
   // Ensure user is logged in
   const getLogin = await checkLogin(_request);
-  if (isError(getLogin)) {
-    return getLogin as ErrorObj;
-  }
-  const currentUser = getLogin as User;
+  if (isError(getLogin)) return getLogin as ErrorObj;
+
   // Emails are the same
-  if (currentUser?.email === email) {
-    return ERR('userEmailSame');
-  }
+  const currentUser = getLogin as User;
+  if (currentUser?.email === email) return ERR('userEmailSame');
+
   // Verify password
   const uid = currentUser?.uid ?? 0;
   const correctPassword = await verifyPassword(uid, sanitizeInput(password));
-  if (!correctPassword) {
-    return ERR('userPasswordWrong');
-  }
+  if (!correctPassword) return ERR('userPasswordWrong');
+
+  // Resolve
   return await updateUser(uid, { email: sanitizeInput(email) });
 }
 
@@ -266,22 +247,24 @@ export async function updateUserAvatar(
     unlinkFile(directory, file.filename);
     return ERR('fileNameTooLong');
   }
+
   // Ensure user is logged in
   const getLogin = await checkLogin(_request);
   if (isError(getLogin)) {
     unlinkFile(directory, file.filename);
     return getLogin as ErrorObj;
   }
+
   // Ensure it is an image, otherwise
   if (!verifyImageFile(file)) {
     unlinkFile(directory, file.filename);
     return ERR('fileImageInvalid');
   }
-  // Remove user's old file
+
+  // Remove user's old avatar file
   const currentUser = getLogin as User;
-  if (currentUser?.avatar_file) {
-    unlinkFile(directory, currentUser.avatar_file);
-  }
+  if (currentUser?.avatar_file) unlinkFile(directory, currentUser.avatar_file);
+
   // Apply
   return await updateUser(currentUser?.uid, { avatar_file: file.filename });
 }
@@ -296,22 +279,24 @@ export async function updateUserBanner(
     unlinkFile(directory, file.filename);
     return ERR('fileNameTooLong');
   }
+
   // Ensure user is logged in
   const getLogin = await checkLogin(_request);
   if (isError(getLogin)) {
     unlinkFile(directory, file.filename);
     return getLogin as ErrorObj;
   }
+
   // Ensure it is an image, otherwise
   if (!verifyImageFile(file)) {
     unlinkFile(directory, file.filename);
     return ERR('fileImageInvalid');
   }
-  // Remove user's old file
+
+  // Remove user's old banner file
   const currentUser = getLogin as User;
-  if (currentUser?.banner_file) {
-    unlinkFile(directory, currentUser.banner_file);
-  }
+  if (currentUser?.banner_file) unlinkFile(directory, currentUser.banner_file);
+
   // Apply
   return await updateUser(currentUser?.uid, { banner_file: file.filename });
 }

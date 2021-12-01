@@ -26,7 +26,7 @@ import {
 import CF from '../../config';
 import { httpStatus } from '../../lib/result';
 import { MulterFileFields } from '../../schema';
-import { Sprite } from '../../schema/subSpritesType';
+import { Sprite } from '../../schema/submissionType';
 
 export const spriteRouter = express.Router();
 // Prepare route and file handling

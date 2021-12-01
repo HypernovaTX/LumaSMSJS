@@ -47,12 +47,14 @@ export function clientIP(_request: Request) {
 export function stringToBoolean(input: string) {
   return input.toLowerCase() === 'true';
 }
+
 export function placeholderPromise(input: string) {
   const output = new Promise((resolve) => {
     resolve(input);
   });
   return output;
 }
+
 export function isStringJSON(toCheck: string) {
   try {
     JSON.parse(toCheck);
@@ -62,12 +64,14 @@ export function isStringJSON(toCheck: string) {
   }
   return true;
 }
+
 export function sanitizeInput(input: string) {
   // Proper Escape String without '
   let output = SqlString.escape(input);
   output = output.substring(1, output.length - 1);
   return output;
 }
+
 export function objIntoArrays(input: { [key: string]: any }) {
   const entries = Object.entries(input);
   const columns = entries.map((item) => {
