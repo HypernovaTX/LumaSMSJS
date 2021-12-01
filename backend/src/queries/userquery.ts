@@ -30,13 +30,14 @@ export default class UserQuery {
 
     // Apply filter
     if (filter.length > 0) {
+      const values: (string | number)[] = [];
       const statements = filter.map((item) => {
         let [name, value] = item;
         name = sanitizeInput(name);
-        value = sanitizeInput(value);
-        return `${name} = ${value}`;
+        values.push(value);
+        return `${name} = ?`;
       });
-      this.DB.buildWhere(statements);
+      this.DB.buildWhere(statements, values);
     }
 
     // Order and limit
@@ -98,7 +99,7 @@ export default class UserQuery {
         countQuery(`${CF.DB_PREFIX}submission_sprites`, subWhere) +
         `) AS submissions`,
     ]);
-    this.DB.buildWhere(`u.uid = ${id.toString()}`);
+    this.DB.buildWhere(`u.uid = ?`, [id]);
     const queryResult = await this.DB.runQuery();
 
     if (!Array.isArray(queryResult) || !queryResult.length) {
@@ -111,7 +112,7 @@ export default class UserQuery {
 
   async getUserByIdLazy(id: number) {
     this.DB.buildSelect(this.userTable, '*');
-    this.DB.buildWhere(`uid = ${id.toString()}`);
+    this.DB.buildWhere(`uid = ?`, [id]);
     const queryResult = await this.DB.runQuery();
     if (!Array.isArray(queryResult) || !queryResult.length) {
       return ERR('userNotFound');
@@ -124,7 +125,7 @@ export default class UserQuery {
 
   async getUserByUsername(username: string) {
     this.DB.buildSelect(this.userTable);
-    this.DB.buildWhere(`username = '${sanitizeInput(username)}'`);
+    this.DB.buildWhere(`username = ?`, [username]);
     const queryResult = await this.DB.runQuery();
     if (!Array.isArray(queryResult) || !queryResult.length) {
       return ERR('userNotFound');
@@ -135,7 +136,7 @@ export default class UserQuery {
 
   async getUserByEmail(email: string) {
     this.DB.buildSelect(this.userTable);
-    this.DB.buildWhere(`email = '${sanitizeInput(email)}'`);
+    this.DB.buildWhere(`email = ?`, [email]);
     const queryResult = await this.DB.runQuery();
     if (!Array.isArray(queryResult) || !queryResult.length) {
       return ERR('userNotFound');
@@ -146,7 +147,7 @@ export default class UserQuery {
 
   async getUserByGid(gid: number) {
     this.DB.buildSelect(this.userTable, '*');
-    this.DB.buildWhere(`gid = ${gid.toString()}`);
+    this.DB.buildWhere(`gid = ?`, [gid]);
     const queryResult = await this.DB.runQuery();
     if (!Array.isArray(queryResult) || !queryResult.length) {
       return ERR('userNotFound');
@@ -158,10 +159,7 @@ export default class UserQuery {
 
   async getUserByUsernameAndEmail(username: string, email: string) {
     this.DB.buildSelect(this.userTable);
-    this.DB.buildWhere(
-      `username = '${sanitizeInput(username)}' 
-        || email = '${sanitizeInput(email)}'`
-    );
+    this.DB.buildWhere(`username = ? || email = ?`, [username, email]);
     const queryResult = await this.DB.runQuery();
     if (!Array.isArray(queryResult) || !queryResult.length) {
       return ERR('userNotFound');
@@ -172,7 +170,7 @@ export default class UserQuery {
 
   async getRole(gid: number) {
     this.DB.buildSelect(this.groupTable, '*');
-    this.DB.buildWhere(`gid = ${gid}`);
+    this.DB.buildWhere(`gid = ?`, [gid]);
     const queryResult = await this.DB.runQuery();
     if (!Array.isArray(queryResult) || !queryResult.length) {
       return ERR('userRoleNotFound');
@@ -183,7 +181,7 @@ export default class UserQuery {
 
   async getUsernameChanges(uid: number) {
     this.DB.buildSelect(this.usernameUpdateTable);
-    this.DB.buildWhere(`uid = ${uid}`);
+    this.DB.buildWhere(`uid = ?`, [uid]);
     this.DB.buildOrder(['date'], [false]);
     const queryResult = await this.DB.runQuery();
     if (!Array.isArray(queryResult) || !queryResult.length) {
@@ -199,7 +197,7 @@ export default class UserQuery {
       ['last_activity', 'last_ip'],
       [timestamp, ip]
     );
-    this.DB.buildWhere(`uid = ${uid.toString()}`);
+    this.DB.buildWhere(`uid = ?`, [uid]);
     this.DB.runQuery();
   }
 
@@ -230,12 +228,12 @@ export default class UserQuery {
     updateValues: string[]
   ) {
     this.DB.buildUpdate(this.userTable, updateColumns, updateValues);
-    this.DB.buildWhere(`uid = ${uid}`);
+    this.DB.buildWhere(`uid = ?`, [`${uid}`]);
     return (await this.DB.runQuery(true)) as NoResponse | ErrorObj;
   }
 
   async deleteUser(uid: number) {
-    this.DB.buildDelete(this.userTable, `uid = ${uid}`);
+    this.DB.buildDelete(this.userTable, `uid = ?`, [uid]);
     return (await this.DB.runQuery(true)) as NoResponse | ErrorObj;
   }
 
@@ -250,12 +248,12 @@ export default class UserQuery {
     updateValues: string[]
   ) {
     this.DB.buildUpdate(this.groupTable, updateColumns, updateValues);
-    this.DB.buildWhere(`gid = ${gid}`);
+    this.DB.buildWhere(`gid = ?`, [gid]);
     return (await this.DB.runQuery(true)) as NoResponse | ErrorObj;
   }
 
   async deleteRole(gid: number) {
-    this.DB.buildDelete(this.userTable, `gid = ${gid}`);
+    this.DB.buildDelete(this.userTable, `gid = ?`, [gid]);
     return (await this.DB.runQuery(true)) as NoResponse | ErrorObj;
   }
 

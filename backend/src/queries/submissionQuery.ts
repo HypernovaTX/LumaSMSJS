@@ -89,7 +89,7 @@ export default class SubmissionQuery {
     );
 
     // Get by submission ID
-    this.DB.buildWhere([`z.id = ${id}`]);
+    this.DB.buildWhere(`z.id = ?`, [id]);
     const queryResult = await this.DB.runQuery();
 
     // Error handling
@@ -105,7 +105,7 @@ export default class SubmissionQuery {
 
   async getSubmissionUpdatesByRid(rid: number, sortVersion?: boolean) {
     this.DB.buildSelect(this.updateTable);
-    this.DB.buildWhere([`rid = ${rid}`, `type = ${this.subType}`]);
+    this.DB.buildWhere([`rid = ?`, `type = ?`], [rid, this.subType]);
     if (sortVersion) this.DB.buildOrder(['version'], [false]);
 
     const queryResult = await this.DB.runQuery();
@@ -114,7 +114,7 @@ export default class SubmissionQuery {
 
   async getSubmissionUpdatesByVid(vid: number) {
     this.DB.buildSelect(this.updateTable);
-    this.DB.buildWhere(`vid = ${vid}`);
+    this.DB.buildWhere(`vid = ?`, [vid]);
 
     const queryResult = await this.DB.runQuery();
     if (isError(queryResult)) return queryResult as ErrorObj;
@@ -233,7 +233,7 @@ export default class SubmissionQuery {
 
     // Query
     this.DB.buildUpdate(this.subTable, updateColumn, updateValue);
-    this.DB.buildWhere(`id = ${id}`);
+    this.DB.buildWhere(`id = ?`, [id]);
 
     // Execute
     return (await this.DB.runQuery(true)) as ErrorObj | NoResponse;
@@ -255,7 +255,7 @@ export default class SubmissionQuery {
     updateColumn.push(...columns);
     updateValue.push(...(values as string[]));
     this.DB.buildUpdate(this.subTable, updateColumn, updateValue);
-    this.DB.buildWhere(`id = ${id}`);
+    this.DB.buildWhere(`id = ?`, [id]);
     const resultUpdate = await this.DB.runQuery(true);
     if (isError(resultUpdate)) {
       return resultUpdate as ErrorObj;
@@ -284,7 +284,7 @@ export default class SubmissionQuery {
     const versionColumn = [`data`, `in_queue`];
     const versionValue = [`{}`, `${acceptCode}`];
     this.DB.buildUpdate(this.updateTable, versionColumn, versionValue);
-    this.DB.buildWhere(`vid = ${vid}`);
+    this.DB.buildWhere(`vid = ?`, [vid]);
     // Execute
     return (await this.DB.runQuery(true)) as ErrorObj | NoResponse;
   }
@@ -303,11 +303,10 @@ export default class SubmissionQuery {
 
     // Prepare query
     this.DB.buildUpdate(this.subTable, voteColumn, voteValue);
-    this.DB.buildWhere([
-      `id = ${id}`,
-      `type = ${this.subType}`,
-      `update = ${checkUpdate}`,
-    ]);
+    this.DB.buildWhere(
+      [`id = ?`, `type = ?`, `update = ?`],
+      [id, this.subType, checkUpdate]
+    );
 
     // Update
     return (await this.DB.runQuery(true)) as ErrorObj | NoResponse;

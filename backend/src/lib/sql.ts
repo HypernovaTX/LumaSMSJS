@@ -99,10 +99,11 @@ export default class SQL {
   }
 
   // WHERE query
-  // Note: all data must be sanitized manually
-  buildWhere(input: string | string[]) {
+  buildWhere(input: string | string[], values: (string | number)[] = []) {
     input = Array.isArray(input) ? input.join(' && ') : input;
-    this.query += `WHERE (${input}) `;
+    const rawQuery = `WHERE (${input})`;
+    const cleaned = mysql.format(rawQuery, values);
+    this.query += `${cleaned} `;
     return this.query;
   }
 
@@ -150,17 +151,21 @@ export default class SQL {
 
   // DELETE FROM query
   // FOR @param {string | string[]} input - Where statement, you can include multiple with arrays
-  buildDelete(table: string, input: string | string[]) {
+  buildDelete(
+    table: string,
+    input: string | string[],
+    values: (string | number)[] = []
+  ) {
     table = sanitizeInput(table);
     this.query = `DELETE FROM ${table} `;
-    this.buildWhere(input);
+    this.buildWhere(input, values);
     return this.query;
   }
 
   // Custom SQL queries, MUST BE STRING!
-  // Note: all data must be sanitized manually
-  buildCustomQuery(input: string) {
-    this.query += `${input} `;
+  buildCustomQuery(input: string, values: (string | number)[] = []) {
+    const cleaned = mysql.format(input, values);
+    this.query += `${cleaned} `;
     return this.query;
   }
 }
