@@ -22,6 +22,7 @@ import {
   updateSprite,
   updateSpriteFile,
   voteNewSprite,
+  voteSpriteUpdate,
 } from '../../components/subSprite';
 // import { isStringJSON } from '../../lib/globallib.js';
 import CF from '../../config';
@@ -87,6 +88,21 @@ spriteRouter.put('/', rateLimits.general, async (req, res) => {
 });
 
 // PATCH ------------------------------------------------------------------------------------------------------
+// PATCH "history/:id/vote" - vote on submission update (Staff only)
+// PARAM: id, BODY: message, decision (id is the update's ID - vid in the DB)
+spriteRouter.patch('/history/:id/vote', rateLimits.update, async (req, res) => {
+  if (!validateRequiredParam(req, ['message', 'decision'])) {
+    invalidParamResponse(res);
+    return;
+  }
+  const id = parseInt(req.params?.id) || 0;
+  const message = `${req.body?.message ?? ''}`;
+  const decision = parseInt(req.body?.decision) || 0;
+  const result = await voteSpriteUpdate(req, id, decision, message);
+  httpStatus(res, result);
+  res.send(result);
+});
+
 // PATCH "/:id" - update submission (no files, user end)
 // PARAM: id, BODY: payload, message, version
 spriteRouter.patch('/:id', rateLimits.update, async (req, res) => {
@@ -150,7 +166,7 @@ spriteRouter.patch(
   }
 );
 
-// PATCH "/:id/vote" - update submission (Staff only)
+// PATCH "/:id/vote" - vote on new submission (Staff only)
 // PARAM: id, BODY: message, decision
 spriteRouter.patch('/:id/vote', rateLimits.update, async (req, res) => {
   if (!validateRequiredParam(req, ['message', 'decision'])) {
@@ -196,39 +212,4 @@ spriteRouter.post(
   }
 );
 
-// PUT -------------------------------------------------------------------------------------------------------
-// // "/update" - register | BODY: data
-// spriteRouter.put('/update', async (req, res) => {
-//   let _data = []; // string of { columnName: value }[]
-//   if (isStringJSON(req.body?.data)) {
-//     _data = JSON.parse(req.body?.data);
-//   }
-//   const _id = req.body?.id ?? '0';
-//   const getData = await sprite.updateSubmission(req, _id, _data);
-//   if (getData === 'DONE') {
-//     res.status(201);
-//   }
-//   res.send(getData);
-// });
-
-// (MUST BE LAST TO THESE TO OVERRIDE ROUTES ABOVE) ------------------------------------
-// // "/:id" - Show specific submission by ID | PARAM: id
-// spriteRouter.get('/:id', async (req, res) => {
-//   const id = req.params.id ?? 0;
-//   const getData = await sprite.showSubmissionDetails(id);
-//   res.send(getData);
-// });
-
-// // "/:id/history" - Show submission's update history | PARAM: id
-// spriteRouter.get('/:id/history', async (req, res) => {
-//   const id = req.params.id ?? 0;
-//   const getData = await sprite.showSubmissionHistory(id);
-//   res.send(getData);
-// });
-
-// // "/:id/history" - Show submission's user comments | PARAM: id
-// spriteRouter.get('/:id/comment', async (req, res) => {
-//   const id = req.params.id ?? 0;
-//   const getData = await sprite.showSubmissionComments(id);
-//   res.send(getData);
-// });
+// DELETE -------------------------------------------------------------------------------------------------------

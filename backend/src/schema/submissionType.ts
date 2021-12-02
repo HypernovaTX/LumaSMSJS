@@ -19,7 +19,7 @@ export interface SubmissionVersion {
   date?: number;
   type?: number;
   old?: number;
-  data?: AnySubmission;
+  data?: string;
   decision?: string;
   in_queue?: number;
 }

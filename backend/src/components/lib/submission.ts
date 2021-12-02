@@ -6,7 +6,7 @@ import { Request } from 'express';
 import { checkLogin, validatePermission } from './userlib';
 import CF from '../../config';
 import ERR, { ErrorObj, isError } from '../../lib/error';
-import { currentTime } from '../../lib/globallib';
+import { currentTime, isStringJSON } from '../../lib/globallib';
 import { NoResponse } from '../../lib/result';
 import SubmissionQuery from '../../queries/submissionQuery';
 import {
@@ -271,13 +271,20 @@ export default class Submission {
     if (isError(getVotes)) return getVotes;
 
     // Determine if the user has voted already
+    let alreadyVoted = 0;
     const existingVote = getVotes as StaffVote[];
-    const findUser = existingVote.filter((data) => data.uid === uid);
-    if (findUser.length > 0) return ERR('submissionAlreadyVoted');
+    const findUserVote = existingVote.find((data) => data.uid === uid);
+    if (findUserVote) {
+      alreadyVoted = findUserVote.voteid;
+      if (findUserVote.decision === decision) {
+        return ERR('submissionAlreadyVoted');
+      }
+    }
 
     // Grab the existing submission, ensure there is no error
     const getSubmission = await this.query.getSubmissionById(rid);
     if (isError(getSubmission)) return getSubmission;
+    const submission = getSubmission as AnySubmission;
 
     // count the number of votes including the current decision
     const accepts =
@@ -291,14 +298,24 @@ export default class Submission {
     const vote = await this.query.addVote(uid, vid, decision, message, true);
     if (isError(vote)) return vote as ErrorObj;
 
+    // Parse update data (ensure the data is valid too)
+    if (!isStringJSON(update.data)) {
+      const decline = await this.query.updateSubmissionVersion(vid, false);
+      if (isError(decline)) return decline as ErrorObj;
+      return ERR('submissionUpdateData');
+    }
+    const updateData = JSON.parse(update.data) as AnySubmission;
+
     // Accept
     if (accepts >= CF.QC_VOTES_UPDATE) {
       // Update the vid row in versions table
       const updateVer = await this.query.updateSubmissionVersion(vid, true);
       if (isError(updateVer)) return updateVer as ErrorObj;
+      // Remove the outdated files
+      this.deleteSubmissionFiles(submission);
       // Prepare data to update the real submission
-      const accept = this.queueUpdatePayload(queueCode.accepted);
-      const payload = { ...accept, ...update.data };
+      const accept = this.queueUpdatePayload(queueCode.accepted, true);
+      const payload = { ...accept, ...updateData } as AnySubmission;
       return await this.query.updateSubmissionLazy(rid, payload);
     }
     // Decline
@@ -306,31 +323,43 @@ export default class Submission {
       // Update the vid row in versions table
       const updateVer = await this.query.updateSubmissionVersion(vid, false);
       if (isError(updateVer)) return updateVer as ErrorObj;
+      // Remove update files
+      this.deleteSubmissionFiles(updateData);
       // Prepare data to update the real submission
       // Will put this as accepted since the original submission is already accepted
-      const payload = this.queueUpdatePayload(queueCode.accepted);
-      this.deleteSubmissionFiles(update.data as AnySubmission);
+      const payload = this.queueUpdatePayload(queueCode.accepted, true);
       return await this.query.updateSubmissionLazy(rid, payload);
     }
     return vote;
   }
 
-  private queueUpdatePayload(queue_code: number) {
-    const output: {
-      queue_code: number;
-      decision: string;
-      accept_date?: number;
-    } =
+  private queueUpdatePayload(queue_code: number, update?: boolean) {
+    const acceptDate =
       queue_code === queueCode.accepted
-        ? {
-            queue_code,
-            decision: '',
-            accept_date: currentTime(),
-          }
-        : {
-            queue_code,
-            decision: '',
-          };
+        ? update
+          ? { update_accept_date: currentTime() }
+          : { accept_date: currentTime() }
+        : {};
+    let filesToRemove: AnySubmission = {};
+    if (this.kind === 'sprites') {
+      filesToRemove = {
+        file: '',
+        thumbnail: '',
+      };
+    }
+    if (this.kind === 'games') {
+      filesToRemove = {
+        file: '',
+        preview: '',
+        thumbnail: '',
+      };
+    }
+    const output: AnySubmission = {
+      queue_code,
+      decision: '',
+      ...acceptDate,
+      ...filesToRemove,
+    };
     return output;
   }
 

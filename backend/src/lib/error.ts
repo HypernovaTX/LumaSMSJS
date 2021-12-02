@@ -40,6 +40,7 @@ export const errors = {
   submissionNotAllowed: 'Users can only update their own submission.',
   submissionNotFound: 'The selected submission is not found!',
   submissionNotInQueue: 'The selected submission is not in queue!',
+  submissionUpdateData: 'Update data is invalid!',
 
   // user
   userCookie: 'User cookie not found!',
