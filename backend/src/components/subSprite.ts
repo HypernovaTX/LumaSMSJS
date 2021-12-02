@@ -32,18 +32,24 @@ export function checkSpriteFile(files: Express.Multer.File[]) {
   return results.includes(false);
 }
 
-export const getPublicSprites = async (...args: ListPublicSpriteFunction) =>
-  (await submission.getPublicList(...args)) as Sprite[] | ErrorObj;
+export const getPublicSprites = async (...args: ListPublicSpriteParam) => {
+  return (await submission.getPublicList(...args)) as Sprite[] | ErrorObj;
+};
 
-export const getSpriteDetails = async (id: number) =>
-  (await submission.getSubmissionDetails(id)) as Sprite | ErrorObj;
+export const getSpriteDetails = async (id: number) => {
+  return (await submission.getSubmissionDetails(id)) as Sprite | ErrorObj;
+};
 
-export const getSpriteHistory = async (id: number) =>
-  (await submission.getSubmissionHistory(id)) as SubmissionVersion[] | ErrorObj;
+export const getSpriteHistory = async (id: number) => {
+  return (await submission.getSubmissionHistory(id)) as
+    | SubmissionVersion[]
+    | ErrorObj;
+};
 
 // WRITE
-export const updateSprite = async (...args: SpriteUpdateFunction) =>
-  (await submission.updateSubmission(...args)) as NoResponse | ErrorObj;
+export const updateSprite = async (...args: SpriteUpdateParam) => {
+  return (await submission.updateSubmission(...args)) as NoResponse | ErrorObj;
+};
 
 // Complex functions
 // WRITE
@@ -99,6 +105,15 @@ export const updateSpriteFile = async (
   return result;
 };
 
+// Staff functions
+export const voteNewSprite = async (...args: StaffVoteParam) => {
+  return await submission.voteSubmission(...args);
+};
+
+export const voteSpriteUpdate = async (...args: StaffVoteParam) => {
+  return await submission.voteSubmissionUpdate(...args);
+};
+
 // TO DO
 // 1 - get file upload for createSubmission and updateSubmission working
 // 2 - npm install node-scheduler and make cron job to delete submission file and DB after 30 days
@@ -108,6 +123,10 @@ export const updateSpriteFile = async (
 // 6 - Comment section
 
 // Sprite specific lib
+export function deleteFile(file: string, thumb: string) {
+  unlinkFile(directory, file);
+  unlinkFile(directory, thumb);
+}
 
 function processPayloadAndFiles(
   payload: Sprite,
@@ -138,12 +157,7 @@ function processPayloadAndFiles(
   return payload;
 }
 
-export function deleteFile(file: string, thumb: string) {
-  unlinkFile(directory, file);
-  unlinkFile(directory, thumb);
-}
-
-type ListPublicSpriteFunction = Parameters<
+type ListPublicSpriteParam = Parameters<
   (
     page: number,
     count: number,
@@ -152,12 +166,20 @@ type ListPublicSpriteFunction = Parameters<
     filter: [string, string][]
   ) => Promise<Sprite | ErrorObj>
 >;
-type SpriteUpdateFunction = Parameters<
+type SpriteUpdateParam = Parameters<
   (
     _request: Request,
     id: number,
     payload: AnySubmission,
     message: string,
     version: string
+  ) => Promise<NoResponse | ErrorObj>
+>;
+type StaffVoteParam = Parameters<
+  (
+    _request: Request,
+    id: number,
+    decision: number,
+    message: string
   ) => Promise<NoResponse | ErrorObj>
 >;

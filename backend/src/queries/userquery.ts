@@ -2,7 +2,7 @@ import SQL from '../lib/sql';
 
 import CF from '../config';
 import ERR, { ErrorObj } from '../lib/error';
-import { objIntoArrays, sanitizeInput } from '../lib/globallib';
+import { currentTime, objIntoArrays, sanitizeInput } from '../lib/globallib';
 import { NoResponse } from '../lib/result';
 import { User, UsernameChange, UserPermissionFull } from '../schema/userTypes';
 
@@ -207,7 +207,7 @@ export default class UserQuery {
     password: string,
     ip: string
   ) {
-    const timestamp = Math.ceil(Date.now() / 1000);
+    const timestamp = currentTime();
     const { columns, values } = objIntoArrays({
       username,
       email,
@@ -258,7 +258,7 @@ export default class UserQuery {
   }
 
   async usernameUpdate(uid: number, oldUsername: string, newusername: string) {
-    const timestamp = Math.ceil(Date.now() / 1000);
+    const timestamp = currentTime();
     const columnNames = ['uid', 'old_username', 'new_username', 'date'];
     const columnValues = [`${uid}`, oldUsername, newusername, `${timestamp}`];
     this.DB.buildInsert(this.usernameUpdateTable, columnNames, columnValues);

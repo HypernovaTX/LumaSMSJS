@@ -95,6 +95,7 @@ CREATE TABLE `tsms_votes` (
   `type` INT(2) NOT NULL , 
   `update` INT(1) NOT NULL , 
   `uid` INT(10) NOT NULL , 
+  `rid` INT(10) NOT NULL , 
   `decision` INT(1) NOT NULL , 
   `message` TEXT NOT NULL , 
   `date` INT(10) NOT NULL , 

@@ -21,6 +21,7 @@ import {
   getSpriteHistory,
   updateSprite,
   updateSpriteFile,
+  voteNewSprite,
 } from '../../components/subSprite';
 // import { isStringJSON } from '../../lib/globallib.js';
 import CF from '../../config';
@@ -148,6 +149,21 @@ spriteRouter.patch(
     res.send(result);
   }
 );
+
+// PATCH "/:id/vote" - update submission (Staff only)
+// PARAM: id, BODY: message, decision
+spriteRouter.patch('/:id/vote', rateLimits.update, async (req, res) => {
+  if (!validateRequiredParam(req, ['message', 'decision'])) {
+    invalidParamResponse(res);
+    return;
+  }
+  const id = parseInt(req.params?.id) || 0;
+  const message = `${req.body?.message ?? ''}`;
+  const decision = parseInt(req.body?.decision) || 0;
+  const result = await voteNewSprite(req, id, decision, message);
+  httpStatus(res, result);
+  res.send(result);
+});
 
 // POST -------------------------------------------------------------------------------------------------------
 // "/" - Create Sprite submission

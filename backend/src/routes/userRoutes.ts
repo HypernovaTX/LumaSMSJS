@@ -235,20 +235,6 @@ userRouter.patch('/banner', rateLimits.update, bannerProp, async (req, res) => {
   res.send(result);
 });
 
-// PATCH "/changerole" - Update user's role [STAFF, ROOT FOR UPDATING OTHER USER TO ROOT]
-// BODY: uid, gid
-userRouter.patch('/changerole', rateLimits.update, async (req, res) => {
-  if (!validateRequiredParam(req, ['uid', 'gid'])) {
-    invalidParamResponse(res);
-    return;
-  }
-  const uid = parseInt(req.body?.uid) || 0;
-  const gid = parseInt(req.body?.gid) || 0;
-  const result = await updateUserRole(req, uid, gid);
-  httpStatus(res, result);
-  res.send(result);
-});
-
 // PATCH "/role/:id" - update role [STAFF]
 // PARAM: id, BODY: data
 userRouter.patch('/role/:id', rateLimits.update, async (req, res) => {
@@ -326,6 +312,20 @@ userRouter.patch(
     res.send(result);
   }
 );
+
+// PATCH "/:id/role" - Update user's role [STAFF, ROOT FOR UPDATING OTHER USER TO ROOT]
+// PARAM: id, BODY: gid
+userRouter.patch('/:id/role', rateLimits.update, async (req, res) => {
+  if (!validateRequiredParam(req, ['gid'])) {
+    invalidParamResponse(res);
+    return;
+  }
+  const uid = parseInt(req.params?.id) || 0;
+  const gid = parseInt(req.body?.gid) || 0;
+  const result = await updateUserRole(req, uid, gid);
+  httpStatus(res, result);
+  res.send(result);
+});
 
 // POST ------------------------------------------------------------------------------------------------------
 // POST "/" - create user

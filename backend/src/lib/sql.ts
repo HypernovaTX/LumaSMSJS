@@ -88,11 +88,9 @@ export default class SQL {
 
   // SELECT query
   buildSelect(table: string, column: string | string[] = '*') {
-    if (Array.isArray(column)) {
-      column = column.map((each) => sanitizeInput(each)).join(', ');
-    } else {
-      column = sanitizeInput(column);
-    }
+    column = Array.isArray(column)
+      ? column.map((each) => sanitizeInput(each)).join(', ')
+      : sanitizeInput(column);
     table = sanitizeInput(table);
     // Apply this to the query
     this.query = `SELECT ${column} FROM ${table} `;
@@ -123,30 +121,26 @@ export default class SQL {
 
   // INSERT INTO query
   // Note: both 'columns' and 'values' param must have the same number of arrays
-  buildInsert(table: string, columns: string[], values: string[]) {
+  buildInsert(table: string, columns: string[], values: (string | number)[]) {
     if (columns.length !== values.length) return ERR('dbInsertNumber');
     table = sanitizeInput(table);
-    const outputColumns = columns
-      .map((eachColumn) => sanitizeInput(eachColumn))
-      .join(', ');
-    const outputValues = values
-      .map((eachValue) => `'${sanitizeInput(eachValue)}'`)
-      .join(', ');
-    this.query = `INSERT INTO ${table} (${outputColumns}) VALUES (${outputValues}) `;
+    const outputColumns = columns.map((c) => sanitizeInput(c)).join(', ');
+    const outputValues = values.map(() => '?').join(', ');
+    const rawQuery = `INSERT INTO ${table} (${outputColumns}) VALUES (${outputValues})`;
+    const cleaned = mysql.format(rawQuery, values);
+    this.query = `${cleaned} `;
     return this.query;
   }
 
   // UPDATE query
   // Note: both 'columns' and 'values' param must have the same number of arrays
-  buildUpdate(table: string, columns: string[], values: string[]) {
+  buildUpdate(table: string, columns: string[], values: (string | number)[]) {
     if (columns.length !== values.length) return ERR('dbUpdateNumber');
-    const updateArray = columns.map((column, index) => {
-      const value = `'${sanitizeInput(values[index])}'`;
-      column = sanitizeInput(column);
-      return `${'`' + column + '`'} = ${value}`;
-    });
     table = sanitizeInput(table);
-    this.query = `UPDATE ${table} SET ${updateArray.join(', ')} `;
+    const updates = columns.map((c) => `${sanitizeInput(c)} = ?`).join(', ');
+    const rawQuery = `UPDATE ${table} SET ${updates}`;
+    const cleaned = mysql.format(rawQuery, values);
+    this.query = `${cleaned} `;
     return this.query;
   }
 

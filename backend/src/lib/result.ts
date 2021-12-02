@@ -24,19 +24,19 @@ export function httpStatus(res: Response, data: any) {
   const errorData = data as ErrorObj;
   let status: ResultCodeType = 'fail';
   switch (errorData.error) {
-    default:
-      status = 'fail';
-      break;
-    case errors.userNotFound:
-    case errors.userRoleNotFound:
+    case 'userNotFound':
+    case 'userRoleNotFound':
+    case 'submissionNotFound':
+    case 'fileNotFound':
       status = 'notfound';
       break;
-    case errors.userPermission:
-    case errors.userStaffPermit:
-    case errors.userRootPermit:
-    case errors.submissionNotFound:
-    case errors.fileNotFound:
+    case 'userPermission':
+    case 'userStaffPermit':
+    case 'userRootPermit':
       status = 'denied';
+      break;
+    default:
+      status = 'fail';
       break;
   }
   res.status(resultCodes[status]);

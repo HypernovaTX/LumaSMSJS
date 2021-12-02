@@ -34,7 +34,7 @@ export const errors = {
   noFile: 'No file has been uploaded as per requirement!',
 
   //submission - MAIN
-  submissionAlreadyVoted: 'User has already voted on this submission!',
+  submissionAlreadyVoted: 'User cannot apply the same vote on this submission!',
   submissionAnimatedThumb: 'Animated GIF is not allowed for thumbnails!',
   submissionMissingParam: 'Invalid parameters to create / update submission!',
   submissionNotAllowed: 'Users can only update their own submission.',

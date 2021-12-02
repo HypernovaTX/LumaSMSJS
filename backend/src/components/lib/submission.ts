@@ -6,11 +6,12 @@ import { Request } from 'express';
 import { checkLogin, validatePermission } from './userlib';
 import CF from '../../config';
 import ERR, { ErrorObj, isError } from '../../lib/error';
-import { noContentResponse, NoResponse } from '../../lib/result';
+import { currentTime } from '../../lib/globallib';
+import { NoResponse } from '../../lib/result';
 import SubmissionQuery from '../../queries/submissionQuery';
 import {
   AnySubmission,
-  queue_code,
+  queueCode,
   StaffVote,
   SubmissionKinds,
   SubmissionVersion,
@@ -139,12 +140,41 @@ export default class Submission {
 
     // Ensure the submission is in queue
     const submission = getSubmission as AnySubmission;
-    if (submission?.queue_code !== queue_code.new) {
+    if (submission?.queue_code !== queueCode.new) {
       return ERR('submissionNotInQueue');
     }
 
     // Process submission votes
     return await this.processVotes(uid, submission, decision, message);
+  }
+
+  async voteSubmissionUpdate(
+    _request: Request,
+    id: number,
+    decision: number,
+    message: string
+  ) {
+    // Ensure user is logged in
+    const getLogin = await checkLogin(_request);
+    if (isError(getLogin)) return getLogin as ErrorObj;
+
+    // Verify permission
+    const uid = (getLogin as User)?.uid ?? 0;
+    const permitted = await validatePermission(_request, 'acp_modq');
+    if (!permitted) return ERR('userStaffPermit');
+
+    // Grab the existing update, ensure there is no error
+    const getUpdate = await this.query.getSubmissionUpdatesByVid(id);
+    if (isError(getUpdate)) return getUpdate;
+
+    // Ensure the submission is in queue
+    const update = getUpdate as SubmissionVersion;
+    if (update?.in_queue !== queueCode.new) {
+      return ERR('submissionNotInQueue');
+    }
+
+    // Process submission votes
+    return await this.processVotesUpdate(uid, update, decision, message);
   }
 
   // Only root admin can delete submissions
@@ -191,9 +221,15 @@ export default class Submission {
     if (isError(getVotes)) return getVotes;
 
     // Determine if the user has voted already
+    let alreadyVoted = 0;
     const existingVote = getVotes as StaffVote[];
-    const findUser = existingVote.filter((data) => data.uid === uid);
-    if (findUser.length > 0) return ERR('submissionAlreadyVoted');
+    const findUserVote = existingVote.find((data) => data.uid === uid);
+    if (findUserVote) {
+      alreadyVoted = findUserVote.voteid;
+      if (findUserVote.decision === decision) {
+        return ERR('submissionAlreadyVoted');
+      }
+    }
 
     // count the number of votes including the current decision
     const accepts =
@@ -204,17 +240,19 @@ export default class Submission {
       (decision ? 0 : 1);
 
     // Register vote
-    const vote = await this.query.addVote(uid, id, decision, message);
+    const vote = alreadyVoted
+      ? await this.query.updateVote(alreadyVoted, decision, message)
+      : await this.query.addVote(uid, id, decision, message);
     if (isError(vote)) return vote as ErrorObj;
 
     // Accept
     if (accepts >= CF.QC_VOTES_NEW) {
-      const payload = this.queueUpdatePayload(queue_code.accepted);
+      const payload = this.queueUpdatePayload(queueCode.accepted);
       return await this.query.updateSubmissionLazy(id, payload);
     }
     // Decline
     else if (declines >= CF.QC_VOTES_NEW) {
-      const payload = this.queueUpdatePayload(queue_code.declined);
+      const payload = this.queueUpdatePayload(queueCode.declined);
       this.deleteSubmissionFiles(submission);
       return await this.query.updateSubmissionLazy(id, payload);
     }
@@ -237,6 +275,10 @@ export default class Submission {
     const findUser = existingVote.filter((data) => data.uid === uid);
     if (findUser.length > 0) return ERR('submissionAlreadyVoted');
 
+    // Grab the existing submission, ensure there is no error
+    const getSubmission = await this.query.getSubmissionById(rid);
+    if (isError(getSubmission)) return getSubmission;
+
     // count the number of votes including the current decision
     const accepts =
       existingVote.filter((vote) => vote.decision >= 1).length +
@@ -255,7 +297,7 @@ export default class Submission {
       const updateVer = await this.query.updateSubmissionVersion(vid, true);
       if (isError(updateVer)) return updateVer as ErrorObj;
       // Prepare data to update the real submission
-      const accept = this.queueUpdatePayload(queue_code.accepted);
+      const accept = this.queueUpdatePayload(queueCode.accepted);
       const payload = { ...accept, ...update.data };
       return await this.query.updateSubmissionLazy(rid, payload);
     }
@@ -266,7 +308,7 @@ export default class Submission {
       if (isError(updateVer)) return updateVer as ErrorObj;
       // Prepare data to update the real submission
       // Will put this as accepted since the original submission is already accepted
-      const payload = this.queueUpdatePayload(queue_code.accepted);
+      const payload = this.queueUpdatePayload(queueCode.accepted);
       this.deleteSubmissionFiles(update.data as AnySubmission);
       return await this.query.updateSubmissionLazy(rid, payload);
     }
@@ -274,10 +316,22 @@ export default class Submission {
   }
 
   private queueUpdatePayload(queue_code: number) {
-    return {
-      queue_code,
-      decision: '',
-    };
+    const output: {
+      queue_code: number;
+      decision: string;
+      accept_date?: number;
+    } =
+      queue_code === queueCode.accepted
+        ? {
+            queue_code,
+            decision: '',
+            accept_date: currentTime(),
+          }
+        : {
+            queue_code,
+            decision: '',
+          };
+    return output;
   }
 
   private deleteSubmissionFiles(submission: AnySubmission) {

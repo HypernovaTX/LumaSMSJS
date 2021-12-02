@@ -30,17 +30,18 @@ export interface StaffVote {
   type?: number;
   is_update?: number;
   uid?: number;
+  rid?: number;
   decision?: number;
   message?: string;
   date?: number;
 }
-export const queue_code = {
+export const queueCode = {
   accepted: 0,
   new: 1,
   updated: 2,
   declined: 3,
 };
-export type QueueCode = keyof typeof queue_code;
+export type QueueCode = keyof typeof queueCode;
 
 // ----- MAIN SUBMISSION INTERFACES -----
 export type AnySubmission = Sprite | Game;
