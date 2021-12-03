@@ -57,7 +57,8 @@ export const createSprite = async (
   _request: Request,
   payload: Sprite,
   file: Express.Multer.File,
-  thumb: Express.Multer.File
+  thumb: Express.Multer.File,
+  uid?: number
 ) => {
   // Check and process files
   const processedPayload = processPayloadAndFiles(payload, file, thumb);
@@ -68,7 +69,7 @@ export const createSprite = async (
 
   // Prepare, execute, and resolve
   payload = processedPayload as Sprite;
-  const result = (await submission.createSubmission(_request, payload)) as
+  const result = (await submission.createSubmission(_request, payload, uid)) as
     | NoResponse
     | ErrorObj;
   if (isError(result)) deleteFile(file.filename, thumb.filename);
@@ -114,45 +115,74 @@ export const voteSpriteUpdate = async (...args: StaffVoteParam) => {
   return await submission.voteSubmissionUpdate(...args);
 };
 
-// TO DO
-// 1 - get file upload for createSubmission and updateSubmission working
-// 2 - npm install node-scheduler and make cron job to delete submission file and DB after 30 days
-// 3 - download submission and update view/downloads
-// 4 - Staff vote
-// 5 - Move on to Reviews, then games, then hacks, then howtos/sounds/misc
-// 6 - Comment section
+export const updateSpriteStaff = async (
+  _request: Request,
+  id: number,
+  payload: Sprite,
+  message: string,
+  version: string,
+  file?: Express.Multer.File,
+  thumb?: Express.Multer.File
+) => {
+  // Check and process files
+  const processedPayload = processPayloadAndFiles(payload, file, thumb);
+  if (isError(processedPayload)) {
+    deleteFile(file?.filename, thumb?.filename);
+    return processedPayload as ErrorObj;
+  }
+
+  // Prepare, execute, and resolve
+  payload = processedPayload as Sprite;
+  const result = (await submission.updateSubmissionStaff(
+    _request,
+    id,
+    payload,
+    message,
+    version
+  )) as NoResponse | ErrorObj;
+  if (isError(result)) deleteFile(file?.filename, thumb?.filename);
+  return result;
+};
+
+export const deleteSprite = async (_request: Request, id: number) => {
+  return await submission.deleteSubmission(_request, id);
+};
 
 // Sprite specific lib
-export function deleteFile(file: string, thumb: string) {
-  unlinkFile(directory, file);
-  unlinkFile(directory, thumb);
+export function deleteFile(file?: string, thumb?: string) {
+  if (file) unlinkFile(directory, file);
+  if (thumb) unlinkFile(directory, thumb);
 }
 
 function processPayloadAndFiles(
   payload: Sprite,
-  file: Express.Multer.File,
-  thumb: Express.Multer.File
+  file?: Express.Multer.File,
+  thumb?: Express.Multer.File
 ) {
   // Prepare
-  payload.file = file.filename;
-  payload.thumbnail = thumb.filename;
-  payload.file_mime = file.mimetype;
+  if (file) {
+    payload.file = file.filename;
+    payload.file_mime = file.mimetype;
+  }
+  if (thumb) payload.thumbnail = thumb.filename;
 
   // File name too long
   if (
-    file.filename.length > CF.FILENAME_LIMIT ||
-    thumb.filename.length > CF.FILENAME_LIMIT
+    (file && file.filename.length > CF.FILENAME_LIMIT) ||
+    (thumb && thumb.filename.length > CF.FILENAME_LIMIT)
   ) {
     return ERR('fileNameTooLong');
   }
 
   // Ensure file/thumb is an image
-  if (!verifyImageFile(file) || !verifyImageFile(thumb)) {
+  if ((file && !verifyImageFile(file)) || (thumb && !verifyImageFile(thumb))) {
     return ERR('fileImageInvalid');
   }
 
   // Detect if thumb is an animated GIF or not
-  if (checkAnimatedGif(directory, thumb)) return ERR('submissionAnimatedThumb');
+  if (thumb && checkAnimatedGif(directory, thumb)) {
+    return ERR('submissionAnimatedThumb');
+  }
 
   return payload;
 }

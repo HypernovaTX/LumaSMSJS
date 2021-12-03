@@ -16,11 +16,13 @@ import {
 } from '../../lib/globallib';
 import {
   createSprite,
+  deleteSprite,
   getPublicSprites,
   getSpriteDetails,
   getSpriteHistory,
   updateSprite,
   updateSpriteFile,
+  updateSpriteStaff,
   voteNewSprite,
   voteSpriteUpdate,
 } from '../../components/subSprite';
@@ -88,21 +90,6 @@ spriteRouter.put('/', rateLimits.general, async (req, res) => {
 });
 
 // PATCH ------------------------------------------------------------------------------------------------------
-// PATCH "history/:id/vote" - vote on submission update (Staff only)
-// PARAM: id, BODY: message, decision (id is the update's ID - vid in the DB)
-spriteRouter.patch('/history/:id/vote', rateLimits.update, async (req, res) => {
-  if (!validateRequiredParam(req, ['message', 'decision'])) {
-    invalidParamResponse(res);
-    return;
-  }
-  const id = parseInt(req.params?.id) || 0;
-  const message = `${req.body?.message ?? ''}`;
-  const decision = parseInt(req.body?.decision) || 0;
-  const result = await voteSpriteUpdate(req, id, decision, message);
-  httpStatus(res, result);
-  res.send(result);
-});
-
 // PATCH "/:id" - update submission (no files, user end)
 // PARAM: id, BODY: payload, message, version
 spriteRouter.patch('/:id', rateLimits.update, async (req, res) => {
@@ -166,20 +153,43 @@ spriteRouter.patch(
   }
 );
 
-// PATCH "/:id/vote" - vote on new submission (Staff only)
-// PARAM: id, BODY: message, decision
-spriteRouter.patch('/:id/vote', rateLimits.update, async (req, res) => {
-  if (!validateRequiredParam(req, ['message', 'decision'])) {
-    invalidParamResponse(res);
-    return;
+// PATCH "/:id/staff" - update submission (has files, staff)
+// PARAM: id, BODY: payload, message, version
+spriteRouter.patch(
+  '/:id/staff',
+  rateLimits.update,
+  spriteUpload.fields(uploadFields),
+  async (req, res) => {
+    const getFiles = req.files as MulterFileFields;
+    if (!validateRequiredParam(req, ['data', 'message', 'version'])) {
+      invalidParamResponse(res);
+      return;
+    }
+    const id = parseInt(req.params?.id) || 0;
+    const message = `${req.body?.message ?? ''}`;
+    const version = `${req.body?.version ?? ''}`;
+    let data = {} as Sprite;
+    if (isStringJSON(req.body?.data)) {
+      data = JSON.parse(req.body?.data);
+    } else if (req.body?.data) {
+      invalidJsonResponse(res);
+      return;
+    }
+    const file = getFiles?.file?.length ? getFiles.file[0] : undefined;
+    const thumb = getFiles?.thumb?.length ? getFiles.thumb[0] : undefined;
+    const result = await updateSpriteStaff(
+      req,
+      id,
+      data,
+      message,
+      version,
+      file,
+      thumb
+    );
+    httpStatus(res, result);
+    res.send(result);
   }
-  const id = parseInt(req.params?.id) || 0;
-  const message = `${req.body?.message ?? ''}`;
-  const decision = parseInt(req.body?.decision) || 0;
-  const result = await voteNewSprite(req, id, decision, message);
-  httpStatus(res, result);
-  res.send(result);
-});
+);
 
 // POST -------------------------------------------------------------------------------------------------------
 // "/" - Create Sprite submission
@@ -212,4 +222,77 @@ spriteRouter.post(
   }
 );
 
+// POST "history/:id/vote" - vote on submission update (Staff only)
+// PARAM: id, BODY: message, decision (id is the update's ID - vid in the DB)
+spriteRouter.post(
+  '/history/:id/vote',
+  rateLimits.creation,
+  async (req, res) => {
+    if (!validateRequiredParam(req, ['message', 'decision'])) {
+      invalidParamResponse(res);
+      return;
+    }
+    const id = parseInt(req.params?.id) || 0;
+    const message = `${req.body?.message ?? ''}`;
+    const decision = parseInt(req.body?.decision) || 0;
+    const result = await voteSpriteUpdate(req, id, decision, message);
+    httpStatus(res, result);
+    res.send(result);
+  }
+);
+
+// "/:uid" - Create Sprite submission for a different user (Staff only)
+// PARAM: uid, BODY: data, FILE: thumb, file
+spriteRouter.post(
+  '/:uid',
+  rateLimits.creation,
+  spriteUpload.fields(uploadFields),
+  async (req, res) => {
+    const getFiles = req.files as MulterFileFields;
+    if (!getFiles?.file?.length || !getFiles?.thumb?.length) {
+      invalidFileResponse(res);
+      return;
+    }
+    if (!validateRequiredParam(req, ['data'])) {
+      invalidParamResponse(res);
+      return;
+    }
+    let data = [];
+    const uid = parseInt(req.params?.uid) || 0;
+    if (isStringJSON(req.body?.data)) {
+      data = JSON.parse(req.body?.data);
+    } else if (req.body?.data) {
+      invalidJsonResponse(res);
+      return;
+    }
+    const [[file], [thumb]] = [getFiles.file, getFiles.thumb];
+    const getData = await createSprite(req, data, file, thumb, uid);
+    httpStatus(res, getData);
+    res.send(getData);
+  }
+);
+
+// POST "/:id/vote" - vote on new submission (Staff only)
+// PARAM: id, BODY: message, decision
+spriteRouter.post('/:id/vote', rateLimits.creation, async (req, res) => {
+  if (!validateRequiredParam(req, ['message', 'decision'])) {
+    invalidParamResponse(res);
+    return;
+  }
+  const id = parseInt(req.params?.id) || 0;
+  const message = `${req.body?.message ?? ''}`;
+  const decision = parseInt(req.body?.decision) || 0;
+  const result = await voteNewSprite(req, id, decision, message);
+  httpStatus(res, result);
+  res.send(result);
+});
+
 // DELETE -------------------------------------------------------------------------------------------------------
+// DELETE "/:id" - Delete a sprite [ROOT]
+// PARAM: id
+spriteRouter.delete('/:id', rateLimits.update, async (req, res) => {
+  const id = parseInt(req.params.id) || 0; // sprite ID
+  const result = await deleteSprite(req, id);
+  httpStatus(res, result);
+  res.send(result);
+});

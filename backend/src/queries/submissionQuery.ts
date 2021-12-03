@@ -244,12 +244,13 @@ export default class SubmissionQuery {
     id: number,
     payload: AnySubmission,
     message: string,
-    version: string
+    version: string,
+    staff?: boolean
   ) {
     // Prepare and update the submission table
     const timestamp = currentTime();
     let updateColumn = ['updated', 'queue_code'];
-    let updateValue = [`${timestamp}`, '2'];
+    let updateValue: (number | string)[] = [timestamp, staff ? 1 : 2];
 
     // Update the submission table
     const { columns, values } = objIntoArrays(payload);
@@ -314,7 +315,7 @@ export default class SubmissionQuery {
   }
 
   async deleteSubmission(id: number) {
-    this.DB.buildDelete(this.voteTable, `id = ${id}`);
+    this.DB.buildDelete(this.subTable, `id = ${id}`);
     return (await this.DB.runQuery(true)) as NoResponse | ErrorObj;
   }
 }

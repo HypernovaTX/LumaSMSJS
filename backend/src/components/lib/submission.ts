@@ -65,20 +65,32 @@ export default class Submission {
   }
 
   // ----- WRITE METHODS -----
-  async createSubmission(_request: Request, payload: AnySubmission) {
+  // Either standard or staff user
+  async createSubmission(
+    _request: Request,
+    payload: AnySubmission,
+    otherUid?: number
+  ) {
     // Ensure user is logged in
     const getLogin = await checkLogin(_request);
     if (isError(getLogin)) return getLogin as ErrorObj;
+    const currentUser = getLogin as User;
+    const ownSubmission = !otherUid;
 
     // Verify permission
-    const permitted = await validatePermission(_request, 'can_submit');
-    if (!permitted) return ERR('userPermission');
+    const permitted = await validatePermission(
+      _request,
+      ownSubmission ? 'can_submit' : 'acp_modq'
+    );
+    if (!permitted) {
+      return ERR(ownSubmission ? 'userPermission' : 'userStaffPermit');
+    }
 
-    // Validate payload
+    // Validate/Prepare payload
     if (!this.validateDataKeys(payload)) return ERR('submissionMissingParam');
+    const uid = ownSubmission ? currentUser.uid : otherUid;
 
     // Execute
-    const { uid } = getLogin as AnySubmission;
     const firstResult = await this.query.createSubmission(uid, payload);
     return firstResult;
   }
@@ -177,18 +189,55 @@ export default class Submission {
     return await this.processVotesUpdate(uid, update, decision, message);
   }
 
-  // Only root admin can delete submissions
+  async updateSubmissionStaff(
+    _request: Request,
+    id: number,
+    payload: AnySubmission,
+    message: string,
+    version: string
+  ) {
+    // Ensure user is logged in
+    const getLogin = await checkLogin(_request);
+    if (isError(getLogin)) return getLogin as ErrorObj;
+
+    // Verify permission
+    const permitted = await validatePermission(_request, 'acp_modq');
+    if (!permitted) return ERR('userStaffPermit');
+
+    // Verify submission exists
+    const checkSubmission = await this.getSubmissionDetails(id);
+    if (isError(checkSubmission)) return checkSubmission as ErrorObj;
+
+    // Execute & resolve
+    const result = await this.query.updateSubmission(
+      id,
+      payload,
+      message,
+      version,
+      true
+    );
+    if (isError(result)) return result as ErrorObj;
+    return result as NoResponse;
+  }
+
   async deleteSubmission(_request: Request, id: number) {
     // Ensure user is logged in
     const getLogin = await checkLogin(_request);
     if (isError(getLogin)) return getLogin as ErrorObj;
 
     // Verify permission
-    const permitted = await validatePermission(_request, 'acp_super');
+    const permitted = await validatePermission(_request, 'acp_modq');
     if (!permitted) return ERR('userStaffPermit');
 
+    // Verify submission exists
+    const checkSubmission = await this.getSubmissionDetails(id);
+    if (isError(checkSubmission)) return checkSubmission as ErrorObj;
+    const toDelete = checkSubmission as AnySubmission;
+
     // Execute & resolve
-    return await this.query.deleteSubmission(id);
+    const deletion = await this.query.deleteSubmission(id);
+    if (!isError(deletion)) this.deleteSubmissionFiles(toDelete);
+    return deletion;
   }
 
   // !!!!! PRIVATE METHODS !!!!!
