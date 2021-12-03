@@ -157,7 +157,7 @@ export default class SubmissionQuery {
     // Prepare data
     const timestamp = currentTime();
     let finalColumn = ['views', 'uid', 'created', 'queue_code'];
-    let finalValue = ['0', `${uid}`, `${timestamp}`, '1'];
+    let finalValue = ['0', `${uid}`, timestamp, queueCode.new];
 
     // Process data for insert
     const { columns, values } = objIntoArrays(payload);
@@ -232,6 +232,11 @@ export default class SubmissionQuery {
     updateColumn.push(...columns);
     updateValue.push(...processedValue);
 
+    // Updated
+    const timestamp = `${currentTime()}`;
+    updateColumn.push('updated');
+    updateValue.push(timestamp);
+
     // Query
     this.DB.buildUpdate(this.subTable, updateColumn, updateValue);
     this.DB.buildWhere(`id = ?`, [id]);
@@ -250,7 +255,10 @@ export default class SubmissionQuery {
     // Prepare and update the submission table
     const timestamp = currentTime();
     let updateColumn = ['updated', 'queue_code'];
-    let updateValue: (number | string)[] = [timestamp, staff ? 1 : 2];
+    let updateValue: (number | string)[] = [
+      timestamp,
+      staff ? queueCode.accepted : queueCode.updated,
+    ];
 
     // Update the submission table
     const { columns, values } = objIntoArrays(payload);

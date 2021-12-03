@@ -135,7 +135,8 @@ export default class Submission {
     _request: Request,
     id: number,
     decision: number,
-    message: string
+    message: string,
+    override?: boolean
   ) {
     // Ensure user is logged in
     const getLogin = await checkLogin(_request);
@@ -157,14 +158,21 @@ export default class Submission {
     }
 
     // Process submission votes
-    return await this.processVotes(uid, submission, decision, message);
+    return await this.processVotes(
+      uid,
+      submission,
+      decision,
+      message,
+      override
+    );
   }
 
   async voteSubmissionUpdate(
     _request: Request,
     id: number,
     decision: number,
-    message: string
+    message: string,
+    override?: boolean
   ) {
     // Ensure user is logged in
     const getLogin = await checkLogin(_request);
@@ -172,8 +180,11 @@ export default class Submission {
 
     // Verify permission
     const uid = (getLogin as User)?.uid ?? 0;
-    const permitted = await validatePermission(_request, 'acp_modq');
-    if (!permitted) return ERR('userStaffPermit');
+    const permitted = await validatePermission(
+      _request,
+      override ? 'acp_super' : 'acp_modq'
+    );
+    if (!permitted) return ERR(override ? 'userRootPermit' : 'userStaffPermit');
 
     // Grab the existing update, ensure there is no error
     const getUpdate = await this.query.getSubmissionUpdatesByVid(id);
@@ -186,7 +197,13 @@ export default class Submission {
     }
 
     // Process submission votes
-    return await this.processVotesUpdate(uid, update, decision, message);
+    return await this.processVotesUpdate(
+      uid,
+      update,
+      decision,
+      message,
+      override
+    );
   }
 
   async updateSubmissionStaff(
@@ -262,7 +279,8 @@ export default class Submission {
     uid: number,
     submission: AnySubmission,
     decision: number,
-    message: string
+    message: string,
+    override?: boolean
   ) {
     // Grab the submission votes
     const { id } = submission;
@@ -275,7 +293,7 @@ export default class Submission {
     const findUserVote = existingVote.find((data) => data.uid === uid);
     if (findUserVote) {
       alreadyVoted = findUserVote.voteid;
-      if (findUserVote.decision === decision) {
+      if (findUserVote.decision === decision && !override) {
         return ERR('submissionAlreadyVoted');
       }
     }
@@ -295,13 +313,13 @@ export default class Submission {
     if (isError(vote)) return vote as ErrorObj;
 
     // Accept
-    if (accepts >= CF.QC_VOTES_NEW) {
-      const payload = this.queueUpdatePayload(queueCode.accepted);
+    if (accepts >= CF.QC_VOTES_NEW || (override && decision)) {
+      const payload = this.queueUpdatePayload(queueCode.accepted, false);
       return await this.query.updateSubmissionLazy(id, payload);
     }
     // Decline
-    else if (declines >= CF.QC_VOTES_NEW) {
-      const payload = this.queueUpdatePayload(queueCode.declined);
+    else if (declines >= CF.QC_VOTES_NEW || (override && !decision)) {
+      const payload = this.queueUpdatePayload(queueCode.declined, false);
       this.deleteSubmissionFiles(submission);
       return await this.query.updateSubmissionLazy(id, payload);
     }
@@ -312,7 +330,8 @@ export default class Submission {
     uid: number,
     update: SubmissionVersion,
     decision: number,
-    message: string
+    message: string,
+    override?: boolean
   ) {
     // Grab the submission votes
     const { vid, rid } = update;
@@ -325,13 +344,15 @@ export default class Submission {
     const findUserVote = existingVote.find((data) => data.uid === uid);
     if (findUserVote) {
       alreadyVoted = findUserVote.voteid;
-      if (findUserVote.decision === decision) {
+      if (findUserVote.decision === decision && !override) {
         return ERR('submissionAlreadyVoted');
       }
     }
 
     // Grab the existing submission, ensure there is no error
-    const getSubmission = await this.query.getSubmissionById(rid);
+    const getSubmission = alreadyVoted
+      ? await this.query.updateVote(alreadyVoted, decision, message)
+      : await this.query.getSubmissionById(rid);
     if (isError(getSubmission)) return getSubmission;
     const submission = getSubmission as AnySubmission;
 
@@ -356,7 +377,7 @@ export default class Submission {
     const updateData = JSON.parse(update.data) as AnySubmission;
 
     // Accept
-    if (accepts >= CF.QC_VOTES_UPDATE) {
+    if (accepts >= CF.QC_VOTES_UPDATE || (override && decision)) {
       // Update the vid row in versions table
       const updateVer = await this.query.updateSubmissionVersion(vid, true);
       if (isError(updateVer)) return updateVer as ErrorObj;
@@ -368,7 +389,7 @@ export default class Submission {
       return await this.query.updateSubmissionLazy(rid, payload);
     }
     // Decline
-    else if (declines >= CF.QC_VOTES_UPDATE) {
+    else if (declines >= CF.QC_VOTES_UPDATE || (override && !decision)) {
       // Update the vid row in versions table
       const updateVer = await this.query.updateSubmissionVersion(vid, false);
       if (isError(updateVer)) return updateVer as ErrorObj;

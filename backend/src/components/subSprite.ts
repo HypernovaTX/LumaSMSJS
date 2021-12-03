@@ -210,6 +210,7 @@ type StaffVoteParam = Parameters<
     _request: Request,
     id: number,
     decision: number,
-    message: string
+    message: string,
+    override?: boolean
   ) => Promise<NoResponse | ErrorObj>
 >;

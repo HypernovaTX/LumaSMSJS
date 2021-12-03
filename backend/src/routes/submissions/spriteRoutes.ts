@@ -222,8 +222,8 @@ spriteRouter.post(
   }
 );
 
-// POST "history/:id/vote" - vote on submission update (Staff only)
-// PARAM: id, BODY: message, decision (id is the update's ID - vid in the DB)
+// POST "history/:id/vote" - vote on submission update (Staff only, ROOT for override)
+// PARAM: id, BODY: message, decision (id is the update's ID - vid in the DB), ?override
 spriteRouter.post(
   '/history/:id/vote',
   rateLimits.creation,
@@ -235,7 +235,8 @@ spriteRouter.post(
     const id = parseInt(req.params?.id) || 0;
     const message = `${req.body?.message ?? ''}`;
     const decision = parseInt(req.body?.decision) || 0;
-    const result = await voteSpriteUpdate(req, id, decision, message);
+    const override = !!req.body?.override;
+    const result = await voteSpriteUpdate(req, id, decision, message, override);
     httpStatus(res, result);
     res.send(result);
   }
@@ -272,8 +273,8 @@ spriteRouter.post(
   }
 );
 
-// POST "/:id/vote" - vote on new submission (Staff only)
-// PARAM: id, BODY: message, decision
+// POST "/:id/vote" - vote on new submission (Staff only, ROOT for override)
+// PARAM: id, BODY: message, decision, ?override
 spriteRouter.post('/:id/vote', rateLimits.creation, async (req, res) => {
   if (!validateRequiredParam(req, ['message', 'decision'])) {
     invalidParamResponse(res);
@@ -282,7 +283,8 @@ spriteRouter.post('/:id/vote', rateLimits.creation, async (req, res) => {
   const id = parseInt(req.params?.id) || 0;
   const message = `${req.body?.message ?? ''}`;
   const decision = parseInt(req.body?.decision) || 0;
-  const result = await voteNewSprite(req, id, decision, message);
+  const override = !!req.body?.override;
+  const result = await voteNewSprite(req, id, decision, message, override);
   httpStatus(res, result);
   res.send(result);
 });
