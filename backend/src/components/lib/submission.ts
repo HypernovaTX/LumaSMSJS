@@ -131,6 +131,10 @@ export default class Submission {
   }
 
   // ----- STAFF METHODS -----
+  async getQueueList() {
+    return {} as AnySubmission;
+  }
+  
   async voteSubmission(
     _request: Request,
     id: number,
