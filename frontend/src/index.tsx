@@ -1,12 +1,165 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import './index.css';
-import App from './App';
+import Navigation from './global/Navigation';
 import reportWebVitals from './reportWebVitals';
 
 ReactDOM.render(
   <React.StrictMode>
-    <App />
+    <Navigation />
+    <div>
+      Test
+      <br />
+      Test
+      <br />
+      Test
+      <br />
+      Test
+      <br />
+      Test
+      <br />
+      Test
+      <br />
+      Test
+      <br />
+      Test
+      <br />
+      Test
+      <br />
+      Test
+      <br />
+      Test
+      <br />
+      Test
+      <br />
+      Test
+      <br />
+      Test
+      <br />
+      Test
+      <br />
+      Test
+      <br />
+      Test
+      <br />
+      Test
+      <br />
+      Test
+      <br />
+      Test
+      <br />
+      Test
+      <br />
+      Test
+      <br />
+      Test
+      <br />
+      Test
+      <br />
+      Test
+      <br />
+      Test
+      <br />
+      Test
+      <br />
+      Test
+      <br />
+      Test
+      <br />
+      Test
+      <br />
+      Test
+      <br />
+      Test
+      <br />
+      Test
+      <br />
+      Test
+      <br />
+      Test
+      <br />
+      Test
+      <br />
+      Test
+      <br />
+      Test
+      <br />
+      Test
+      <br />
+      Test
+      <br />
+      Test
+      <br />
+      Test
+      <br />
+      Test
+      <br />
+      Test
+      <br />
+      Test
+      <br />
+      Test
+      <br />
+      Test
+      <br />
+      Test
+      <br />
+      Test
+      <br />
+      Test
+      <br />
+      Test
+      <br />
+      Test
+      <br />
+      Test
+      <br />
+      Test
+      <br />
+      Test
+      <br />
+      Test
+      <br />
+      Test
+      <br />
+      Test
+      <br />
+      Test
+      <br />
+      Test
+      <br />
+      Test
+      <br />
+      Test
+      <br />
+      Test
+      <br />
+      Test
+      <br />
+      Test
+      <br />
+      Test
+      <br />
+      Test
+      <br />
+      Test
+      <br />
+      Test
+      <br />
+      Test
+      <br />
+      Test
+      <br />
+      Test
+      <br />
+      Test
+      <br />
+      Test
+      <br />
+      Test
+      <br />
+      Test
+      <br />
+    </div>
   </React.StrictMode>,
   document.getElementById('root')
 );
