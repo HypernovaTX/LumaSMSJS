@@ -1,165 +1,26 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
+
+import theme from './MUIConfig';
+import './index.css';
 import Navigation from './global/Navigation';
 import reportWebVitals from './reportWebVitals';
+import image from './psyw_screen_mfgg.png';
+import { ThemeProvider } from '@emotion/react';
 
 ReactDOM.render(
   <React.StrictMode>
-    <Navigation />
-    <div>
-      Test
-      <br />
-      Test
-      <br />
-      Test
-      <br />
-      Test
-      <br />
-      Test
-      <br />
-      Test
-      <br />
-      Test
-      <br />
-      Test
-      <br />
-      Test
-      <br />
-      Test
-      <br />
-      Test
-      <br />
-      Test
-      <br />
-      Test
-      <br />
-      Test
-      <br />
-      Test
-      <br />
-      Test
-      <br />
-      Test
-      <br />
-      Test
-      <br />
-      Test
-      <br />
-      Test
-      <br />
-      Test
-      <br />
-      Test
-      <br />
-      Test
-      <br />
-      Test
-      <br />
-      Test
-      <br />
-      Test
-      <br />
-      Test
-      <br />
-      Test
-      <br />
-      Test
-      <br />
-      Test
-      <br />
-      Test
-      <br />
-      Test
-      <br />
-      Test
-      <br />
-      Test
-      <br />
-      Test
-      <br />
-      Test
-      <br />
-      Test
-      <br />
-      Test
-      <br />
-      Test
-      <br />
-      Test
-      <br />
-      Test
-      <br />
-      Test
-      <br />
-      Test
-      <br />
-      Test
-      <br />
-      Test
-      <br />
-      Test
-      <br />
-      Test
-      <br />
-      Test
-      <br />
-      Test
-      <br />
-      Test
-      <br />
-      Test
-      <br />
-      Test
-      <br />
-      Test
-      <br />
-      Test
-      <br />
-      Test
-      <br />
-      Test
-      <br />
-      Test
-      <br />
-      Test
-      <br />
-      Test
-      <br />
-      Test
-      <br />
-      Test
-      <br />
-      Test
-      <br />
-      Test
-      <br />
-      Test
-      <br />
-      Test
-      <br />
-      Test
-      <br />
-      Test
-      <br />
-      Test
-      <br />
-      Test
-      <br />
-      Test
-      <br />
-      Test
-      <br />
-      Test
-      <br />
-      Test
-      <br />
-      Test
-      <br />
-      Test
-      <br />
-      Test
-      <br />
-    </div>
+    <ThemeProvider theme={theme}>
+      <Navigation />
+      <div
+        style={{
+          background: `linear-gradient(0deg, rgba(0,0,0,0.5) 0%, rgba(0,0,0,0.5) 100%), url(${image})`,
+          backgroundSize: 'cover',
+          imageRendering: 'pixelated',
+          height: '200vh',
+        }}
+      ></div>
+    </ThemeProvider>
   </React.StrictMode>,
   document.getElementById('root')
 );
