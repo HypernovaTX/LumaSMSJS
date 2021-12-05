@@ -20,6 +20,7 @@ import {
   getPublicSprites,
   getSpriteDetails,
   getSpriteHistory,
+  getSpriteQueue,
   updateSprite,
   updateSpriteFile,
   updateSpriteStaff,
@@ -47,6 +48,13 @@ const uploadFields = [
 // GET "/" - list sprites (default)
 spriteRouter.get('/', rateLimits.general, async (_, res) => {
   const result = await getPublicSprites(0, CF.ROWS, '', false, []);
+  httpStatus(res, result);
+  res.send(result);
+});
+
+// GET "/queue" - list sprites queue (staff)
+spriteRouter.get('/queue', rateLimits.general, async (req, res) => {
+  const result = await getSpriteQueue(req, 0, CF.ROWS);
   httpStatus(res, result);
   res.send(result);
 });
@@ -85,6 +93,16 @@ spriteRouter.put('/', rateLimits.general, async (req, res) => {
     return;
   }
   const result = await getPublicSprites(page, count, colSort, asc, filter);
+  httpStatus(res, result);
+  res.send(result);
+});
+
+// PUT "/queue" - list sprites queue (staff)
+// BODY: ?page, ?count
+spriteRouter.put('/queue', rateLimits.general, async (req, res) => {
+  const page = parseInt(req.body?.page) || 0;
+  const count = parseInt(req.body?.count) || 25;
+  const result = await getSpriteQueue(req, page, count);
   httpStatus(res, result);
   res.send(result);
 });

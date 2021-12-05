@@ -24,42 +24,34 @@ const directory = `${CF.UPLOAD_DIRECTORY}/${CF.UPLOAD_SUB_SPRITE}`;
 
 // Easily passable functions
 // READ ONLY
-export function checkSpriteFile(files: Express.Multer.File[]) {
-  const results = files.map(
-    (file) =>
-      spriteImageMIME.test(file.mimetype) && archiveFileMIME.test(file.mimetype)
-  );
-  return results.includes(false);
+export async function getPublicSprites(...args: ListPublicSpriteParam) {
+  return (await submission.getPublicList(...args)) as Sprite[] | ErrorObj;
 }
 
-export const getPublicSprites = async (...args: ListPublicSpriteParam) => {
-  return (await submission.getPublicList(...args)) as Sprite[] | ErrorObj;
-};
-
-export const getSpriteDetails = async (id: number) => {
+export async function getSpriteDetails(id: number) {
   return (await submission.getSubmissionDetails(id)) as Sprite | ErrorObj;
-};
+}
 
-export const getSpriteHistory = async (id: number) => {
+export async function getSpriteHistory(id: number) {
   return (await submission.getSubmissionHistory(id)) as
     | SubmissionVersion[]
     | ErrorObj;
-};
+}
 
 // WRITE
-export const updateSprite = async (...args: SpriteUpdateParam) => {
+export async function updateSprite(...args: SpriteUpdateParam) {
   return (await submission.updateSubmission(...args)) as NoResponse | ErrorObj;
-};
+}
 
 // Complex functions
 // WRITE
-export const createSprite = async (
+export async function createSprite(
   _request: Request,
   payload: Sprite,
   file: Express.Multer.File,
   thumb: Express.Multer.File,
   uid?: number
-) => {
+) {
   // Check and process files
   const processedPayload = processPayloadAndFiles(payload, file, thumb);
   if (isError(processedPayload)) {
@@ -74,9 +66,9 @@ export const createSprite = async (
     | ErrorObj;
   if (isError(result)) deleteFile(file.filename, thumb.filename);
   return result;
-};
+}
 
-export const updateSpriteFile = async (
+export async function updateSpriteFile(
   _request: Request,
   id: number,
   payload: Sprite,
@@ -84,7 +76,7 @@ export const updateSpriteFile = async (
   version: string,
   file: Express.Multer.File,
   thumb: Express.Multer.File
-) => {
+) {
   // Check and process files
   const processedPayload = processPayloadAndFiles(payload, file, thumb);
   if (isError(processedPayload)) {
@@ -104,18 +96,26 @@ export const updateSpriteFile = async (
   )) as NoResponse | ErrorObj;
   if (isError(result)) deleteFile(file.filename, thumb.filename);
   return result;
-};
+}
 
 // Staff functions
-export const voteNewSprite = async (...args: StaffVoteParam) => {
+export async function getSpriteQueue(
+  _request: Request,
+  page: number,
+  count: number
+) {
+  return await submission.getQueueList(_request, page, count);
+}
+
+export async function voteNewSprite(...args: StaffVoteParam) {
   return await submission.voteSubmission(...args);
-};
+}
 
-export const voteSpriteUpdate = async (...args: StaffVoteParam) => {
+export async function voteSpriteUpdate(...args: StaffVoteParam) {
   return await submission.voteSubmissionUpdate(...args);
-};
+}
 
-export const updateSpriteStaff = async (
+export async function updateSpriteStaff(
   _request: Request,
   id: number,
   payload: Sprite,
@@ -123,7 +123,7 @@ export const updateSpriteStaff = async (
   version: string,
   file?: Express.Multer.File,
   thumb?: Express.Multer.File
-) => {
+) {
   // Check and process files
   const processedPayload = processPayloadAndFiles(payload, file, thumb);
   if (isError(processedPayload)) {
@@ -142,16 +142,22 @@ export const updateSpriteStaff = async (
   )) as NoResponse | ErrorObj;
   if (isError(result)) deleteFile(file?.filename, thumb?.filename);
   return result;
-};
+}
 
-export const deleteSprite = async (_request: Request, id: number) => {
+export async function deleteSprite(_request: Request, id: number) {
   return await submission.deleteSubmission(_request, id);
-};
+}
 
 // Sprite specific lib
 export function deleteFile(file?: string, thumb?: string) {
   if (file) unlinkFile(directory, file);
   if (thumb) unlinkFile(directory, thumb);
+}
+
+export function checkSpriteFile(file: Express.Multer.File) {
+  return (
+    spriteImageMIME.test(file.mimetype) || archiveFileMIME.test(file.mimetype)
+  );
 }
 
 function processPayloadAndFiles(
@@ -174,8 +180,11 @@ function processPayloadAndFiles(
     return ERR('fileNameTooLong');
   }
 
-  // Ensure file/thumb is an image
-  if ((file && !verifyImageFile(file)) || (thumb && !verifyImageFile(thumb))) {
+  // Check file MIME types
+  if (file && !checkSpriteFile(file)) {
+    return ERR('fileSpriteInvalid');
+  }
+  if (thumb && !verifyImageFile(thumb)) {
     return ERR('fileImageInvalid');
   }
 

@@ -45,9 +45,11 @@ export type QueueCode = keyof typeof queueCode;
 
 // ----- MAIN SUBMISSION INTERFACES -----
 export type AnySubmission = Sprite | Game;
+export type AnySubmissionKey = keyof AnySubmission;
 interface Submission {
   id?: number;
   uid?: number;
+  username?: string;
   gid?: number;
   title?: string;
   created?: number;

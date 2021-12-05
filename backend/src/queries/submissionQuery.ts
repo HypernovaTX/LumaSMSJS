@@ -26,14 +26,14 @@ export default class SubmissionQuery {
   DB: SQL;
   subType: number;
   subTable: string;
-  updateTable: string;
+  versionTable: string;
   voteTable: string;
   submissionKind: SubmissionKinds;
 
   constructor(submissionKind: SubmissionKinds = 'sprites') {
     this.DB = new SQL();
     this.subTable = `${CF.DB_PREFIX}submission_${submissionKind}`;
-    this.updateTable = `${CF.DB_PREFIX}version`;
+    this.versionTable = `${CF.DB_PREFIX}version`;
     this.voteTable = `${CF.DB_PREFIX}votes`;
     this.subType = submissionList[submissionKind];
     this.submissionKind = submissionKind;
@@ -74,7 +74,7 @@ export default class SubmissionQuery {
       this.DB.buildOrder([column], [asc]);
     }
     if (count) {
-      this.DB.buildCustomQuery(`LIMIT ${page * count}, ${count}`);
+      this.DB.buildCustomQuery('LIMIT ?, ?', [page * count, count]);
     }
 
     // Execute
@@ -104,8 +104,28 @@ export default class SubmissionQuery {
     return submission;
   }
 
+  async getSubmissionUpdateList(
+    queueCode: number,
+    page: number,
+    count: number
+  ) {
+    // Build and run
+    this.DB.buildSelect(this.versionTable);
+    if (queueCode !== -1) this.DB.buildWhere('in_queue = ?', [queueCode]);
+    if (count) {
+      this.DB.buildCustomQuery('LIMIT ?, ?', [page * count, count]);
+    }
+    const queryResult = await this.DB.runQuery();
+
+    // Error handling
+    if (isError(queryResult)) return queryResult as ErrorObj;
+
+    // Resolve
+    return queryResult as SubmissionVersion[];
+  }
+
   async getSubmissionUpdatesByRid(rid: number, sortVersion?: boolean) {
-    this.DB.buildSelect(this.updateTable);
+    this.DB.buildSelect(this.versionTable);
     this.DB.buildWhere([`rid = ?`, `type = ?`], [rid, this.subType]);
     if (sortVersion) this.DB.buildOrder(['version'], [false]);
 
@@ -114,7 +134,7 @@ export default class SubmissionQuery {
   }
 
   async getSubmissionUpdatesByVid(vid: number) {
-    this.DB.buildSelect(this.updateTable);
+    this.DB.buildSelect(this.versionTable);
     this.DB.buildWhere(`vid = ?`, [vid]);
 
     const queryResult = await this.DB.runQuery();
@@ -188,7 +208,7 @@ export default class SubmissionQuery {
       version,
       message,
     });
-    this.DB.buildInsert(this.updateTable, columns, values);
+    this.DB.buildInsert(this.versionTable, columns, values);
 
     // Execute
     return (await this.DB.runQuery(true)) as ErrorObj | NoResponse;
@@ -282,7 +302,7 @@ export default class SubmissionQuery {
         `${timestamp}`,
       ],
     ];
-    this.DB.buildInsert(this.updateTable, versionColumn, versionValue);
+    this.DB.buildInsert(this.versionTable, versionColumn, versionValue);
 
     // Execute
     return (await this.DB.runQuery(true)) as ErrorObj | NoResponse;
@@ -293,7 +313,7 @@ export default class SubmissionQuery {
     const acceptCode = accept ? queueCode.accepted : queueCode.declined;
     const versionColumn = [`data`, `in_queue`];
     const versionValue = [`{}`, `${acceptCode}`];
-    this.DB.buildUpdate(this.updateTable, versionColumn, versionValue);
+    this.DB.buildUpdate(this.versionTable, versionColumn, versionValue);
     this.DB.buildWhere(`vid = ?`, [vid]);
     // Execute
     return (await this.DB.runQuery(true)) as ErrorObj | NoResponse;

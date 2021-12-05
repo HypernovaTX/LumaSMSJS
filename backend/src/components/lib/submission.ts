@@ -11,6 +11,7 @@ import { NoResponse } from '../../lib/result';
 import SubmissionQuery from '../../queries/submissionQuery';
 import {
   AnySubmission,
+  AnySubmissionKey,
   queueCode,
   StaffVote,
   SubmissionKinds,
@@ -19,17 +20,6 @@ import {
 import { User } from '../../schema/userTypes';
 
 import { deleteFile as deleteSpriteFile } from '../subSprite';
-
-// Types/constants
-type ListPublicFunction = Parameters<
-  (
-    page: number,
-    count: number,
-    column: string,
-    asc: boolean,
-    filter: [string, string][]
-  ) => Promise<ErrorObj | SubmissionVersion[]>
->;
 
 export default class Submission {
   kind: SubmissionKinds;
@@ -41,7 +31,7 @@ export default class Submission {
   }
 
   // ----- READ ONLY METHODS -----
-  async getPublicList(...args: ListPublicFunction) {
+  async getPublicList(...args: SubmissionListFunction) {
     const getData = await this.query.getSubmissionList('accepted', ...args);
     if (isError(getData)) return getData as ErrorObj;
     const submissions = getData as AnySubmission[];
@@ -131,10 +121,48 @@ export default class Submission {
   }
 
   // ----- STAFF METHODS -----
-  async getQueueList() {
-    return {} as AnySubmission;
+  async getQueueList(_request: Request, page: number, count: number) {
+    // Ensure user is logged in
+    const getLogin = await checkLogin(_request);
+    if (isError(getLogin)) return getLogin as ErrorObj;
+
+    // Verify permission
+    const permitted = await validatePermission(_request, 'acp_modq');
+    if (!permitted) return ERR('userStaffPermit');
+
+    // Obtain new submissions
+    const getNew = await this.query.getSubmissionList(
+      'new',
+      page,
+      count,
+      'id',
+      true
+    );
+    if (isError(getNew)) return getNew as ErrorObj;
+    const newList = getNew as AnySubmission[];
+
+    // Obtain update submission
+    const getUpdate = await this.query.getSubmissionUpdateList(1, page, count);
+    if (isError(getUpdate)) return getUpdate as ErrorObj;
+    const updates = getUpdate as SubmissionVersion[];
+
+    // Get submission for each update
+    const updateList: AnySubmission[] = [];
+    for (let item of updates) {
+      // Ensure the submission is valid
+      const getSubmission = await this.query.getSubmissionById(item.rid);
+      if (isError(getSubmission)) continue;
+      // Ensure the update data is valid
+      if (!isStringJSON(item.data)) continue;
+      const updateData = JSON.parse(item.data) as AnySubmission;
+      // Finalize data
+      const finalize = { ...getSubmission, ...updateData } as AnySubmission;
+      updateList.push(finalize);
+    }
+
+    return [...newList, ...updateList];
   }
-  
+
   async voteSubmission(
     _request: Request,
     id: number,
@@ -445,3 +473,14 @@ export default class Submission {
     }
   }
 }
+
+// Types/constants
+type SubmissionListFunction = Parameters<
+  (
+    page: number,
+    count: number,
+    column: string,
+    asc: boolean,
+    filter: [string, string][]
+  ) => Promise<ErrorObj | AnySubmission[]>
+>;

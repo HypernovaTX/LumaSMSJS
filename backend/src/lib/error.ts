@@ -30,10 +30,11 @@ export const errors = {
   fileImageInvalid: 'Image is not in PNG, JPG, nor GIF format!',
   fileNameTooLong: 'File name is too long!',
   fileNotFound: 'File not found!',
+  fileSpriteInvalid: 'Sprite are not in PNG, GIF, ZIP, DMG, 7Z, RAR format!',
   fileUnlink: 'File unlink error!',
   noFile: 'No file has been uploaded as per requirement!',
 
-  //submission - MAIN
+  //submission
   submissionAlreadyVoted: 'User cannot apply the same vote on this submission!',
   submissionAnimatedThumb: 'Animated GIF is not allowed for thumbnails!',
   submissionMissingParam: 'Invalid parameters to create / update submission!',
