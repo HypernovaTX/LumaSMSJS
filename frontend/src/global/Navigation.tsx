@@ -74,7 +74,7 @@ export default function Navigation() {
                 width="100%"
                 sx={{
                   backgroundColor: searchBackground,
-                  transition: '200ms linear all',
+                  transition: styles.transition.transition,
                 }}
               >
                 <InputBase
@@ -99,24 +99,28 @@ export default function Navigation() {
             </Grid>
             <Grid item container alignContent="center" xs="auto">
               {loaded ? (
-                <>
-                  <Button
-                    color="secondary"
-                    variant="contained"
-                    startIcon={<LoginIcon />}
-                    sx={{ mr: 1, height: '2rem' }}
-                  >
-                    {t('user.login')}
-                  </Button>
-                  <Button
-                    color="secondary"
-                    variant="outlined"
-                    startIcon={<PersonAddIcon />}
-                    sx={{ ml: 1, height: '2rem' }}
-                  >
-                    {t('user.register')}
-                  </Button>
-                </>
+                login ? (
+                  <></>
+                ) : (
+                  <>
+                    <Button
+                      color="secondary"
+                      variant="contained"
+                      startIcon={<LoginIcon />}
+                      sx={{ mr: 1, height: '2rem' }}
+                    >
+                      {t('user.login')}
+                    </Button>
+                    <Button
+                      color="secondary"
+                      variant="outlined"
+                      startIcon={<PersonAddIcon />}
+                      sx={{ ml: 1, height: '2rem' }}
+                    >
+                      {t('user.register')}
+                    </Button>
+                  </>
+                )
               ) : (
                 <CircularProgress size={32} />
               )}
