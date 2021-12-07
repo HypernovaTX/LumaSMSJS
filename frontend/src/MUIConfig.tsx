@@ -1,4 +1,5 @@
 import { createTheme } from '@mui/material/styles';
+import { makeStyles } from '@mui/material';
 
 const theme = createTheme({
   palette: {
@@ -33,3 +34,5 @@ const theme = createTheme({
   },
 });
 export default theme;
+
+export const styles: { [key: string]: React.CSSProperties } = {};

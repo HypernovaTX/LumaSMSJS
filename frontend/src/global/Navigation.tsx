@@ -1,21 +1,29 @@
-import React, { useMemo, useState } from 'react';
+import React, { useContext, useMemo, useState } from 'react';
 import {
   AppBar,
   Box,
+  Button,
+  CircularProgress,
   Container,
   Grid,
   IconButton,
   InputBase,
   Typography,
 } from '@mui/material';
+import LoginIcon from '@mui/icons-material/Login';
+import PersonAddIcon from '@mui/icons-material/PersonAdd';
 import SearchIcon from '@mui/icons-material/Search';
 import { useTranslation } from 'react-i18next';
 
-import theme from 'MUIConfig';
+import theme, { styles } from 'MUIConfig';
+import { UserContext } from 'User/UserContext';
 
 export default function Navigation() {
   // Custom hooks
   const { t } = useTranslation();
+
+  // Context
+  const { user, loaded, login } = useContext(UserContext);
 
   // State
   const [searchFocused, setSearchFocused] = useState(false);
@@ -29,7 +37,7 @@ export default function Navigation() {
   return (
     <AppBar position="fixed" color="transparent">
       <Box sx={{ backgroundColor: theme.palette.primary.dark }}>
-        <Container>
+        <Container maxWidth="xl">
           <Grid container flexDirection="row">
             {/* Logo */}
             <Grid item container alignContent="center" xs="auto">
@@ -88,6 +96,30 @@ export default function Navigation() {
                   <SearchIcon />
                 </IconButton>
               </Box>
+            </Grid>
+            <Grid item container alignContent="center" xs="auto">
+              {loaded ? (
+                <>
+                  <Button
+                    color="secondary"
+                    variant="contained"
+                    startIcon={<LoginIcon />}
+                    sx={{ mr: 1, height: '2rem' }}
+                  >
+                    {t('user.login')}
+                  </Button>
+                  <Button
+                    color="secondary"
+                    variant="outlined"
+                    startIcon={<PersonAddIcon />}
+                    sx={{ ml: 1, height: '2rem' }}
+                  >
+                    {t('user.register')}
+                  </Button>
+                </>
+              ) : (
+                <CircularProgress size={32} />
+              )}
             </Grid>
           </Grid>
         </Container>
