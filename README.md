@@ -25,12 +25,12 @@
 ## Built With
 Main Tools | Libraries
 -----------|----------
-<a href='https://reactjs.org/'>React</a> (Front End) - Planned | <a href='https://reactrouter.com/'>React Router</a> (Front End) - Planned
-<a href='https://typescriptlang.org/'>Typescript</a> (Full stack) - Planned | <a href='https://www.npmjs.com/package/multer'>multer</a> (Back End)
-<a href='https://sass-lang.com/'>SCSS</a> (Front End) - Planned | <a href='https://www.npmjs.com/package/sqlstring'>SqlString</a> (Back End)
+<a href='https://reactjs.org/'>React</a> (Front End) | <a href='https://reactrouter.com/'>React Router</a> (Front End)
+<a href='https://typescriptlang.org/'>Typescript</a> (Full stack) | <a href='https://www.npmjs.com/package/multer'>multer</a> (Back End)
+<a href='https://mui.com/'>Material UI</a> (Front End) | <a href='https://www.npmjs.com/package/sqlstring'>SqlString</a> (Back End)
 <a href='https://expressjs.com/'>Express</a> (Back End) | <a href='https://www.npmjs.com/package/bcryptjs'>bcryptjs</a> (Back End)
 <a href='https://www.npmjs.com/package/mysql'>MySQL</a> (Back End) | <a href='https://jwt.io/'>JWT</a> (Back End)
---- | <a href='https://www.npmjs.com/package/cookie-parser'>Cookie-parser</a> (Back End)
+<a href='https://www.i18next.com/'>i18next</a> (Front End) | <a href='https://www.npmjs.com/package/cookie-parser'>Cookie-parser</a> (Back End)
 --- | <a href='https://www.npmjs.com/package/node-schedule'>Node-schedule</a> (Back End)
 --- | <a href='https://helmetjs.github.io/'>HelmetJS</a> (Back End)
 --- | <a href='https://www.npmjs.com/package/morgan'>Morgan</a> (Back End)
