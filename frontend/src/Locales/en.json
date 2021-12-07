@@ -1,4 +1,14 @@
 {
+  "error": {
+    "error": "Error",
+    "error400": "Request Failure (400)",
+    "error404": "Not Found (404)",
+    "noError": "No errors found at this moment",
+    "unknown": "An unknown error as occured!"
+  },
+  "footer": {
+    "copyright": "Mario Fan Games Galaxy, 2001 - {{year}}"
+  },
   "main": {
     "search": "Search",
     "siteName": "MFGG",
@@ -13,6 +23,9 @@
   "user": {
     "login": "Sign In",
     "logout": "Log Out",
-    "register": "Register"
+    "password": "Password",
+    "register": "Register",
+    "remember": "Remember Me",
+    "username": "username"
   }
 }

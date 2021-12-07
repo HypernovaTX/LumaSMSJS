@@ -34,6 +34,7 @@ const requestKinds = ['get', 'put', 'patch', 'post', 'delete'] as const;
 
 // React hook
 export default function useFetch(
+  skip: boolean,
   kind: RequestKinds,
   url: string,
   body?: AnyObject,
@@ -49,8 +50,8 @@ export default function useFetch(
       );
       setData(waitData);
     };
-    if (!loaded) load();
-  }, [body, file, kind, loaded, url]);
+    if (!loaded && !skip) load();
+  }, [body, file, kind, loaded, skip, url]);
   return { data, loaded };
 }
 

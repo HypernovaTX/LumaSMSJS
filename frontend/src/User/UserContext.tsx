@@ -1,4 +1,4 @@
-import { createContext, useMemo } from 'react';
+import { createContext, useContext, useMemo } from 'react';
 
 import { User } from 'schema/userSchema';
 import { ContextProps, ErrorObj } from 'schema';
@@ -23,8 +23,11 @@ const defaultUserContext: UserContextType = {
 export const UserContext = createContext<UserContextType>(defaultUserContext);
 
 export default function UserProvider(props: ContextProps) {
+  // Context
+  const { login: getLogin } = useContext(UserContext);
+
   // Data
-  const { data: userData, loaded: userLoaded } = useAPI_verify();
+  const { data: userData, loaded: userLoaded } = useAPI_verify(!getLogin);
 
   // Memo
   const user = useMemo(userMemo, [userData]);

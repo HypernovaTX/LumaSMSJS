@@ -1,10 +1,16 @@
 import React from 'react';
-import { Route, Routes } from 'react-router-dom';
+import { BrowserRouter, Route, Switch } from 'react-router-dom';
+
+import Error from 'Error';
+import Login from 'User/Login';
 
 export default function MainRoutes() {
   return (
-    <Routes>
-      <Route />
-    </Routes>
+    <BrowserRouter>
+      <Switch>
+        <Route exact path="/" component={Error} />
+        <Route exact path="/login" component={Login} />
+      </Switch>
+    </BrowserRouter>
   );
 }

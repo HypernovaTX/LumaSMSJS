@@ -3,21 +3,21 @@ import { ErrorObj, NoResponse } from 'schema';
 import { User } from 'schema/userSchema';
 
 // List users
-export function useAPI_userList(body: GetUserListBody) {
+export function useAPI_userList(skip: boolean, body: GetUserListBody) {
   const url = 'user';
-  return useFetch('put', url, body) as GetUserListResponse;
+  return useFetch(skip, 'put', url, body) as GetUserListResponse;
 }
 
 // Show a specific user by ID
-export function useAPI_user(body: GetUserBody) {
+export function useAPI_user(skip: boolean, body: GetUserBody) {
   const url = `user/${body.id}`;
-  return useFetch('get', url) as GetUserResponse;
+  return useFetch(skip, 'get', url) as GetUserResponse;
 }
 
 // Get current user login
-export function useAPI_verify() {
+export function useAPI_verify(skip: boolean) {
   const url = `user/verify`;
-  return useFetch('get', url) as GetUserResponse;
+  return useFetch(skip, 'get', url) as GetUserResponse;
 }
 
 // Login

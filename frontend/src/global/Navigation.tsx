@@ -35,10 +35,10 @@ export default function Navigation() {
 
   // Output
   return (
-    <AppBar position="fixed" color="transparent">
+    <AppBar position="sticky" color="transparent">
       <Box sx={{ backgroundColor: theme.palette.primary.dark }}>
         <Container maxWidth="xl">
-          <Grid container flexDirection="row">
+          <Grid container flexDirection="row" sx={{ height: '80px' }}>
             {/* Logo */}
             <Grid item container alignContent="center" xs="auto">
               <Box px={1}>
