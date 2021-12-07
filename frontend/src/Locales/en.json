@@ -1,0 +1,18 @@
+{
+  "main": {
+    "search": "Search",
+    "siteName": "MFGG",
+    "siteNameLong": "Mario Fan Games Galaxy"
+  },
+  "nav": {
+    "games": "Games",
+    "hacks": "Hacks",
+    "resources": "Resources",
+    "community": "Community"
+  },
+  "user": {
+    "login": "Sign In",
+    "logout": "Log Out",
+    "register": "Register"
+  }
+}

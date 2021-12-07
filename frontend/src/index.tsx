@@ -1,12 +1,13 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-
-import theme from './MUIConfig';
-import './index.css';
-import Navigation from './global/Navigation';
-import reportWebVitals from './reportWebVitals';
-import image from './psyw_screen_mfgg.png';
 import { ThemeProvider } from '@emotion/react';
+
+import theme from 'MUIConfig';
+import 'index.css';
+import Navigation from 'Global/Navigation';
+import reportWebVitals from 'reportWebVitals';
+import image from 'psyw_screen_mfgg.png';
+import 'languages';
 
 ReactDOM.render(
   <React.StrictMode>

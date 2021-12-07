@@ -2,7 +2,9 @@
   "name": "frontend",
   "version": "0.1.0",
   "private": true,
+  "license": "MIT",
   "dependencies": {
+    "@craco/craco": "^6.4.2",
     "@emotion/react": "^11.7.0",
     "@emotion/styled": "^11.6.0",
     "@mui/icons-material": "^5.2.0",
@@ -10,21 +12,27 @@
     "@testing-library/jest-dom": "^5.14.1",
     "@testing-library/react": "^11.2.7",
     "@testing-library/user-event": "^12.8.3",
+    "@types/i18next": "^13.0.0",
     "@types/jest": "^26.0.24",
     "@types/node": "^12.20.16",
     "@types/react": "^17.0.14",
     "@types/react-dom": "^17.0.9",
+    "axios": "^0.24.0",
+    "dotenv": "^10.0.0",
+    "i18next": "^21.5.4",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
+    "react-i18next": "^11.14.3",
     "react-scripts": "4.0.3",
+    "ts-node": "^10.4.0",
     "typescript": "^4.3.5",
     "web-vitals": "^1.1.2"
   },
   "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build",
-    "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "start": "craco start",
+    "build": "craco build",
+    "test": "craco test",
+    "eject": "craco eject"
   },
   "eslintConfig": {
     "extends": [
@@ -46,5 +54,9 @@
   },
   "resolutions": {
     "ansi-html": "https://registry.yarnpkg.com/ansi-html-community/-/ansi-html-community-0.0.8.tgz#69fbc4d6ccbe383f9736934ae34c3f8290f1bf41"
+  },
+  "devDependencies": {
+    "tsconfig-paths": "^3.12.0",
+    "tscpaths": "^0.0.9"
   }
 }

@@ -8,12 +8,9 @@
     "moduleResolution": "node",
     "sourceMap": true,
     "outDir": "build",
-    "baseUrl": ".",
+    "baseUrl": "src",
     "esModuleInterop": true,
-    "paths": {
-      "*": ["node_modules/*"]
-    },
     "strict": false
   },
-  "include": ["src/**/*"]
+  "include": ["src"]
 }
