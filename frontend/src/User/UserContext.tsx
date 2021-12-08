@@ -2,7 +2,7 @@ import { createContext, useContext, useMemo } from 'react';
 
 import { User } from 'schema/userSchema';
 import { ContextProps, ErrorObj } from 'schema';
-import { useAPI_verify } from 'api';
+import { useAPI_verify } from 'API';
 import { isError } from 'lib';
 
 type UserContextType = {
@@ -11,6 +11,7 @@ type UserContextType = {
   login: boolean;
   loaded: boolean;
   error?: ErrorObj;
+  reloadUser?: () => void;
 };
 
 const defaultUserContext: UserContextType = {
@@ -27,7 +28,11 @@ export default function UserProvider(props: ContextProps) {
   const { login: getLogin } = useContext(UserContext);
 
   // Data
-  const { data: userData, loaded: userLoaded } = useAPI_verify(!getLogin);
+  const {
+    data: userData,
+    loaded: userLoaded,
+    refetch: reloadUser,
+  } = useAPI_verify(getLogin);
 
   // Memo
   const user = useMemo(userMemo, [userData]);
@@ -44,6 +49,7 @@ export default function UserProvider(props: ContextProps) {
         login,
         loaded,
         error,
+        reloadUser,
       }}
     >
       {props.children}

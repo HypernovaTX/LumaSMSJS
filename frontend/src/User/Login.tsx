@@ -1,21 +1,56 @@
+import React, { useContext, useEffect, useState } from 'react';
 import {
   Box,
-  Button,
+  CircularProgress,
   FormControlLabel,
   FormGroup,
-  Grid,
   Typography,
 } from '@mui/material';
-import React from 'react';
 import { useTranslation } from 'react-i18next';
 
 import LoginIcon from '@mui/icons-material/Login';
 import { styles } from 'MUIConfig';
-import { LumaCheckbox, LumaInput } from 'lib/LumaComponents';
+import { LumaButton, LumaCheckbox, LumaInput, Url } from 'lib/LumaComponents';
+import { useAPI_userLogin } from 'API';
+import { UserContext } from 'User/UserContext';
+
+type UserLogin = {
+  username: string;
+  password: string;
+  remember?: boolean;
+};
+
+const defaultForm = {
+  username: '',
+  password: '',
+};
 
 export default function Login() {
   // Custom hooks
   const { t } = useTranslation();
+
+  // Context
+  const { reloadUser } = useContext(UserContext);
+
+  // States
+  const [loginForm, setLoginForm] = useState<UserLogin>(defaultForm);
+  const [loginLoading, setLoginLoading] = useState(false);
+
+  // Data
+  const { execute: login, loaded: loginLoaded } = useAPI_userLogin(
+    loginForm,
+    () => {
+      setLoginLoading(false);
+      if (reloadUser) reloadUser();
+    }
+  );
+
+  // Effect
+  useEffect(() => {
+    if (loginLoaded && loginLoading) {
+      setLoginLoading(false);
+    }
+  }, [loginLoaded, loginLoading]);
 
   // Output
   return (
@@ -38,35 +73,107 @@ export default function Login() {
         justifyContent="center"
         minWidth="25vw"
       >
+        {/* Title */}
         <Typography variant="h2" style={styles.bigText}>
           {t('user.login')}
         </Typography>
+        {/* Username/password input */}
         <Box my={1} width="100%">
-          <LumaInput fullWidth label={t('user.username')} />
+          <LumaInput
+            disabled={loginLoading}
+            fullWidth
+            label={t('user.username')}
+            name="username"
+            onChange={handleInputChange}
+            value={loginForm.username}
+          />
         </Box>
         <Box my={1} width="100%">
-          <LumaInput fullWidth label={t('user.password')} type="password" />
+          <LumaInput
+            disabled={loginLoading}
+            fullWidth
+            label={t('user.password')}
+            name="password"
+            type="password"
+            onChange={handleInputChange}
+            value={loginForm.password}
+          />
         </Box>
+        {/* Remember Me */}
         <Box my={0} width="100%">
           <FormGroup>
             <FormControlLabel
-              control={<LumaCheckbox />}
+              control={
+                <LumaCheckbox
+                  disabled={loginLoading}
+                  name="remember"
+                  onChange={handleCheckbox}
+                  value={!!loginForm.remember}
+                />
+              }
               label={`${t('user.remember')}`}
             />
           </FormGroup>
         </Box>
+        {/* Sign In button */}
         <Box my={2} width="100%">
-          <Button
+          <LumaButton
+            disabled={loginLoading}
             color="secondary"
             variant="contained"
             fullWidth
             size="large"
-            startIcon={<LoginIcon />}
+            startIcon={loginLoading ? undefined : <LoginIcon />}
+            onClick={loginButtionClick}
           >
-            {t('user.login')}
-          </Button>
+            {loginLoading ? (
+              <CircularProgress size={26} color="secondary" />
+            ) : (
+              t('user.login')
+            )}
+          </LumaButton>
+        </Box>
+        {/* Bottom texts */}
+        <Box my={1} width="100%">
+          <Typography>
+            {t('user.dontHaveAccount')}{' '}
+            <Url disabled={loginLoading} click={() => {}}>
+              {t('user.signup')}
+            </Url>
+          </Typography>
+          <Typography>
+            <Url disabled={loginLoading} click={() => {}}>
+              {t('user.forget')}
+            </Url>
+          </Typography>
         </Box>
       </Box>
     </Box>
   );
+
+  // Callbacks
+  function handleInputChange(e: React.ChangeEvent<HTMLInputElement>) {
+    let form = loginForm;
+    if (e.target.name === 'username') {
+      form = { ...loginForm, username: e.target.value };
+    }
+    if (e.target.name === 'password') {
+      form = { ...loginForm, password: e.target.value };
+    }
+    setLoginForm(form);
+  }
+
+  function handleCheckbox(e: React.ChangeEvent<HTMLInputElement>) {
+    let form = loginForm;
+    if (e.target.name === 'remember') {
+      form = { ...loginForm, remember: e.target.checked };
+    }
+    setLoginForm(form);
+  }
+
+  function loginButtionClick() {
+    if (loginLoading) return;
+    setLoginLoading(true);
+    login();
+  }
 }

@@ -13,7 +13,7 @@ export default function Footer() {
   // Output
   return (
     <Box py={4} sx={{ backgroundColor: theme.palette.primary.dark }}>
-      <Container>
+      <Container maxWidth="xl">
         <Typography>{t('footer.copyright', { year })}</Typography>
       </Container>
     </Box>

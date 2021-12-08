@@ -21,11 +21,14 @@
     "community": "Community"
   },
   "user": {
+    "dontHaveAccount": "Don't have an account?",
+    "forget": "Forgot your username and/or password?",
     "login": "Sign In",
     "logout": "Log Out",
     "password": "Password",
     "register": "Register",
     "remember": "Remember Me",
+    "signup": "Sign up!",
     "username": "username"
   }
 }

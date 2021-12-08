@@ -1,35 +1,42 @@
-import useFetch, { mainAPICall } from 'api/apiCore';
-import { ErrorObj, NoResponse } from 'schema';
+import useFetch, {
+  FetchResponse,
+  SendNoResponse,
+  SendResponse,
+  useSend,
+} from 'API/apiCore';
 import { User } from 'schema/userSchema';
 
 // List users
 export function useAPI_userList(skip: boolean, body: GetUserListBody) {
   const url = 'user';
-  return useFetch(skip, 'put', url, body) as GetUserListResponse;
+  return useFetch(skip, 'put', url, body) as FetchResponse<User[]>;
 }
 
 // Show a specific user by ID
 export function useAPI_user(skip: boolean, body: GetUserBody) {
   const url = `user/${body.id}`;
-  return useFetch(skip, 'get', url) as GetUserResponse;
+  return useFetch(skip, 'get', url) as FetchResponse<User>;
 }
 
 // Get current user login
 export function useAPI_verify(skip: boolean) {
   const url = `user/verify`;
-  return useFetch(skip, 'get', url) as GetUserResponse;
+  return useFetch(skip, 'get', url) as FetchResponse<User>;
 }
 
 // Login
-export async function useAPI_userLogin(body: GetUserLoginBody) {
+export function useAPI_userLogin(
+  body: GetUserLoginBody,
+  onComplete: (data: User) => void
+) {
   const url = `user/login`;
-  return (await mainAPICall('put', url, body)) as NoResponse;
+  return useSend(onComplete, 'put', url, body) as SendResponse<User>;
 }
 
 // Log out
-export async function useAPI_userLogout() {
+export function useAPI_userLogout(onComplete: () => void) {
   const url = `user/logout`;
-  return (await mainAPICall('get', url)) as NoResponse;
+  return useSend(onComplete, 'get', url) as SendNoResponse;
 }
 
 // Body Types
@@ -45,14 +52,4 @@ type GetUserLoginBody = {
   username: string;
   password: string;
   remember?: boolean;
-};
-
-// Reponse types
-type GetUserResponse = {
-  data: User | null | ErrorObj;
-  loaded: boolean;
-};
-type GetUserListResponse = {
-  data: User[] | null | ErrorObj;
-  loaded: boolean;
 };

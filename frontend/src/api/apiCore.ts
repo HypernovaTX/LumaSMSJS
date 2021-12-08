@@ -9,7 +9,22 @@ export type APIError = {
   reason: string;
   message?: string;
 };
-export type APINoResponse = {
+export type FetchResponse<T> = {
+  data: T | null | ErrorObj;
+  refetch: () => Promise<void>;
+  loaded: boolean;
+};
+export type FetchNoResponse = {
+  refetch: () => Promise<void>;
+  loaded: boolean;
+};
+export type SendResponse<T> = {
+  data: T | null | ErrorObj;
+  execute: () => Promise<void>;
+  loaded: boolean;
+};
+export type SendNoResponse = {
+  execute: () => Promise<void>;
   loaded: boolean;
 };
 type RequestKinds = typeof requestKinds[number];
@@ -32,7 +47,7 @@ const defaultAPIError: APIError = {
 };
 const requestKinds = ['get', 'put', 'patch', 'post', 'delete'] as const;
 
-// React hook
+// React hooks
 export default function useFetch(
   skip: boolean,
   kind: RequestKinds,
@@ -42,6 +57,13 @@ export default function useFetch(
 ) {
   const [loaded, setLoaded] = useState(false);
   const [data, setData] = useState<unknown>(null);
+  const refetch = async () => {
+    setLoaded(false);
+    const waitData = await mainAPICall(kind, url, body, file, () =>
+      setLoaded(true)
+    );
+    setData(waitData);
+  };
 
   useEffect(() => {
     const load = async () => {
@@ -52,9 +74,36 @@ export default function useFetch(
     };
     if (!loaded && !skip) load();
   }, [body, file, kind, loaded, skip, url]);
-  return { data, loaded };
+  return { data, loaded, refetch };
 }
 
+export function useSend(
+  onComplete: (data: any) => void,
+  kind: RequestKinds,
+  url: string,
+  body?: AnyObject,
+  file?: boolean
+) {
+  const [loaded, setLoaded] = useState(false);
+  const [completed, setCompleted] = useState(false);
+  const [data, setData] = useState<unknown>(null);
+  const execute = async () => {
+    setLoaded(false);
+    const waitData = await mainAPICall(kind, url, body, file, () =>
+      setLoaded(true)
+    );
+    setData(waitData);
+  };
+  useEffect(() => {
+    if (loaded && !completed) {
+      setCompleted(true);
+      onComplete(data);
+    }
+  }, [completed, data, loaded, onComplete]);
+  return { execute, data, loaded };
+}
+
+// Root API call function
 export async function mainAPICall(
   kind: RequestKinds,
   url: string,
