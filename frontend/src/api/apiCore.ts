@@ -31,6 +31,7 @@ type RequestKinds = typeof requestKinds[number];
 
 // Init
 const host = CF.HOST;
+axios.defaults.withCredentials = true;
 const headerConfig = {
   headers: {
     'content-type': 'application/x-www-form-urlencoded',
