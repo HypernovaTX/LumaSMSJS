@@ -1,6 +1,7 @@
-import axios from 'axios';
-import CF from 'config';
 import { useEffect, useState } from 'react';
+import axios from 'axios';
+
+import CF from 'config';
 import { AnyObject, ErrorObj } from 'schema';
 
 // Types
@@ -9,24 +10,18 @@ export type APIError = {
   reason: string;
   message?: string;
 };
-export type FetchResponse<T> = {
+export type APIResponse<T, B> = {
   data: T | null | ErrorObj;
-  refetch: () => Promise<void>;
-  loaded: boolean;
+  execute: (body?: B) => Promise<void>;
+  requested: boolean;
+  loading: boolean;
 };
-export type FetchNoResponse = {
-  refetch: () => Promise<void>;
-  loaded: boolean;
+export type APINoResponse<B> = {
+  execute: (body?: B) => Promise<void>;
+  requested: boolean;
+  loading: boolean;
 };
-export type SendResponse<T> = {
-  data: T | null | ErrorObj;
-  execute: () => Promise<void>;
-  loaded: boolean;
-};
-export type SendNoResponse = {
-  execute: () => Promise<void>;
-  loaded: boolean;
-};
+export type OnComplete<T> = (data: T) => void;
 type RequestKinds = typeof requestKinds[number];
 
 // Init
@@ -50,32 +45,82 @@ const requestKinds = ['get', 'put', 'patch', 'post', 'delete'] as const;
 
 // React hooks
 export default function useFetch(
+  onComplete: (data: any) => void,
   skip: boolean,
   kind: RequestKinds,
   url: string,
   body?: AnyObject,
   file?: boolean
 ) {
-  const [loaded, setLoaded] = useState(false);
+  const [requested, setRequested] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [data, setData] = useState<unknown>(null);
-  const refetch = async () => {
-    setLoaded(false);
-    const waitData = await mainAPICall(kind, url, body, file, () =>
-      setLoaded(true)
-    );
-    setData(waitData);
+
+  const execute = async (newBody?: AnyObject) => {
+    setLoading(true);
+    await mainAPICall(kind, url, newBody || body, file, (data) => {
+      onComplete(data);
+      setLoading(false);
+      setRequested(true);
+      setData(data);
+    });
   };
 
   useEffect(() => {
-    const load = async () => {
-      const waitData = await mainAPICall(kind, url, body, file, () =>
-        setLoaded(true)
-      );
-      setData(waitData);
+    const getData = async () => {
+      if (loading) return;
+      setLoading(true);
+      await mainAPICall(kind, url, body, file, (data) => {
+        setLoading(false);
+        setRequested(true);
+        onComplete(data);
+        setData(data);
+      });
     };
-    if (!loaded && !skip) load();
-  }, [body, file, kind, loaded, skip, url]);
-  return { data, loaded, refetch };
+    if (!loading && !requested && !skip) {
+      getData();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+  return { data, loading, requested, execute };
+}
+
+export function useDownload(
+  onComplete: (data: any) => void,
+  skip: boolean,
+  body: AnyObject
+) {
+  const [requested, setRequested] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [data, setData] = useState<unknown>(null);
+
+  const execute = async (newBody?: AnyObject) => {
+    setLoading(true);
+    await APIDownload(newBody || body, (data) => {
+      onComplete(data);
+      setLoading(false);
+      setRequested(true);
+      setData(data);
+    });
+  };
+
+  useEffect(() => {
+    const getData = async () => {
+      if (loading) return;
+      setLoading(true);
+      await APIDownload(body, (data) => {
+        onComplete(data);
+        setLoading(false);
+        setRequested(true);
+        setData(data);
+      });
+    };
+    if (!loading && !requested && !skip) {
+      getData();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+  return { data, loading, requested, execute };
 }
 
 export function useSend(
@@ -85,23 +130,19 @@ export function useSend(
   body?: AnyObject,
   file?: boolean
 ) {
-  const [loaded, setLoaded] = useState(false);
-  const [completed, setCompleted] = useState(false);
+  const [requested, setRequested] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [data, setData] = useState<unknown>(null);
   const execute = async () => {
-    setLoaded(false);
-    const waitData = await mainAPICall(kind, url, body, file, () =>
-      setLoaded(true)
-    );
-    setData(waitData);
-  };
-  useEffect(() => {
-    if (loaded && !completed) {
-      setCompleted(true);
+    setLoading(true);
+    await mainAPICall(kind, url, body, file, () => {
+      setLoading(false);
+      setRequested(true);
       onComplete(data);
-    }
-  }, [completed, data, loaded, onComplete]);
-  return { execute, data, loaded };
+      setData(data);
+    });
+  };
+  return { data, loading, requested, execute };
 }
 
 // Root API call function
@@ -110,7 +151,7 @@ export async function mainAPICall(
   url: string,
   body?: AnyObject,
   file?: boolean,
-  loadedFunction?: () => void
+  loadedFunction?: (data: any) => void
 ) {
   let getData = null;
   if (body) {
@@ -118,8 +159,8 @@ export async function mainAPICall(
   } else {
     getData = await APICall(kind, url);
   }
-  if (loadedFunction) loadedFunction();
-  return getData;
+  if (loadedFunction) loadedFunction(getData?.data);
+  return getData?.data;
 }
 
 // All requests
@@ -140,7 +181,6 @@ async function APICall(kind: RequestKinds, url: string) {
         }
       });
   });
-  console.log(4);
   return output as any;
 }
 
@@ -172,13 +212,36 @@ async function APICallBody(
   return output as any;
 }
 
+async function APIDownload(
+  body: AnyObject,
+  loadedFunction?: (data: any) => void
+) {
+  const params = prepareRequestBody(body);
+  const output = await new Promise((resolve) => {
+    axios
+      .put(`${host}/file`, params, { ...headerConfig, responseType: 'blob' })
+      .then((response) => {
+        if (loadedFunction) loadedFunction(response?.data);
+        resolve(response?.data);
+      })
+      .catch((err) => {
+        if (err?.response?.data) {
+          resolve(err?.response?.data as ErrorObj);
+        } else {
+          resolve({ ...defaultAPIError, reason: err } as APIError);
+        }
+      });
+  });
+  return output as any;
+}
+
 // Util functions
 function prepareRequestBody(body: AnyObject) {
   const bodyEntries = Object.entries(body);
   const params = new URLSearchParams();
   bodyEntries.forEach((item) => {
     const [key, value] = item;
-    params.append(key, value);
+    params.append(key, value || '(null)');
   });
   return params;
 }

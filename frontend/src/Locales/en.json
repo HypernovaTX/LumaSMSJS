@@ -12,7 +12,8 @@
   "main": {
     "search": "Search",
     "siteName": "MFGG",
-    "siteNameLong": "Mario Fan Games Galaxy"
+    "siteNameLong": "Mario Fan Games Galaxy",
+    "unknown": "unknown"
   },
   "nav": {
     "games": "Games",

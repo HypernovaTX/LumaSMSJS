@@ -1,6 +1,7 @@
 import React, { useContext, useMemo, useState } from 'react';
 import {
   AppBar,
+  Avatar,
   Box,
   Button,
   CircularProgress,
@@ -17,13 +18,14 @@ import { useTranslation } from 'react-i18next';
 
 import theme, { styles } from 'MUIConfig';
 import { UserContext } from 'User/UserContext';
+import logo from 'image/logo.svg';
 
 export default function Navigation() {
   // Custom hooks
   const { t } = useTranslation();
 
   // Context
-  const { user, loaded, login } = useContext(UserContext);
+  const { avatar, user, loaded, login } = useContext(UserContext);
 
   // State
   const [searchFocused, setSearchFocused] = useState(false);
@@ -41,25 +43,33 @@ export default function Navigation() {
           <Grid container flexDirection="row" sx={{ height: '80px' }}>
             {/* Logo */}
             <Grid item container alignContent="center" xs="auto">
-              <Box px={1}>
-                <Typography variant="h3">{t('main.siteName')}</Typography>
-              </Box>
+              <Box
+                px={1}
+                sx={{
+                  width: 160,
+                  height: 64,
+                  backgroundImage: `url(${logo})`,
+                  backgroundSize: 'contain',
+                  backgroundPosition: 'center',
+                  backgroundRepeat: 'no-repeat',
+                }}
+              ></Box>
             </Grid>
             {/* Nav */}
             <Grid item container flexDirection="row" xs="auto">
               <Grid item container alignContent="center" xs="auto">
                 <Box px={1}>
-                  <Typography variant="h5">{t('nav.games')}</Typography>
+                  <Typography variant="h6">{t('nav.games')}</Typography>
                 </Box>
               </Grid>
               <Grid item container alignContent="center" xs="auto">
                 <Box px={1}>
-                  <Typography variant="h5">{t('nav.resources')}</Typography>
+                  <Typography variant="h6">{t('nav.resources')}</Typography>
                 </Box>
               </Grid>
               <Grid item container alignContent="center" xs="auto">
                 <Box px={1}>
-                  <Typography variant="h5">{t('nav.community')}</Typography>
+                  <Typography variant="h6">{t('nav.community')}</Typography>
                 </Box>
               </Grid>
             </Grid>
@@ -97,10 +107,30 @@ export default function Navigation() {
                 </IconButton>
               </Box>
             </Grid>
+            {/* User profile/login */}
             <Grid item container alignContent="center" xs="auto">
               {loaded ? (
-                login ? (
-                  <></>
+                login && user ? (
+                  <Grid container item>
+                    <Grid container item xs="auto" alignContent="center">
+                      <Box px={1}>
+                        <Typography>{user?.username}</Typography>
+                      </Box>
+                    </Grid>
+                    <Grid container item xs="auto">
+                      <Avatar
+                        sx={{
+                          width: 48,
+                          height: 48,
+                          backgroundColor: theme.palette.primary.main,
+                          border: `1px solid ${theme.palette.primary.main}`,
+                        }}
+                        variant="rounded"
+                        alt={user?.username || t('main.unknown')}
+                        src={avatar}
+                      />
+                    </Grid>
+                  </Grid>
                 ) : (
                   <>
                     <Button

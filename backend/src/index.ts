@@ -17,14 +17,26 @@ import { fileRouter } from './routes/fileRoutes';
 import { submissionRouter } from './routes/submissionRoutes';
 import { userRouter } from './routes/userRoutes';
 import ERR from './lib/error';
+import CF from './config';
 
-const whitelist = ['http://localhost:3000', 'http://localhost:3001'];
+// ==================== Configs ====================
+const morganConfig: morgan.Options<any, any> = {
+  skip: (_, res) => res.statusCode < 400,
+};
+const corsConfig: cors.CorsOptions = {
+  origin: (o, call) => {
+    if (CF.WHITELIST.indexOf(o) !== -1 || !o) {
+      call(null, true);
+    } else {
+      call(new Error(ERR('notAllowedCors').message));
+    }
+  },
+  credentials: true,
+};
 
 // ==================== Init ====================
 const app: Application = express();
-const morganEntity = morgan('combined', {
-  skip: (_, res) => res.statusCode < 400,
-});
+const morganEntity = morgan('combined', morganConfig);
 const csrfProtection = csurf({ cookie: true });
 const parseForm = express.urlencoded({ extended: false });
 const cron = new Cron();
@@ -33,18 +45,7 @@ cron.job.start();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
-app.use(
-  cors({
-    origin: (o, call) => {
-      if (whitelist.indexOf(o) !== -1) {
-        call(null, true);
-      } else {
-        call(new Error(ERR('notAllowedCors').message));
-      }
-    },
-    credentials: true,
-  })
-);
+app.use(cors(corsConfig));
 app.options('*', cors());
 app.use(helmet());
 app.use(morganEntity);

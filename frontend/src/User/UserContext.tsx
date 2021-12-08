@@ -1,44 +1,61 @@
-import { createContext, useContext, useMemo } from 'react';
+import { createContext, useEffect, useMemo, useState } from 'react';
 
 import { User } from 'schema/userSchema';
 import { ContextProps, ErrorObj } from 'schema';
-import { useAPI_verify } from 'API';
+import { useAPI_verify, useAPI_image } from 'API';
 import { isError } from 'lib';
 
+// Init context
 type UserContextType = {
-  user: User;
+  user?: User;
   permission: string[];
   login: boolean;
   loaded: boolean;
+  avatar?: string;
   error?: ErrorObj;
   reloadUser?: () => void;
 };
-
 const defaultUserContext: UserContextType = {
-  user: {},
   permission: [],
   login: false,
   loaded: false,
 };
-
 export const UserContext = createContext<UserContextType>(defaultUserContext);
 
+// Main Provider
 export default function UserProvider(props: ContextProps) {
-  // Context
-  const { login: getLogin } = useContext(UserContext);
+  // State
+  const [login, setLogin] = useState(false);
+  const [user, setUser] = useState<User | undefined>(undefined);
 
   // Data
   const {
     data: userData,
-    loaded: userLoaded,
-    refetch: reloadUser,
-  } = useAPI_verify(getLogin);
+    requested: userLoaded,
+    execute: reloadUser,
+  } = useAPI_verify(login, (data) => {
+    if (!isError(data)) {
+      reloadAvatar({
+        path: `avatar/${data?.avatar_file ?? ''}`,
+      });
+    }
+  });
+  const {
+    data: avatarData,
+    requested: avatarLoaded,
+    execute: reloadAvatar,
+  } = useAPI_image(true, {
+    path: `avatar/${user?.avatar_file ?? ''}`,
+  });
 
   // Memo
-  const user = useMemo(userMemo, [userData]);
   const error = useMemo(errorMemo, [userData]);
-  const loaded = useMemo(loadedMemo, [userLoaded]);
-  const login = useMemo(loginMemo, [loaded, userData]);
+  const loaded = useMemo(loadedMemo, [userLoaded, avatarLoaded]);
+  const avatar = useMemo(avatarMemo, [avatarData]);
+
+  // Effects
+  useEffect(userEffect, [userData]);
+  useEffect(loginEffect, [loaded, userData]);
 
   // Output
   return (
@@ -49,6 +66,7 @@ export default function UserProvider(props: ContextProps) {
         login,
         loaded,
         error,
+        avatar,
         reloadUser,
       }}
     >
@@ -57,13 +75,6 @@ export default function UserProvider(props: ContextProps) {
   );
 
   // Memo hoists
-  function userMemo() {
-    if (userData && !isError(userData)) {
-      return userData as User;
-    }
-    return {} as User;
-  }
-
   function errorMemo() {
     if (isError(userData)) {
       return userData as ErrorObj;
@@ -72,13 +83,29 @@ export default function UserProvider(props: ContextProps) {
   }
 
   function loadedMemo() {
-    return userLoaded;
+    return userLoaded && avatarLoaded;
   }
 
-  function loginMemo() {
-    if (userData && !isError(userData) && loaded) {
-      return true;
+  function avatarMemo() {
+    if (!avatarData) return undefined;
+    if (isError(avatarData)) return undefined;
+    const avatarFile = window.URL.createObjectURL(new Blob([avatarData]));
+    console.log(avatarFile);
+    return avatarFile;
+  }
+
+  // Effect hoists
+  function userEffect() {
+    if (userData && !isError(userData)) {
+      setUser(userData as User);
     }
-    return false;
+  }
+
+  function loginEffect() {
+    if (userData && !isError(userData) && loaded) {
+      setLogin(true);
+    } else {
+      setLogin(false);
+    }
   }
 }

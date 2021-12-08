@@ -19,5 +19,6 @@ const CF = {
   UPLOAD_AVATAR: 'avatar', // upload directory for user's avatar files
   UPLOAD_BANNER: 'banner', // upload directory for user's banner files
   UPLOAD_SUB_SPRITE: 'submission/sprite', // upload directory for sprite submission
+  WHITELIST: ['*'], // list of allowed requests addresses
 };
 export default CF;

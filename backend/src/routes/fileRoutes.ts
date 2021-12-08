@@ -23,5 +23,6 @@ fileRouter.put('/', rateLimits.general, async (req, res) => {
     httpStatus(res, error);
     res.send(error);
   }
-  res.sendFile(path.resolve(filepath));
+  const file = path.resolve(filepath);
+  res.sendFile(file);
 });

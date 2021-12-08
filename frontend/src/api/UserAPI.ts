@@ -1,42 +1,67 @@
 import useFetch, {
-  FetchResponse,
-  SendNoResponse,
-  SendResponse,
+  OnComplete,
+  APINoResponse,
+  APIResponse,
   useSend,
 } from 'API/apiCore';
 import { User } from 'schema/userSchema';
 
 // List users
-export function useAPI_userList(skip: boolean, body: GetUserListBody) {
+export function useAPI_userList(
+  skip: boolean,
+  body: GetUserListBody,
+  done?: OnComplete<User[]>
+) {
   const url = 'user';
-  return useFetch(skip, 'put', url, body) as FetchResponse<User[]>;
+  const completeFunction = done ? done : () => {};
+  return useFetch(completeFunction, skip, 'put', url, body) as APIResponse<
+    User[],
+    GetUserListBody
+  >;
 }
 
 // Show a specific user by ID
-export function useAPI_user(skip: boolean, body: GetUserBody) {
+export function useAPI_user(
+  skip: boolean,
+  body: GetUserBody,
+  done?: OnComplete<User>
+) {
   const url = `user/${body.id}`;
-  return useFetch(skip, 'get', url) as FetchResponse<User>;
+  const completeFunction = done ? done : () => {};
+  return useFetch(completeFunction, skip, 'get', url) as APIResponse<
+    User,
+    GetUserBody
+  >;
 }
 
 // Get current user login
-export function useAPI_verify(skip: boolean) {
+export function useAPI_verify(skip: boolean, done?: OnComplete<User>) {
   const url = `user/verify`;
-  return useFetch(skip, 'get', url) as FetchResponse<User>;
+  const completeFunction = done ? done : () => {};
+  return useFetch(completeFunction, skip, 'get', url) as APIResponse<
+    User,
+    undefined
+  >;
 }
 
 // Login
 export function useAPI_userLogin(
   body: GetUserLoginBody,
-  onComplete: (data: User) => void
+  done?: OnComplete<User>
 ) {
   const url = `user/login`;
-  return useSend(onComplete, 'put', url, body) as SendResponse<User>;
+  const completeFunction = done ? done : () => {};
+  return useSend(completeFunction, 'put', url, body) as APIResponse<
+    User,
+    GetUserLoginBody
+  >;
 }
 
 // Log out
-export function useAPI_userLogout(onComplete: () => void) {
+export function useAPI_userLogout(done?: OnComplete<null>) {
   const url = `user/logout`;
-  return useSend(onComplete, 'get', url) as SendNoResponse;
+  const completeFunction = done ? done : () => {};
+  return useSend(completeFunction, 'get', url) as APINoResponse<undefined>;
 }
 
 // Body Types
