@@ -15,19 +15,19 @@ import LoginIcon from '@mui/icons-material/Login';
 import PersonAddIcon from '@mui/icons-material/PersonAdd';
 import SearchIcon from '@mui/icons-material/Search';
 import { useTranslation } from 'react-i18next';
-import { useHistory } from 'react-router-dom';
 
 import theme, { styles } from 'MUIConfig';
 import { UserContext } from 'User/UserContext';
 import logo from 'image/logo.svg';
+import { GlobalContext } from 'Global/GlobalContext';
 
 export default function Navigation() {
   // Custom hooks
   const { t } = useTranslation();
-  const history = useHistory();
 
   // Context
   const { avatar, user, loaded, login } = useContext(UserContext);
+  const { navigate } = useContext(GlobalContext);
 
   // State
   const [searchFocused, setSearchFocused] = useState(false);
@@ -56,7 +56,7 @@ export default function Navigation() {
                   backgroundRepeat: 'no-repeat',
                   cursor: 'pointer',
                 }}
-                onClick={goHome}
+                onClick={() => navigate('/')}
               />
             </Grid>
             {/* Nav */}
@@ -164,10 +164,6 @@ export default function Navigation() {
       </Box>
     </AppBar>
   );
-
-  function goHome() {
-    history.push('/');
-  }
 
   function searchBackgroundMemo() {
     return searchFocused

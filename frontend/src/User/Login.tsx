@@ -13,7 +13,7 @@ import { styles } from 'MUIConfig';
 import { LumaButton, LumaCheckbox, LumaInput, Url } from 'lib/LumaComponents';
 import { useAPI_userLogin } from 'API';
 import { UserContext } from 'User/UserContext';
-import { ToastContext } from 'Global/ToastContext';
+import { GlobalContext } from 'Global/GlobalContext';
 
 type UserLogin = {
   username: string;
@@ -32,7 +32,7 @@ export default function Login() {
 
   // Context
   const { loadUser: reloadUser } = useContext(UserContext);
-  const { toastPush } = useContext(ToastContext);
+  const { toast, prevPath, navigate } = useContext(GlobalContext);
 
   // States
   const [loginForm, setLoginForm] = useState<UserLogin>(defaultForm);
@@ -41,13 +41,16 @@ export default function Login() {
   // Data
   const { execute: login, requested: loginLoaded } = useAPI_userLogin({
     body: loginForm,
-    onComplete: () => {
+    onComplete: (data) => {
       setLoginLoading(false);
       if (reloadUser) reloadUser();
+      if (data?.username) {
+        toast(t('main.welcomeBack', { username: data.username }), 'info');
+      }
+      navigate(prevPath || '/');
     },
     onError: (err) => {
-      console.log(err);
-      toastPush(err.message, 'error');
+      toast(err.message, 'error');
     },
   });
 

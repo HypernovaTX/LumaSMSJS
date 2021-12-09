@@ -150,7 +150,6 @@ export function useSend(props: APIProp) {
         }
         if (isError(data) && props.onError) {
           props.onError(data as ErrorObj);
-          console.log(error);
           setError(data);
         }
         setLoading(false);
