@@ -16,6 +16,18 @@ export type ResultCodeType = keyof typeof resultCodes;
 export type NoResponse = { noContent: true };
 
 export function httpStatus(res: Response, data: any) {
+  if (data?.noContent) res.status(resultCodes.noContent);
+  else res.status(resultCodes.pass);
+  return;
+}
+
+export function noContentResponse() {
+  return { noContent: true } as NoResponse;
+}
+
+// Old code that also passes 4xx HTTP code,
+// however AXIOS does not support that for ".them"
+export function httpStatusLegacy(res: Response, data: any) {
   if (!isError(data)) {
     if (data?.noContent) res.status(resultCodes.noContent);
     else res.status(resultCodes.pass);
@@ -40,8 +52,4 @@ export function httpStatus(res: Response, data: any) {
       break;
   }
   res.status(resultCodes[status]);
-}
-
-export function noContentResponse() {
-  return { noContent: true } as NoResponse;
 }

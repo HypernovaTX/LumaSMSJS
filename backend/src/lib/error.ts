@@ -10,6 +10,7 @@ export interface ErrorObj {
   error: ErrorCodes;
   message: string;
   reason?: string;
+  code?: number;
 }
 export const errors = {
   // default errors
@@ -75,7 +76,9 @@ export function isError(x: any) {
 }
 
 export default function ERR(error: ErrorCodes, reason?: string): ErrorObj {
+  // Variables
   const message = errors[error];
+  const code = handleErrorCode(error);
 
   // Only calls if it's not blank
   console.log(
@@ -90,7 +93,30 @@ export default function ERR(error: ErrorCodes, reason?: string): ErrorObj {
   const data = `${date} - [${error}] ${message}\n`;
   const data2 = reason ? `${date} - ${reason}\n` : '';
   logFile(data, data2);
-  return { error, message, reason };
+
+  // Resolve
+  return { error, message, reason, code };
+}
+
+function handleErrorCode(error: ErrorCodes) {
+  let status = 400;
+  switch (error) {
+    case 'userNotFound':
+    case 'userRoleNotFound':
+    case 'submissionNotFound':
+    case 'fileNotFound':
+      status = 404;
+      break;
+    case 'userPermission':
+    case 'userStaffPermit':
+    case 'userRootPermit':
+      status = 401;
+      break;
+    default:
+      status = 400;
+      break;
+  }
+  return status;
 }
 
 function logFile(data: string, data2?: string) {

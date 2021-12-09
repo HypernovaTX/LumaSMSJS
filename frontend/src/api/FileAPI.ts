@@ -1,19 +1,21 @@
-import { APIResponse, OnComplete, useDownload } from 'API/apiCore';
+import { useDownload } from 'API/apiCore';
+import {
+  APIPropTemplate,
+  APIResponse,
+  OnComplete,
+  OnError,
+} from 'schema/apiSchema';
 
 // Get image
-export function useAPI_image(
-  skip: boolean,
-  body: GetImageBody,
-  done?: OnComplete<any>
-) {
-  const completeFunction = done ? done : () => {};
-  return useDownload(completeFunction, skip, body) as APIResponse<
-    any,
-    GetImageBody
-  >;
+export function useAPI_image(props: GetImageProps) {
+  return useDownload(props) as APIResponse<any, GetImageBody>;
 }
 
 // Body Types
-type GetImageBody = {
-  path: string;
-};
+type GetImageBody = { path: string };
+interface GetImageProps extends APIPropTemplate {
+  body: GetImageBody;
+  skip: boolean;
+  onComplete?: OnComplete<any>;
+  onError?: OnError;
+}

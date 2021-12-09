@@ -1,23 +1,16 @@
 import { createContext, useState } from 'react';
-import { ContextProps } from 'schema';
+import { ContextProps, ErrorObj } from 'schema';
 
 type ErrorContextBase = {
-  code?: number;
-  title?: string;
-  message?: string;
-  isError?: boolean;
+  error?: ErrorObj;
 };
 
 interface ErrorContextType extends ErrorContextBase {
-  setError: (inputs: ErrorContextBase) => void;
+  setError: (inputs: ErrorObj) => void;
   resetError: () => void;
 }
 
 const defaultErrorContext: ErrorContextType = {
-  code: 0,
-  title: '',
-  message: '',
-  isError: false,
   setError: () => {},
   resetError: () => {},
 };
@@ -27,19 +20,13 @@ export const ErrorContext =
 
 export default function ErrorProvider(props: ContextProps) {
   // States
-  const [code, setCode] = useState(defaultErrorContext.code);
-  const [title, setTitle] = useState(defaultErrorContext.title);
-  const [message, setMessage] = useState(defaultErrorContext.message);
-  const [isError, setIsError] = useState(defaultErrorContext.isError);
+  const [error, setError] = useState<ErrorObj>();
 
   // Output
   return (
     <ErrorContext.Provider
       value={{
-        code,
-        title,
-        message,
-        isError,
+        error,
         setError,
         resetError,
       }}
@@ -48,18 +35,8 @@ export default function ErrorProvider(props: ContextProps) {
     </ErrorContext.Provider>
   );
 
-  // Context hoists
-  function setError(inputs: ErrorContextBase) {
-    if (inputs?.code !== undefined) setCode(inputs.code);
-    if (inputs?.title !== undefined) setTitle(inputs.title);
-    if (inputs?.message !== undefined) setMessage(inputs.message);
-    if (inputs?.isError !== undefined) setIsError(inputs.isError);
-  }
-
+  // Element callbacks
   function resetError() {
-    setCode(defaultErrorContext.code);
-    setTitle(defaultErrorContext.title);
-    setMessage(defaultErrorContext.message);
-    setIsError(defaultErrorContext.isError);
+    setError(undefined);
   }
 }

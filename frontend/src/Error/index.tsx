@@ -11,7 +11,7 @@ export default function Error() {
   const { t } = useTranslation();
 
   // Context
-  const { message } = useContext(ErrorContext);
+  const { error } = useContext(ErrorContext);
 
   // States
 
@@ -20,7 +20,7 @@ export default function Error() {
       <Grid container>
         <Grid item md={4} xs={8}>
           <Typography variant="h2">{t('error.error')}</Typography>
-          <Typography variant="h5">{message}</Typography>
+          <Typography variant="h5">{error?.message}</Typography>
         </Grid>
       </Grid>
     </Box>

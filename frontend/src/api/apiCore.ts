@@ -3,26 +3,8 @@ import axios from 'axios';
 
 import CF from 'config';
 import { AnyObject, ErrorObj } from 'schema';
-
-// Types
-export type APIError = {
-  error: string;
-  reason: string;
-  message?: string;
-};
-export type APIResponse<T, B> = {
-  data: T | null | ErrorObj;
-  execute: (body?: B) => Promise<void>;
-  requested: boolean;
-  loading: boolean;
-};
-export type APINoResponse<B> = {
-  execute: (body?: B) => Promise<void>;
-  requested: boolean;
-  loading: boolean;
-};
-export type OnComplete<T> = (data: T) => void;
-type RequestKinds = typeof requestKinds[number];
+import { isError } from 'lib';
+import { APIDownloadProp, APIProp, RequestKinds } from 'schema/apiSchema';
 
 // Init
 const host = CF.HOST;
@@ -37,32 +19,91 @@ const headerFileConfig = {
     'content-type': 'multipart/form-data',
   },
 };
-const defaultAPIError: APIError = {
+const defaultAPIError: ErrorObj = {
   error: 'APIError',
-  reason: 'Failed to execute API request!',
+  message: 'Failed to execute API request!',
 };
-const requestKinds = ['get', 'put', 'patch', 'post', 'delete'] as const;
 
 // React hooks
-export default function useFetch(
-  onComplete: (data: any) => void,
-  skip: boolean,
-  kind: RequestKinds,
-  url: string,
-  body?: AnyObject,
-  file?: boolean
-) {
+export function useFetch(props: APIProp) {
   const [requested, setRequested] = useState(false);
   const [loading, setLoading] = useState(false);
   const [data, setData] = useState<unknown>(null);
+  const [error, setError] = useState<ErrorObj | null>(null);
 
   const execute = async (newBody?: AnyObject) => {
     setLoading(true);
-    await mainAPICall(kind, url, newBody || body, file, (data) => {
-      onComplete(data);
+    await mainAPICall(
+      props.kind,
+      props.url,
+      newBody || props.body,
+      props.file,
+      (data) => {
+        if (!isError(data) && props.onComplete) {
+          props.onComplete(data);
+          setData(data);
+        }
+        if (isError(data) && props.onError) {
+          props.onError(data as ErrorObj);
+          setError(data);
+        }
+        setLoading(false);
+        setRequested(true);
+      }
+    );
+  };
+
+  useEffect(() => {
+    const getData = async () => {
+      if (loading) return;
+      setLoading(true);
+      await mainAPICall(
+        props.kind,
+        props.url,
+        props.body,
+        props.file,
+        (data) => {
+          if (!isError(data) && props.onComplete) {
+            props.onComplete(data);
+            setData(data);
+          }
+          if (isError(data) && props.onError) {
+            props.onError(data as ErrorObj);
+            setError(data);
+          }
+          setLoading(false);
+          setRequested(true);
+          setData(data);
+        }
+      );
+    };
+    if (!loading && !requested && !props.skip) {
+      getData();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+  return { data, loading, requested, execute, error };
+}
+
+export function useDownload(props: APIDownloadProp) {
+  const [requested, setRequested] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [data, setData] = useState<unknown>(null);
+  const [error, setError] = useState<ErrorObj | null>(null);
+
+  const execute = async (newBody?: AnyObject) => {
+    setLoading(true);
+    await APIDownload(newBody || props.body, (data) => {
+      if (!isError(data) && props.onComplete) {
+        props.onComplete(data);
+        setData(data);
+      }
+      if (isError(data) && props.onError) {
+        props.onError(data);
+        setError(data);
+      }
       setLoading(false);
       setRequested(true);
-      setData(data);
     });
   };
 
@@ -70,79 +111,54 @@ export default function useFetch(
     const getData = async () => {
       if (loading) return;
       setLoading(true);
-      await mainAPICall(kind, url, body, file, (data) => {
+      await APIDownload(props.body, (data) => {
+        if (!isError(data) && props.onComplete) {
+          props.onComplete(data);
+          setData(data);
+        } else if (props.onError) {
+          props.onError(data);
+          setError(data);
+        }
         setLoading(false);
         setRequested(true);
-        onComplete(data);
-        setData(data);
       });
     };
-    if (!loading && !requested && !skip) {
+    if (!loading && !requested && !props.skip) {
       getData();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-  return { data, loading, requested, execute };
+  return { data, loading, requested, execute, error };
 }
 
-export function useDownload(
-  onComplete: (data: any) => void,
-  skip: boolean,
-  body: AnyObject
-) {
+export function useSend(props: APIProp) {
   const [requested, setRequested] = useState(false);
   const [loading, setLoading] = useState(false);
   const [data, setData] = useState<unknown>(null);
-
-  const execute = async (newBody?: AnyObject) => {
+  const [error, setError] = useState<ErrorObj | null>(null);
+  const execute = async (newBody: AnyObject) => {
     setLoading(true);
-    await APIDownload(newBody || body, (data) => {
-      onComplete(data);
-      setLoading(false);
-      setRequested(true);
-      setData(data);
-    });
-  };
-
-  useEffect(() => {
-    const getData = async () => {
-      if (loading) return;
-      setLoading(true);
-      await APIDownload(body, (data) => {
-        onComplete(data);
+    await mainAPICall(
+      props.kind,
+      props.url,
+      newBody || props.body,
+      props.file,
+      (data) => {
+        if (!isError(data) && props.onComplete) {
+          props.onComplete(data);
+          setData(data);
+        }
+        if (isError(data) && props.onError) {
+          props.onError(data as ErrorObj);
+          console.log(error);
+          setError(data);
+        }
         setLoading(false);
         setRequested(true);
-        setData(data);
-      });
-    };
-    if (!loading && !requested && !skip) {
-      getData();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-  return { data, loading, requested, execute };
-}
-
-export function useSend(
-  onComplete: (data: any) => void,
-  kind: RequestKinds,
-  url: string,
-  body?: AnyObject,
-  file?: boolean
-) {
-  const [requested, setRequested] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [data, setData] = useState<unknown>(null);
-  const execute = async () => {
-    setLoading(true);
-    await mainAPICall(kind, url, body, file, () => {
-      setLoading(false);
-      setRequested(true);
-      onComplete(data);
-      setData(data);
-    });
+      }
+    );
   };
-  return { data, loading, requested, execute };
+  return { data, loading, requested, execute, error };
 }
 
 // Root API call function
@@ -177,7 +193,7 @@ async function APICall(kind: RequestKinds, url: string) {
         if (err?.response?.data) {
           resolve(err?.response?.data as ErrorObj);
         } else {
-          resolve({ ...defaultAPIError, reason: err } as APIError);
+          resolve({ ...defaultAPIError, reason: err as string } as ErrorObj);
         }
       });
   });
@@ -202,11 +218,7 @@ async function APICallBody(
     )
       .then((data) => resolve(data))
       .catch((err) => {
-        if (err?.response?.data) {
-          resolve(err?.response?.data as ErrorObj);
-        } else {
-          resolve({ ...defaultAPIError, reason: err } as APIError);
-        }
+        resolve({ ...defaultAPIError, reason: err as string } as ErrorObj);
       });
   });
   return output as any;
@@ -228,7 +240,7 @@ async function APIDownload(
         if (err?.response?.data) {
           resolve(err?.response?.data as ErrorObj);
         } else {
-          resolve({ ...defaultAPIError, reason: err } as APIError);
+          resolve({ ...defaultAPIError, reason: err as string } as ErrorObj);
         }
       });
   });

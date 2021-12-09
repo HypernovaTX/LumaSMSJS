@@ -15,6 +15,7 @@ import LoginIcon from '@mui/icons-material/Login';
 import PersonAddIcon from '@mui/icons-material/PersonAdd';
 import SearchIcon from '@mui/icons-material/Search';
 import { useTranslation } from 'react-i18next';
+import { useHistory } from 'react-router-dom';
 
 import theme, { styles } from 'MUIConfig';
 import { UserContext } from 'User/UserContext';
@@ -23,6 +24,7 @@ import logo from 'image/logo.svg';
 export default function Navigation() {
   // Custom hooks
   const { t } = useTranslation();
+  const history = useHistory();
 
   // Context
   const { avatar, user, loaded, login } = useContext(UserContext);
@@ -52,8 +54,10 @@ export default function Navigation() {
                   backgroundSize: 'contain',
                   backgroundPosition: 'center',
                   backgroundRepeat: 'no-repeat',
+                  cursor: 'pointer',
                 }}
-              ></Box>
+                onClick={goHome}
+              />
             </Grid>
             {/* Nav */}
             <Grid item container flexDirection="row" xs="auto">
@@ -160,6 +164,10 @@ export default function Navigation() {
       </Box>
     </AppBar>
   );
+
+  function goHome() {
+    history.push('/');
+  }
 
   function searchBackgroundMemo() {
     return searchFocused

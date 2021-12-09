@@ -1,7 +1,7 @@
-import { createContext, useEffect, useMemo, useState } from 'react';
+import { createContext, useMemo, useState } from 'react';
 
 import { User } from 'schema/userSchema';
-import { ContextProps, ErrorObj } from 'schema';
+import { ContextProps } from 'schema';
 import { useAPI_verify, useAPI_image } from 'API';
 import { isError } from 'lib';
 
@@ -12,8 +12,7 @@ type UserContextType = {
   login: boolean;
   loaded: boolean;
   avatar?: string;
-  error?: ErrorObj;
-  reloadUser?: () => void;
+  loadUser?: () => void;
 };
 const defaultUserContext: UserContextType = {
   permission: [],
@@ -26,36 +25,38 @@ export const UserContext = createContext<UserContextType>(defaultUserContext);
 export default function UserProvider(props: ContextProps) {
   // State
   const [login, setLogin] = useState(false);
+  const [avatar, setAvatar] = useState<string>();
   const [user, setUser] = useState<User | undefined>(undefined);
 
   // Data
-  const {
-    data: userData,
-    requested: userLoaded,
-    execute: reloadUser,
-  } = useAPI_verify(login, (data) => {
-    if (!isError(data)) {
-      reloadAvatar({
+  // - User validation
+  const { requested: userLoaded, execute: loadUser } = useAPI_verify({
+    skip: login,
+    onComplete: (data) => {
+      setUser(data);
+      setLogin(true);
+      loadAvatar({
         path: `avatar/${data?.avatar_file ?? ''}`,
       });
-    }
+    },
+    onError: () => {
+      setLogin(false);
+      setUser({});
+    },
   });
-  const {
-    data: avatarData,
-    requested: avatarLoaded,
-    execute: reloadAvatar,
-  } = useAPI_image(true, {
-    path: `avatar/${user?.avatar_file ?? ''}`,
+  // - User avatar
+  const { requested: avatarLoaded, execute: loadAvatar } = useAPI_image({
+    skip: true,
+    body: {
+      path: `avatar/${user?.avatar_file ?? ''}`,
+    },
+    onComplete: (data) => {
+      updateAvatar(data);
+    },
   });
 
   // Memo
-  const error = useMemo(errorMemo, [userData]);
   const loaded = useMemo(loadedMemo, [userLoaded, avatarLoaded]);
-  const avatar = useMemo(avatarMemo, [avatarData]);
-
-  // Effects
-  useEffect(userEffect, [userData]);
-  useEffect(loginEffect, [loaded, userData]);
 
   // Output
   return (
@@ -65,47 +66,24 @@ export default function UserProvider(props: ContextProps) {
         permission: [],
         login,
         loaded,
-        error,
         avatar,
-        reloadUser,
+        loadUser: loadUser,
       }}
     >
       {props.children}
     </UserContext.Provider>
   );
 
-  // Memo hoists
-  function errorMemo() {
-    if (isError(userData)) {
-      return userData as ErrorObj;
-    }
-    return undefined;
+  // Special Callbacks
+  function updateAvatar(data: any) {
+    if (!data) setAvatar(undefined);
+    if (isError(data)) setAvatar(undefined);
+    const avatarFile = window.URL.createObjectURL(new Blob([data]));
+    setAvatar(avatarFile);
   }
 
+  // Memo hoists
   function loadedMemo() {
     return userLoaded && avatarLoaded;
-  }
-
-  function avatarMemo() {
-    if (!avatarData) return undefined;
-    if (isError(avatarData)) return undefined;
-    const avatarFile = window.URL.createObjectURL(new Blob([avatarData]));
-    console.log(avatarFile);
-    return avatarFile;
-  }
-
-  // Effect hoists
-  function userEffect() {
-    if (userData && !isError(userData)) {
-      setUser(userData as User);
-    }
-  }
-
-  function loginEffect() {
-    if (userData && !isError(userData) && loaded) {
-      setLogin(true);
-    } else {
-      setLogin(false);
-    }
   }
 }
