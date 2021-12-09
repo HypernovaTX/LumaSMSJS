@@ -10,14 +10,14 @@ type UserContextType = {
   user?: User;
   permission: string[];
   login: boolean;
-  loaded: boolean;
+  loading: boolean;
   avatar?: string;
   loadUser?: () => void;
 };
 const defaultUserContext: UserContextType = {
   permission: [],
   login: false,
-  loaded: false,
+  loading: false,
 };
 export const UserContext = createContext<UserContextType>(defaultUserContext);
 
@@ -30,7 +30,7 @@ export default function UserProvider(props: ContextProps) {
 
   // Data
   // - User validation
-  const { requested: userLoaded, execute: loadUser } = useAPI_verify({
+  const { loading: loadU, execute: loadUser } = useAPI_verify({
     skip: login,
     onComplete: (data) => {
       setUser(data);
@@ -45,7 +45,7 @@ export default function UserProvider(props: ContextProps) {
     },
   });
   // - User avatar
-  const { requested: avatarLoaded, execute: loadAvatar } = useAPI_image({
+  const { loading: loadA, execute: loadAvatar } = useAPI_image({
     skip: true,
     body: {
       path: `avatar/${user?.avatar_file ?? ''}`,
@@ -56,7 +56,7 @@ export default function UserProvider(props: ContextProps) {
   });
 
   // Memo
-  const loaded = useMemo(loadedMemo, [userLoaded, avatarLoaded]);
+  const loading = useMemo(loadingMemo, [loadA, loadU]);
 
   // Output
   return (
@@ -65,7 +65,7 @@ export default function UserProvider(props: ContextProps) {
         user,
         permission: [],
         login,
-        loaded,
+        loading,
         avatar,
         loadUser: loadUser,
       }}
@@ -83,7 +83,7 @@ export default function UserProvider(props: ContextProps) {
   }
 
   // Memo hoists
-  function loadedMemo() {
-    return userLoaded && avatarLoaded;
+  function loadingMemo() {
+    return loadU && loadA;
   }
 }

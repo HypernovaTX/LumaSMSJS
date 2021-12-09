@@ -26,7 +26,7 @@ export default function Navigation() {
   const { t } = useTranslation();
 
   // Context
-  const { avatar, user, loaded, login } = useContext(UserContext);
+  const { avatar, user, loading, login } = useContext(UserContext);
   const { navigate } = useContext(GlobalContext);
 
   // State
@@ -111,10 +111,11 @@ export default function Navigation() {
                 </IconButton>
               </Box>
             </Grid>
-            {/* User profile/login */}
+            {/* User profile/login section */}
             <Grid item container alignContent="center" xs="auto">
-              {loaded ? (
+              {!loading ? (
                 login && user ? (
+                  // logged in
                   <Grid container item>
                     <Grid container item xs="auto" alignContent="center">
                       <Box px={1}>
@@ -136,12 +137,14 @@ export default function Navigation() {
                     </Grid>
                   </Grid>
                 ) : (
+                  // guest
                   <>
                     <Button
                       color="secondary"
                       variant="contained"
                       startIcon={<LoginIcon />}
                       sx={{ mr: 1, height: '2rem' }}
+                      onClick={() => navigate('/login')}
                     >
                       {t('user.login')}
                     </Button>
@@ -150,12 +153,14 @@ export default function Navigation() {
                       variant="outlined"
                       startIcon={<PersonAddIcon />}
                       sx={{ ml: 1, height: '2rem' }}
+                      onClick={() => navigate('/register')}
                     >
                       {t('user.register')}
                     </Button>
                   </>
                 )
               ) : (
+                // loading
                 <CircularProgress size={32} />
               )}
             </Grid>

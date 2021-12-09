@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useContext, useState } from 'react';
 import {
   Box,
   CircularProgress,
@@ -36,13 +36,11 @@ export default function Login() {
 
   // States
   const [loginForm, setLoginForm] = useState<UserLogin>(defaultForm);
-  const [loginLoading, setLoginLoading] = useState(false);
 
   // Data
-  const { execute: login, requested: loginLoaded } = useAPI_userLogin({
+  const { execute: login, loading: loginLoading } = useAPI_userLogin({
     body: loginForm,
     onComplete: (data) => {
-      setLoginLoading(false);
       if (reloadUser) reloadUser();
       if (data?.username) {
         toast(t('main.welcomeBack', { username: data.username }), 'info');
@@ -53,13 +51,6 @@ export default function Login() {
       toast(err.message, 'error');
     },
   });
-
-  // Effect
-  useEffect(() => {
-    if (loginLoaded && loginLoading) {
-      setLoginLoading(false);
-    }
-  }, [loginLoaded, loginLoading]);
 
   // Output
   return (
@@ -182,7 +173,6 @@ export default function Login() {
 
   function loginButtionClick() {
     if (loginLoading) return;
-    setLoginLoading(true);
     login();
   }
 }

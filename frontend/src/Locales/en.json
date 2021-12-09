@@ -4,12 +4,14 @@
     "error400": "Request Failure (400)",
     "error404": "Not Found (404)",
     "noError": "No errors found at this moment",
+    "tooManyRequests": "Too many network requests! Please try again later!",
     "unknown": "An unknown error as occured!"
   },
   "footer": {
     "copyright": "Mario Fan Games Galaxy, 2001 - {{year}}"
   },
   "main": {
+    "goHome": "Go Home",
     "search": "Search",
     "siteName": "MFGG",
     "siteNameLong": "Mario Fan Games Galaxy",
@@ -21,6 +23,10 @@
     "hacks": "Hacks",
     "resources": "Resources",
     "community": "Community"
+  },
+  "test": {
+    "title": "TEST PAGE",
+    "sub": "This is a test page, please disregard."
   },
   "user": {
     "dontHaveAccount": "Don't have an account?",

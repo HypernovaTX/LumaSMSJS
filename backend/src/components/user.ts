@@ -94,7 +94,7 @@ export async function userLogin(
   // Get requested username
   const query = new UserQuery();
   const queryResult = await query.getUserByUsername(username);
-  if (isError(queryResult)) return queryResult;
+  if (isError(queryResult)) return ERR('userLogin');
 
   // Ensure password is a string
   const userHelper = queryResult as User;

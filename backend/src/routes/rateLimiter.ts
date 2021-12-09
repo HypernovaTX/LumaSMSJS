@@ -14,7 +14,7 @@ const msg = {
   message: JSON.stringify(errorJSON),
 };
 const general = { windowMs: sec(10), max: 100 };
-const login = { windowMs: min(60), max: 10 };
+const login = { windowMs: sec(30), max: 10 };
 const creation = { windowMs: min(2), max: 10 };
 const update = { windowMs: min(1), max: 20 };
 

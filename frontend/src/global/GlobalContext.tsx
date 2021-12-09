@@ -95,6 +95,7 @@ export function GlobalProviderChild(props: ContextProps) {
   function toast(message: string, variant: VariantType) {
     enqueueSnackbar(message, {
       variant,
+      autoHideDuration: 3000,
       anchorOrigin: {
         horizontal: 'center',
         vertical: 'top',
