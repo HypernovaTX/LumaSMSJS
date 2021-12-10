@@ -4,7 +4,7 @@ import { BrowserRouter } from 'react-router-dom';
 
 import 'index.css';
 import 'languages';
-import theme, { styles } from 'MUIConfig';
+import theme from 'MUIConfig';
 
 import ErrorProvider from 'Error/ErrorContext';
 import Footer from 'Global/Footer';
@@ -21,14 +21,14 @@ export default function App() {
         <GlobalProvider>
           <ErrorProvider>
             <UserProvider>
-              <Navigation />
               <Box
                 display="flex"
                 flexDirection="column"
                 alignItems="stretch"
-                minHeight="calc(100vh - 80px)"
+                minHeight="100vh"
               >
-                <Box flex="1 0 auto" position="relative" sx={styles.zigzagBG}>
+                <Navigation />
+                <Box display="flex" flexDirection="column" flex="1 0 auto">
                   <Routes />
                 </Box>
                 <Box>

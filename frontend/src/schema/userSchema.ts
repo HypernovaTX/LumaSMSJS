@@ -74,4 +74,12 @@ export interface UserPermissions {
   edit_comment?: number;
   delete_comment?: number;
 }
-export type PermissionKind = keyof UserPermissions;
+export type PermissionKind = keyof Omit<
+  UserPermissions,
+  | 'gid'
+  | 'group_name'
+  | 'group_title'
+  | 'msg_capacity'
+  | 'name_prefix'
+  | 'name_suffix'
+>;

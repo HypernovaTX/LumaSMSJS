@@ -1,4 +1,4 @@
-import { createContext, createRef, useState } from 'react';
+import { createContext, createRef, useEffect, useMemo, useState } from 'react';
 import { useHistory, useLocation } from 'react-router-dom';
 
 import { noop } from 'lodash';
@@ -17,22 +17,103 @@ import {
   Warning,
 } from '@mui/icons-material';
 
-import { ContextProps } from 'schema';
+import CF from 'config';
 import theme from 'MUIConfig';
+import { useWindowWidth } from 'Lib';
+import { ContextProps } from 'schema';
 
 interface GlobalContextType {
+  isMobile: boolean;
   navigate: (p: string) => void;
+  nativateToPrevious: () => void;
   prevPath?: string;
+  setTitle: (p: string) => void;
+  title: string;
   toast: (m: string, v: VariantType) => void;
 }
 export const GlobalContext = createContext<GlobalContextType>({
+  isMobile: false,
   navigate: noop,
+  nativateToPrevious: noop,
+  setTitle: noop,
+  title: '(null)',
   toast: noop,
 });
+
+export function GlobalProviderChild(props: ContextProps) {
+  // Custom Hook
+  const history = useHistory();
+  const location = useLocation();
+  const { enqueueSnackbar } = useSnackbar();
+  const displayWidth = useWindowWidth();
+
+  // States
+  const [prevPath, setPrevPath] = useState<string>();
+  const [title, setTitle] = useState('(null)');
+
+  // Memo
+  const isMobile = useMemo(isMobileMemo, [displayWidth]);
+
+  // Effects
+  useEffect(documentTitleEffect, [title]);
+
+  // Return
+  return (
+    <GlobalContext.Provider
+      value={{
+        isMobile,
+        navigate,
+        nativateToPrevious,
+        prevPath,
+        setTitle,
+        title,
+        toast,
+      }}
+    >
+      {props.children}
+    </GlobalContext.Provider>
+  );
+
+  // Callback
+  function navigate(url: string) {
+    if (url === location.pathname) return;
+    setPrevPath(location.pathname);
+    history.push(url);
+  }
+
+  function nativateToPrevious() {
+    navigate(prevPath === location.pathname || !prevPath ? '/' : prevPath);
+  }
+
+  function toast(message: string, variant: VariantType) {
+    enqueueSnackbar(message, {
+      variant,
+      autoHideDuration: 3000,
+      anchorOrigin: {
+        horizontal: 'center',
+        vertical: 'top',
+      },
+    });
+  }
+
+  // Memo hoists
+  function isMobileMemo() {
+    return !!displayWidth && displayWidth <= CF.MAX_MOBILESIZE;
+  }
+
+  // Effect hoists
+  function documentTitleEffect() {
+    const pageTitle = `${CF.SITE_NAME} - ${title}`;
+    if (document.title !== pageTitle) {
+      document.title = pageTitle;
+    }
+  }
+}
 
 export default function GlobalProvider(props: ContextProps) {
   // Const
   const Gap = <Box width={8} />;
+
   // Ref
   const snackbarRef = createRef<SnackbarProvider>();
 
@@ -67,39 +148,5 @@ export default function GlobalProvider(props: ContextProps) {
     if (snackbarRef && snackbarRef?.current) {
       snackbarRef.current.closeSnackbar(key);
     }
-  }
-}
-
-export function GlobalProviderChild(props: ContextProps) {
-  // Custom Hook
-  const history = useHistory();
-  const location = useLocation();
-  const { enqueueSnackbar } = useSnackbar();
-
-  // States
-  const [prevPath, setPrevPath] = useState<string>();
-
-  // Return
-  return (
-    <GlobalContext.Provider value={{ navigate, prevPath, toast }}>
-      {props.children}
-    </GlobalContext.Provider>
-  );
-
-  // Callback
-  function navigate(url: string) {
-    setPrevPath(location.pathname);
-    history.push(url);
-  }
-
-  function toast(message: string, variant: VariantType) {
-    enqueueSnackbar(message, {
-      variant,
-      autoHideDuration: 3000,
-      anchorOrigin: {
-        horizontal: 'center',
-        vertical: 'top',
-      },
-    });
   }
 }

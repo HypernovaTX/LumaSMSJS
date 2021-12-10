@@ -27,7 +27,7 @@ export default class SQL {
       user: CF.DB_USER,
       password: CF.DB_PASS,
       database: CF.DB_NAME,
-      connectionLimit: 10,
+      connectionLimit: 100,
     };
     this.query = '';
   }
@@ -65,7 +65,7 @@ export default class SQL {
         }
         try {
           connection.query(this.query, (error, result) => {
-            connection.release();
+            this.release();
             if (error) resolve(ERR('dbQuery', error.message));
             else resolve(noReturn ? noContentResponse() : result);
           });

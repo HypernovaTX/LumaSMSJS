@@ -1,4 +1,4 @@
-import React, { useContext, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import {
   Box,
   CircularProgress,
@@ -9,11 +9,11 @@ import {
 import { useTranslation } from 'react-i18next';
 
 import LoginIcon from '@mui/icons-material/Login';
-import { styles } from 'MUIConfig';
-import { LumaButton, LumaCheckbox, LumaInput, Url } from 'lib/LumaComponents';
 import { useAPI_userLogin } from 'API';
-import { UserContext } from 'User/UserContext';
+import { LumaButton, LumaCheckbox, LumaInput, A } from 'Lib';
+import { styles } from 'MUIConfig';
 import { GlobalContext } from 'Global/GlobalContext';
+import { UserContext } from 'User/UserContext';
 
 type UserLogin = {
   username: string;
@@ -32,7 +32,7 @@ export default function Login() {
 
   // Context
   const { loadUser: reloadUser } = useContext(UserContext);
-  const { toast, prevPath, navigate } = useContext(GlobalContext);
+  const { setTitle, toast, nativateToPrevious } = useContext(GlobalContext);
 
   // States
   const [loginForm, setLoginForm] = useState<UserLogin>(defaultForm);
@@ -45,19 +45,22 @@ export default function Login() {
       if (data?.username) {
         toast(t('main.welcomeBack', { username: data.username }), 'info');
       }
-      navigate(prevPath || '/');
+      nativateToPrevious();
     },
     onError: (err) => {
       toast(err.message, 'error');
     },
   });
 
+  // Effect
+  useEffect(setTitleEffect, [setTitle, t]);
+  // NOTE - Add auto
+
   // Output
   return (
     <Box
+      flex="1 0 auto"
       width="100%"
-      height="100%"
-      position="absolute"
       style={styles.zigzagBG}
       display="flex"
       flexDirection="column"
@@ -65,7 +68,7 @@ export default function Login() {
       justifyContent="center"
     >
       <Box
-        my={2}
+        my={8}
         mx={4}
         display="flex"
         flexDirection="column"
@@ -137,14 +140,14 @@ export default function Login() {
         <Box my={1} width="100%">
           <Typography>
             {t('user.dontHaveAccount')}{' '}
-            <Url disabled={loginLoading} click={() => {}}>
+            <A disabled={loginLoading} url="#">
               {t('user.signup')}
-            </Url>
+            </A>
           </Typography>
           <Typography>
-            <Url disabled={loginLoading} click={() => {}}>
+            <A disabled={loginLoading} url="#">
               {t('user.forget')}
-            </Url>
+            </A>
           </Typography>
         </Box>
       </Box>
@@ -174,5 +177,10 @@ export default function Login() {
   function loginButtionClick() {
     if (loginLoading) return;
     login();
+  }
+
+  // Effect hoists
+  function setTitleEffect() {
+    setTitle(t('title.login'));
   }
 }

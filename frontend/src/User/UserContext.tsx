@@ -1,31 +1,44 @@
 import { createContext, useMemo, useState } from 'react';
+import { noop } from 'lodash-es';
 
-import { User } from 'schema/userSchema';
+import { PermissionKind, User } from 'schema/userSchema';
 import { ContextProps } from 'schema';
-import { useAPI_verify, useAPI_image } from 'API';
-import { isError } from 'lib';
+import {
+  useAPI_verify,
+  useAPI_image,
+  useAPI_permissions,
+  useAPI_userLogout,
+} from 'API';
+import { isError } from 'Lib';
 
 // Init context
 type UserContextType = {
-  user?: User;
-  permission: string[];
-  login: boolean;
-  loading: boolean;
   avatar?: string;
+  checkPermit: (p: PermissionKind) => boolean;
+  loading: boolean;
   loadUser?: () => void;
+  login: boolean;
+  logout: () => void;
+  permission: PermissionKind[];
+  user?: User;
 };
 const defaultUserContext: UserContextType = {
-  permission: [],
-  login: false,
+  checkPermit: () => {
+    return false;
+  },
   loading: false,
+  login: false,
+  logout: noop,
+  permission: [],
 };
 export const UserContext = createContext<UserContextType>(defaultUserContext);
 
 // Main Provider
 export default function UserProvider(props: ContextProps) {
   // State
-  const [login, setLogin] = useState(false);
   const [avatar, setAvatar] = useState<string>();
+  const [login, setLogin] = useState(false);
+  const [permission, setPermission] = useState<PermissionKind[]>([]);
   const [user, setUser] = useState<User | undefined>(undefined);
 
   // Data
@@ -35,13 +48,13 @@ export default function UserProvider(props: ContextProps) {
     onComplete: (data) => {
       setUser(data);
       setLogin(true);
+      loadPermit();
       loadAvatar({
         path: `avatar/${data?.avatar_file ?? ''}`,
       });
     },
     onError: () => {
-      setLogin(false);
-      setUser({});
+      clearUser();
     },
   });
   // - User avatar
@@ -54,20 +67,39 @@ export default function UserProvider(props: ContextProps) {
       updateAvatar(data);
     },
   });
+  // - User permission
+  const { loading: loadP, execute: loadPermit } = useAPI_permissions({
+    skip: true,
+    onComplete: (data) => {
+      setPermission(data);
+    },
+    onError: () => {
+      clearUser();
+    },
+  });
+  // - User log out
+  const { loading: loadL, execute: logout } = useAPI_userLogout({
+    skip: true,
+    onComplete: () => {
+      clearUser();
+    },
+  });
 
   // Memo
-  const loading = useMemo(loadingMemo, [loadA, loadU]);
+  const loading = useMemo(loadingMemo, [loadA, loadP, loadU, loadL]);
 
   // Output
   return (
     <UserContext.Provider
       value={{
-        user,
-        permission: [],
-        login,
-        loading,
         avatar,
+        checkPermit,
+        loading,
         loadUser: loadUser,
+        login,
+        logout,
+        permission,
+        user,
       }}
     >
       {props.children}
@@ -82,8 +114,18 @@ export default function UserProvider(props: ContextProps) {
     setAvatar(avatarFile);
   }
 
+  function clearUser() {
+    setLogin(false);
+    setUser({});
+    setPermission([]);
+  }
+
+  function checkPermit(permit: PermissionKind) {
+    return permission.includes(permit);
+  }
+
   // Memo hoists
   function loadingMemo() {
-    return loadU && loadA;
+    return loadU || loadA || loadP || loadL;
   }
 }

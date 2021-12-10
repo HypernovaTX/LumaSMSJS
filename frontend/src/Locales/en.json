@@ -19,14 +19,30 @@
     "welcomeBack": "Welcome back, {{username}}!"
   },
   "nav": {
+    "community": "Community",
+    "discord": "Discord",
+    "favorites": "Favorites",
+    "forums": "Forums",
     "games": "Games",
+    "graphics": "Graphics",
     "hacks": "Hacks",
+    "hallOfFame": "Hall of Fame",
+    "logout": "Log Out",
+    "misc": "Misc",
+    "models": "Models",
+    "preferences": "Preferences",
     "resources": "Resources",
-    "community": "Community"
+    "sounds": "Sounds & Music",
+    "staff": "Staff CP",
+    "submitFile": "Submit File",
+    "twitter": "Twitter"
   },
   "test": {
     "title": "TEST PAGE",
     "sub": "This is a test page, please disregard."
+  },
+  "title": {
+    "login": "Sign In"
   },
   "user": {
     "dontHaveAccount": "Don't have an account?",

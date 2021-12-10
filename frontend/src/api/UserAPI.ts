@@ -1,5 +1,5 @@
 import { useFetch, useSend } from 'API/apiCore';
-import { User } from 'schema/userSchema';
+import { PermissionKind, User } from 'schema/userSchema';
 import {
   APINoResponse,
   APIProp,
@@ -28,6 +28,12 @@ export function useAPI_user(p: GetUserProps) {
 export function useAPI_verify(p: GetUserVerifyProps) {
   const payload = { ...p, kind: 'get', url: 'user/verify' } as APIProp;
   return useFetch(payload) as APIResponse<User, undefined>;
+}
+
+// Get current user permissions
+export function useAPI_permissions(p: GetUserPermitProps) {
+  const payload = { ...p, kind: 'get', url: 'user/permission' } as APIProp;
+  return useFetch(payload) as APIResponse<PermissionKind[], undefined>;
 }
 
 // Login
@@ -60,6 +66,10 @@ interface GetUserListProps extends APIPropTemplate {
 }
 interface GetUserVerifyProps extends Omit<APIPropTemplate, 'body'> {
   onComplete?: OnComplete<User>;
+}
+
+interface GetUserPermitProps extends Omit<APIPropTemplate, 'body'> {
+  onComplete?: OnComplete<PermissionKind[]>;
 }
 
 type GetUserLoginBody = {

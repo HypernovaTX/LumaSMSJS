@@ -1,8 +1,16 @@
-import { ReactNode } from 'react';
-import { Button, Checkbox, TextField, Typography } from '@mui/material';
+import { ReactNode, useContext } from 'react';
+import {
+  Button,
+  Checkbox,
+  Menu,
+  MenuProps,
+  TextField,
+  Typography,
+} from '@mui/material';
 import { styled } from '@mui/material/styles';
 
 import theme, { styles } from 'MUIConfig';
+import { GlobalContext } from 'Global/GlobalContext';
 
 const URLTxt = styled(Typography)({
   '&': {
@@ -22,19 +30,31 @@ const URLTxt = styled(Typography)({
 
 type URLProps = {
   children: ReactNode;
-  click: () => void;
+  url: string;
   disabled?: boolean;
 };
-export function Url(props: URLProps) {
+export function A(props: URLProps) {
+  // Const
+  const className = props.disabled ? 'disabled' : undefined;
+
+  // Context
+  const { navigate } = useContext(GlobalContext);
+
+  // Callbacks
+  const href = () => {
+    if (!props.disabled) navigate(props.url);
+  };
+  const clearA = (e: React.MouseEvent<HTMLAnchorElement, MouseEvent>) => {
+    e.preventDefault();
+  };
+
+  // Output
   return (
-    <URLTxt
-      onClick={() => {
-        if (!props.disabled) props.click();
-      }}
-      className={props.disabled ? 'disabled' : undefined}
-    >
-      {props.children}
-    </URLTxt>
+    <a href={props.url} onClick={clearA} style={{ textDecoration: 'none' }}>
+      <URLTxt onClick={href} className={className}>
+        {props.children}
+      </URLTxt>
+    </a>
   );
 }
 
@@ -57,8 +77,8 @@ export const LumaInput = styled(TextField)({
     cursor: 'not-allowed',
   },
   '& input:-internal-autofill-selected, & input:-webkit-autofill': {
-    '-webkit-box-shadow': `0 0 0 50px ${theme.palette.secondary.main} inset`,
-    '-webkit-text-fill-color': theme.palette.secondary.contrastText,
+    '-webkit-box-shadow': `0 0 0 50px ${theme.palette.primary.main} inset`,
+    '-webkit-text-fill-color': theme.palette.primary.contrastText,
     zIndex: 1,
   },
   '& .MuiOutlinedInput-root': {
@@ -95,3 +115,27 @@ export const LumaCheckbox = styled(Checkbox)({
     color: theme.palette.primary.light,
   },
 });
+
+const CustomMenu = styled(Menu)({
+  '& > .MuiPaper-root': {
+    backgroundColor: theme.palette.primary.main,
+    color: theme.palette.primary.contrastText,
+  },
+});
+export const LumaMenu = (props: MenuProps) => {
+  return (
+    <CustomMenu
+      anchorOrigin={{
+        vertical: 'bottom',
+        horizontal: 'center',
+      }}
+      transformOrigin={{
+        vertical: 'top',
+        horizontal: 'center',
+      }}
+      {...props}
+    >
+      {props.children}
+    </CustomMenu>
+  );
+};

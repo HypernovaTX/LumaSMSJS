@@ -3,7 +3,7 @@ import axios from 'axios';
 
 import CF from 'config';
 import { AnyObject, ErrorObj } from 'schema';
-import { isError } from 'lib';
+import { isError } from 'Lib';
 import { APIDownloadProp, APIProp, RequestKinds } from 'schema/apiSchema';
 
 // Init

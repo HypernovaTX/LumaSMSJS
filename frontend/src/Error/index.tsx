@@ -6,7 +6,7 @@ import { useTranslation } from 'react-i18next';
 import { styles } from 'MUIConfig';
 import { ErrorContext } from 'Error/ErrorContext';
 import { GlobalContext } from 'Global/GlobalContext';
-import { LumaButton } from 'lib/LumaComponents';
+import { LumaButton } from 'Lib';
 
 export default function Error() {
   // Custom hooks
@@ -16,13 +16,10 @@ export default function Error() {
   const { error } = useContext(ErrorContext);
   const { navigate } = useContext(GlobalContext);
 
-  // States
-
   return (
     <Box
+      flex="1 0 auto"
       width="100%"
-      height="100%"
-      position="absolute"
       style={styles.zigzagBG}
       display="flex"
       flexDirection="column"
