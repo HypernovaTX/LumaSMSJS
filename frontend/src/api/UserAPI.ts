@@ -1,4 +1,4 @@
-import { useFetch, useSend } from 'API/apiCore';
+import { useFetch, useSend } from 'api/apiCore';
 import { PermissionKind, User } from 'schema/userSchema';
 import {
   APINoResponse,

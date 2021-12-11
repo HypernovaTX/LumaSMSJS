@@ -19,7 +19,7 @@ import {
 
 import CF from 'config';
 import theme from 'MUIConfig';
-import { useWindowWidth } from 'Lib';
+import { useWindowWidth } from 'lib';
 import { ContextProps } from 'schema';
 
 interface GlobalContextType {

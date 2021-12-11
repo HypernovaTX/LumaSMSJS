@@ -6,12 +6,12 @@ import 'index.css';
 import 'languages';
 import theme from 'MUIConfig';
 
-import ErrorProvider from 'Error/ErrorContext';
-import Footer from 'Global/Footer';
-import Navigation from 'Global/Navigation';
+import ErrorProvider from 'error/ErrorContext';
+import Footer from 'global/Footer';
+import Navigation from 'global/navigation';
 import Routes from 'Routes';
-import UserProvider from 'User/UserContext';
-import GlobalProvider from 'Global/GlobalContext';
+import UserProvider from 'user/UserContext';
+import GlobalProvider from 'global/GlobalContext';
 
 // Root APP
 export default function App() {

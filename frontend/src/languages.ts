@@ -1,7 +1,7 @@
 import i18next from 'i18next';
 import { initReactI18next } from 'react-i18next';
 
-import languages from 'Locales/';
+import languages from 'locales';
 
 i18next.use(initReactI18next).init({
   resources: languages,

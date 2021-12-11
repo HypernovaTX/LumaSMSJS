@@ -2,9 +2,9 @@ import React, { useContext } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Box, Container, Grid, Typography } from '@mui/material';
 
-import { LumaButton } from 'Components';
-import { ErrorContext } from 'Error/ErrorContext';
-import { GlobalContext } from 'Global/GlobalContext';
+import { LumaButton } from 'components';
+import { ErrorContext } from 'error/ErrorContext';
+import { GlobalContext } from 'global/GlobalContext';
 import { styles } from 'MUIConfig';
 
 export default function Error() {

@@ -1,7 +1,7 @@
 import CF from 'config';
 import { ErrorObj } from 'schema';
 
-export * from 'Lib/Hooks';
+export * from 'lib/Hooks';
 
 export function isError(x: any) {
   return (x as ErrorObj)?.error && (x as ErrorObj).message;

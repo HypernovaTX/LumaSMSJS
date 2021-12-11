@@ -1,4 +1,4 @@
-import { useDownload } from 'API/apiCore';
+import { useDownload } from 'api/apiCore';
 import {
   APIPropTemplate,
   APIResponse,

@@ -26,11 +26,11 @@ import {
   faUser,
 } from '@fortawesome/free-solid-svg-icons';
 
-import { GlobalContext } from 'Global/GlobalContext';
-import { LumaMenu } from 'Components';
+import { GlobalContext } from 'global/GlobalContext';
+import { LumaMenu } from 'components';
 import theme from 'MUIConfig';
-import { UserContext } from 'User/UserContext';
-import SubmitButton from './SubmitButton';
+import { UserContext } from 'user/UserContext';
+import SubmitButton from 'global/navigation/SubmitButton';
 
 export default function NavUserDesktop() {
   // Const

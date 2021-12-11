@@ -11,8 +11,8 @@ import {
   MenuItem,
 } from '@mui/material';
 
-import menu, { Menus } from 'Global/Navigation/MenuOptions';
-import { A, LumaMenu } from 'Components';
+import menu, { Menus } from 'global/navigation/MenuOptions';
+import { A, LumaMenu } from 'components';
 import theme from 'MUIConfig';
 
 export default function NavMenuDesktop() {

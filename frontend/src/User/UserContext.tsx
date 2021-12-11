@@ -8,8 +8,8 @@ import {
   useAPI_image,
   useAPI_permissions,
   useAPI_userLogout,
-} from 'API';
-import { isError } from 'Lib';
+} from 'api';
+import { isError } from 'lib';
 
 // Init context
 type UserContextType = {

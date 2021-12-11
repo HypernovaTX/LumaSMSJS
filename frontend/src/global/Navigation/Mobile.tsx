@@ -5,12 +5,12 @@ import { Avatar, Box, Button, CircularProgress, Grid } from '@mui/material';
 import { Login, PersonAdd } from '@mui/icons-material';
 import Hamburger from 'hamburger-react';
 
-import { A, SlideMenu } from 'Components';
-import { GlobalContext } from 'Global/GlobalContext';
+import { A, SlideMenu } from 'components';
+import { GlobalContext } from 'global/GlobalContext';
 import logo from 'image/logo.svg';
 import theme from 'MUIConfig';
-import { UserContext } from 'User/UserContext';
-import NavMenuMobile from './MenuMobile';
+import { UserContext } from 'user/UserContext';
+import NavMenuMobile from 'global/navigation/MenuMobile';
 
 export default function NavMobile() {
   // Custom hooks

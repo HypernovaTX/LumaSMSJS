@@ -1,2 +1,2 @@
-export * from 'API/UserAPI';
-export * from 'API/FileAPI';
+export * from 'api/UserAPI';
+export * from 'api/FileAPI';

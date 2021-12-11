@@ -9,11 +9,11 @@ import {
 import { useTranslation } from 'react-i18next';
 
 import LoginIcon from '@mui/icons-material/Login';
-import { useAPI_userLogin } from 'API';
-import { LumaButton, LumaCheckbox, LumaInput, A } from 'Components';
+import { useAPI_userLogin } from 'api';
+import { LumaButton, LumaCheckbox, LumaInput, A } from 'components';
 import { styles } from 'MUIConfig';
-import { GlobalContext } from 'Global/GlobalContext';
-import { UserContext } from 'User/UserContext';
+import { GlobalContext } from 'global/GlobalContext';
+import { UserContext } from 'user/UserContext';
 
 type UserLogin = {
   username: string;

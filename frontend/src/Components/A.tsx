@@ -3,7 +3,7 @@ import { Box } from '@mui/material';
 import { styled } from '@mui/material/styles';
 
 import theme, { styles } from 'MUIConfig';
-import { GlobalContext } from 'Global/GlobalContext';
+import { GlobalContext } from 'global/GlobalContext';
 
 const URLTxt = styled(Box)({
   '&': {

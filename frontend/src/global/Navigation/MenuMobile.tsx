@@ -8,13 +8,13 @@ import {
   Typography,
 } from '@mui/material';
 
-import menu, { Menus } from 'Global/Navigation/MenuOptions';
+import menu, { Menus } from 'global/navigation/MenuOptions';
 import {
   A,
   LumaAccordion,
   LumaAccordionContent,
   LumaAccordionItem,
-} from 'Components';
+} from 'components';
 import theme from 'MUIConfig';
 
 interface NavMobileType {

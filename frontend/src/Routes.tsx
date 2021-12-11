@@ -1,8 +1,8 @@
 import React from 'react';
 import { Route, Switch } from 'react-router-dom';
 
-import Error from 'Error';
-import Login from 'User/Login';
+import Error from 'error';
+import Login from 'user/Login';
 
 export default function Routes() {
   return (

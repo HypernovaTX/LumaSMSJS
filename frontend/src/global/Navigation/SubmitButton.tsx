@@ -11,8 +11,8 @@ import {
 } from '@mui/material';
 import { Add, ExpandMore } from '@mui/icons-material';
 
-import { A } from 'Components';
-import { LumaMenu, LumaToolTip } from 'Components';
+import { A } from 'components';
+import { LumaMenu, LumaToolTip } from 'components';
 import theme from 'MUIConfig';
 
 export default function SubmitButton() {

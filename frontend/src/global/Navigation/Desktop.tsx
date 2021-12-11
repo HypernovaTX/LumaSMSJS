@@ -3,11 +3,11 @@ import { useTranslation } from 'react-i18next';
 import { Box, Grid, IconButton, InputBase } from '@mui/material';
 import { Search } from '@mui/icons-material';
 
-import { A } from 'Components';
+import { A } from 'components';
 import logo from 'image/logo.svg';
 import theme, { styles } from 'MUIConfig';
-import NavMenuDesktop from './MenuDesktop';
-import NavUserDesktop from './UserDesktop';
+import NavMenuDesktop from 'global/navigation/MenuDesktop';
+import NavUserDesktop from 'global/navigation/UserDesktop';
 
 export default function NavDesktop() {
   // Custom hooks
