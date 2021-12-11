@@ -1,3 +1,8 @@
+// ================================================================================
+// LumaSMS Frontend React client
+// Written by - Hypernova
+// MFGG - 2021
+// ================================================================================
 import React from 'react';
 import ReactDOM from 'react-dom';
 

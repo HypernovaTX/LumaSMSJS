@@ -17,7 +17,11 @@ import {
 } from 'Components';
 import theme from 'MUIConfig';
 
-export default function NavMenuMobile() {
+interface NavMobileType {
+  close: () => void;
+}
+
+export default function NavMenuMobile(props: NavMobileType) {
   // Const
   const { contrastText } = theme.palette.primary;
   // Custom hooks
@@ -73,7 +77,9 @@ export default function NavMenuMobile() {
   );
 
   // Handles
-  function handleCloseMenu() {}
+  function handleCloseMenu() {
+    props.close();
+  }
   function handleOpenExternal(url: string) {
     window.open(url, '_blank');
     handleCloseMenu();

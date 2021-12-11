@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import {
   Box,
   Button,
+  Divider,
   Grid,
   ListItemIcon,
   ListItemText,
@@ -50,13 +51,16 @@ export default function NavMenuDesktop() {
             >
               {m.items.map((i, k2) =>
                 i.external ? (
-                  <MenuItem
-                    onClick={() => handleOpenExternal(i.external)}
-                    key={k2}
-                  >
-                    <ListItemIcon>{i.icon}</ListItemIcon>
-                    <ListItemText>{t(`nav.${i.id}`)}</ListItemText>
-                  </MenuItem>
+                  <React.Fragment key={k2}>
+                    <MenuItem
+                      onClick={() => handleOpenExternal(i.external)}
+                      key={k2}
+                    >
+                      <ListItemIcon>{i.icon}</ListItemIcon>
+                      <ListItemText>{t(`nav.${i.id}`)}</ListItemText>
+                    </MenuItem>
+                    {i.divider ? <Divider /> : null}
+                  </React.Fragment>
                 ) : (
                   <A
                     url={`/${i.id.toLowerCase()}`}
@@ -67,6 +71,7 @@ export default function NavMenuDesktop() {
                       <ListItemIcon>{i.icon}</ListItemIcon>
                       <ListItemText>{t(`nav.${i.id}`)}</ListItemText>
                     </MenuItem>
+                    {i.divider ? <Divider /> : null}
                   </A>
                 )
               )}

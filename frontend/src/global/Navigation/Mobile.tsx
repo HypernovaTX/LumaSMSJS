@@ -106,7 +106,7 @@ export default function NavMobile() {
       </Grid>
       <SlideMenu show={open} direction="right" gap={80}>
         <Box>
-          <NavMenuMobile />
+          <NavMenuMobile close={() => setOpen(false)} />
         </Box>
       </SlideMenu>
     </>
