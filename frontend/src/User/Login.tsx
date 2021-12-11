@@ -10,7 +10,7 @@ import { useTranslation } from 'react-i18next';
 
 import LoginIcon from '@mui/icons-material/Login';
 import { useAPI_userLogin } from 'API';
-import { LumaButton, LumaCheckbox, LumaInput, A } from 'Lib';
+import { LumaButton, LumaCheckbox, LumaInput, A } from 'Components';
 import { styles } from 'MUIConfig';
 import { GlobalContext } from 'Global/GlobalContext';
 import { UserContext } from 'User/UserContext';
@@ -138,17 +138,17 @@ export default function Login() {
         </Box>
         {/* Bottom texts */}
         <Box my={1} width="100%">
-          <Typography>
+          <Box>
             {t('user.dontHaveAccount')}{' '}
             <A disabled={loginLoading} url="#">
               {t('user.signup')}
             </A>
-          </Typography>
-          <Typography>
+          </Box>
+          <Box>
             <A disabled={loginLoading} url="#">
               {t('user.forget')}
             </A>
-          </Typography>
+          </Box>
         </Box>
       </Box>
     </Box>

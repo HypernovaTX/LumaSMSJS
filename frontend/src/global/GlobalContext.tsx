@@ -24,6 +24,7 @@ import { ContextProps } from 'schema';
 
 interface GlobalContextType {
   isMobile: boolean;
+  isTinyMobile: boolean;
   navigate: (p: string) => void;
   nativateToPrevious: () => void;
   prevPath?: string;
@@ -33,6 +34,7 @@ interface GlobalContextType {
 }
 export const GlobalContext = createContext<GlobalContextType>({
   isMobile: false,
+  isTinyMobile: false,
   navigate: noop,
   nativateToPrevious: noop,
   setTitle: noop,
@@ -53,6 +55,7 @@ export function GlobalProviderChild(props: ContextProps) {
 
   // Memo
   const isMobile = useMemo(isMobileMemo, [displayWidth]);
+  const isTinyMobile = useMemo(isTinyMobileMemo, [displayWidth]);
 
   // Effects
   useEffect(documentTitleEffect, [title]);
@@ -62,6 +65,7 @@ export function GlobalProviderChild(props: ContextProps) {
     <GlobalContext.Provider
       value={{
         isMobile,
+        isTinyMobile,
         navigate,
         nativateToPrevious,
         prevPath,
@@ -99,6 +103,9 @@ export function GlobalProviderChild(props: ContextProps) {
   // Memo hoists
   function isMobileMemo() {
     return !!displayWidth && displayWidth <= CF.MAX_MOBILESIZE;
+  }
+  function isTinyMobileMemo() {
+    return !!displayWidth && displayWidth <= CF.MAX_TINYSIZE;
   }
 
   // Effect hoists

@@ -21,7 +21,8 @@
   "nav": {
     "community": "Community",
     "discord": "Discord",
-    "favorites": "Favorites",
+    "DM": "Direct Messages",
+    "favorites": "My Favorites",
     "forums": "Forums",
     "games": "Games",
     "graphics": "Graphics",
@@ -30,12 +31,28 @@
     "logout": "Log Out",
     "misc": "Misc",
     "models": "Models",
+    "mySubmissions": "My Submissions",
     "preferences": "Preferences",
+    "profile": "My Profile",
     "resources": "Resources",
-    "sounds": "Sounds & Music",
+    "rules": "Rules",
+    "signedInAs": "Signed in as: ",
+    "sounds": "Sounds",
     "staff": "Staff CP",
+    "submitAs": "Submit:",
     "submitFile": "Submit File",
-    "twitter": "Twitter"
+    "tutorials": "Tutorials",
+    "twitter": "Twitter",
+    "users": "Users"
+  },
+  "submission": {
+    "games": "Games",
+    "graphics": "Graphics",
+    "hacks": "Hacks",
+    "misc": "Misc",
+    "models": "Models",
+    "sounds": "Sounds",
+    "tutorials": "Tutorials"
   },
   "test": {
     "title": "TEST PAGE",

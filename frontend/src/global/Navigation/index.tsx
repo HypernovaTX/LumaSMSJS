@@ -13,7 +13,7 @@ export default function Navigation() {
   // Output
   return (
     <AppBar position="sticky" color="transparent">
-      <Box sx={{ backgroundColor: theme.palette.primary.dark }}>
+      <Box sx={{ backgroundColor: theme.palette.primary.dark, zIndex: 999 }}>
         <Container maxWidth="xl">
           {isMobile ? <NavMobile /> : <NavDesktop />}
         </Container>

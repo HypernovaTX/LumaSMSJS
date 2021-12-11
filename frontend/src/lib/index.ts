@@ -1,7 +1,6 @@
 import CF from 'config';
 import { ErrorObj } from 'schema';
 
-export * from 'Lib/LumaComponents';
 export * from 'Lib/Hooks';
 
 export function isError(x: any) {

@@ -1,12 +1,11 @@
 import React, { useContext } from 'react';
-
-import { Box, Container, Grid, Typography } from '@mui/material';
 import { useTranslation } from 'react-i18next';
+import { Box, Container, Grid, Typography } from '@mui/material';
 
-import { styles } from 'MUIConfig';
+import { LumaButton } from 'Components';
 import { ErrorContext } from 'Error/ErrorContext';
 import { GlobalContext } from 'Global/GlobalContext';
-import { LumaButton } from 'Lib';
+import { styles } from 'MUIConfig';
 
 export default function Error() {
   // Custom hooks
