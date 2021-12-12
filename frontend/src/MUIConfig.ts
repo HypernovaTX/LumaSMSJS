@@ -1,4 +1,5 @@
 import { createTheme } from '@mui/material/styles';
+import mixColor from 'mix-color';
 import image from 'psyw_screen_mfgg.png';
 
 const theme = createTheme({
@@ -35,6 +36,10 @@ const theme = createTheme({
 });
 export default theme;
 
+const veryDark = mixColor('#000', theme.palette.primary.dark, 0.5);
+const veryDarkBG = mixColor('#000', theme.palette.primary.dark, 0.4);
+const veryError = mixColor('#000', theme.palette.error.main, 0.5);
+const veryErrorBG = mixColor('#000', theme.palette.error.main, 0.4);
 export const styles: { [key: string]: React.CSSProperties } = {
   bigText: {
     fontWeight: 600,
@@ -83,9 +88,15 @@ export const styles: { [key: string]: React.CSSProperties } = {
     transition: '200ms linear all',
   },
   zigzagBG: {
-    backgroundColor: '#000043',
-    backgroundImage:
-      'linear-gradient(135deg, #000356 25%, transparent 25%), linear-gradient(225deg, #000356 25%, transparent 25%), linear-gradient(45deg, #000356 25%, transparent 25%), linear-gradient(315deg, #000356 25%, #000043 25%)',
+    backgroundColor: veryDarkBG,
+    backgroundImage: `linear-gradient(135deg, ${veryDark} 25%, transparent 25%), linear-gradient(225deg, ${veryDark} 25%, transparent 25%), linear-gradient(45deg, ${veryDark} 25%, transparent 25%), linear-gradient(315deg, ${veryDark} 25%, ${veryDarkBG} 25%)`,
+    backgroundPosition: '40px 0, 40px 0, 0 0, 0 0',
+    backgroundSize: '80px 80px',
+    backgroundRepeat: 'repeat',
+  },
+  zigzagBGError: {
+    backgroundColor: veryErrorBG,
+    backgroundImage: `linear-gradient(135deg, ${veryError} 25%, transparent 25%), linear-gradient(225deg, ${veryError} 25%, transparent 25%), linear-gradient(45deg, ${veryError} 25%, transparent 25%), linear-gradient(315deg, ${veryError} 25%, ${veryErrorBG} 25%)`,
     backgroundPosition: '40px 0, 40px 0, 0 0, 0 0',
     backgroundSize: '80px 80px',
     backgroundRepeat: 'repeat',

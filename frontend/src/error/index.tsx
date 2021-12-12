@@ -30,7 +30,7 @@ export default function Error(props: ErrorProps) {
     <Box
       flex="1 0 auto"
       width="100%"
-      style={styles.zigzagBG}
+      style={props.error || error ? styles.zigzagBGError : styles.zigzagBG}
       display="flex"
       flexDirection="column"
       alignItems="center"
@@ -53,7 +53,12 @@ export default function Error(props: ErrorProps) {
             </Typography>
           </Box>
           <Box mx={2} my={4}>
-            <LumaButton onClick={handleGoHome} variant="contained" size="large">
+            <LumaButton
+              onClick={handleGoHome}
+              variant="contained"
+              size="large"
+              color={props.error || error ? 'error' : undefined}
+            >
               {error || props.error ? t('main.goHome') : t('main.unknown')}
             </LumaButton>
           </Box>
