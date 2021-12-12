@@ -4,7 +4,6 @@ import { useTranslation } from 'react-i18next';
 import {
   Avatar,
   Box,
-  Button,
   CircularProgress,
   Grid,
   IconButton,
