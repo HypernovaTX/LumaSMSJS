@@ -23,7 +23,7 @@ export default function Error(props: ErrorProps) {
   const { isMobile, navigate } = useContext(GlobalContext);
 
   // Special custom hook
-  useSetTitle(t(error ? 'title.error' : 'title.testPage'));
+  useSetTitle(t(props.error || error ? 'title.error' : 'title.testPage'));
 
   // Output
   return (

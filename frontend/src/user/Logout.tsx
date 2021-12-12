@@ -14,7 +14,7 @@ export default function Logout() {
   useSetTitle(t('title.logoff'));
 
   // Context
-  const { clearUser } = useContext(UserContext);
+  const { clearUser, user } = useContext(UserContext);
   const { isMobile, nativateToPrevious, toast } = useContext(GlobalContext);
 
   // Data
@@ -69,6 +69,7 @@ export default function Logout() {
 
   // Effect hoists
   function initEffect() {
-    logout();
+    if (!user) nativateToPrevious();
+    else logout();
   }
 }
