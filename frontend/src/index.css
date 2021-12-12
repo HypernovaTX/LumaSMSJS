@@ -24,5 +24,5 @@ a {
   border-radius: 50%;
 }
 .hamburger-react:active {
-  background-color: rgba(255, 255, 255, 0.5);
+  background-color: rgba(255, 255, 255, 0.2);
 }
