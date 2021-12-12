@@ -2,6 +2,7 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 
 import {
+  Box,
   ListItemIcon,
   ListItemText,
   MenuItem,
@@ -49,8 +50,10 @@ export default function NavMenuMobile(props: NavMobileType) {
                       : handleCloseMenu
                   }
                 >
-                  <ListItemIcon>{i.icon}</ListItemIcon>
-                  <ListItemText>{t(`nav.${i.id}`)}</ListItemText>
+                  <Box my={1} display="inline-flex">
+                    <ListItemIcon>{i.icon}</ListItemIcon>
+                    <ListItemText>{t(`nav.${i.id}`)}</ListItemText>
+                  </Box>
                 </MenuItem>
               </A>
             ))}

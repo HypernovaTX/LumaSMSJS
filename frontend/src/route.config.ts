@@ -14,6 +14,7 @@ const routes = {
   profileFavorites: '/profile/favorites',
   profileSettings: '/profile/preferences',
   profileSubmissions: '/profile/uploads',
+  profileSubmit: '/profile/submit',
 
   // Staff
   staff: '/staffcp',
@@ -55,5 +56,6 @@ const routes = {
   user: '/user',
   userLogin: '/login',
   userLogout: '/logout',
+  userRegister: '/register',
 } as const;
 export default routes;

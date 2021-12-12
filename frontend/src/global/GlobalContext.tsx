@@ -58,7 +58,8 @@ export function GlobalProviderChild(props: ContextProps) {
   const isTinyMobile = useMemo(isTinyMobileMemo, [displayWidth]);
 
   // Effects
-  useEffect(documentTitleEffect, [title]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(initEffect, []);
 
   // Return
   return (
@@ -109,7 +110,7 @@ export function GlobalProviderChild(props: ContextProps) {
   }
 
   // Effect hoists
-  function documentTitleEffect() {
+  function initEffect() {
     const pageTitle = `${CF.SITE_NAME} - ${title}`;
     if (document.title !== pageTitle) {
       document.title = pageTitle;
@@ -147,6 +148,7 @@ export default function GlobalProvider(props: ContextProps) {
       )}
     >
       <GlobalProviderChild>{props.children}</GlobalProviderChild>
+      <style>{`body { background-color: ${theme.palette.primary.dark} }`}</style>
     </SnackbarProvider>
   );
 

@@ -107,8 +107,10 @@ export default function NavUserDesktop() {
                   </Grid>
                 </Grid>
                 <Divider />
+                {/* Rest of the items */}
                 {userMenu.map((i, k) =>
-                  !i.staff || (i.staff && checkPermit('acp_access')) ? (
+                  (!i.staff || (i.staff && checkPermit('acp_access'))) &&
+                  i.showDesktop ? (
                     <Box key={k}>
                       <A url={i.url} color={contrastText}>
                         <MenuItem onClick={handleCloseMenu}>

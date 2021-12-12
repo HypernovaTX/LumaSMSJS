@@ -2,8 +2,8 @@ import React, { useContext } from 'react';
 import { AppBar, Box, Container } from '@mui/material';
 
 import { GlobalContext } from 'global/GlobalContext';
-import NavDesktop from 'global/navigation/DesktopNav';
-import NavMobile from 'global/navigation/MobileNav';
+import NavDesktop from 'global/navigation/Desktop';
+import NavMobile from 'global/navigation/Mobile';
 import theme from 'MUIConfig';
 
 export default function Navigation() {
