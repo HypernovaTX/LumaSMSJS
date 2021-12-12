@@ -21,7 +21,7 @@ import { GlobalContext } from 'global/GlobalContext';
 import { A, LumaDivider, LumaMenu } from 'components';
 import theme, { styles } from 'MUIConfig';
 import { UserContext } from 'user/UserContext';
-import SubmitButton from 'global/navigation/DesktopSubmitButton';
+import SubmitButtonDesktop from 'global/navigation/DesktopSubmitButton';
 import useUserOptions from 'global/navigation/ConfigUser';
 
 const anchorOrigin: PopoverOrigin = {
@@ -60,7 +60,7 @@ export default function NavUserDesktop() {
           // logged in
           <Grid container item>
             <Grid container item alignContent="center" xs="auto">
-              <SubmitButton />
+              <SubmitButtonDesktop />
             </Grid>
             <Grid container item xs="auto">
               <IconButton id="user-button" onClick={handleOpenMenu}>

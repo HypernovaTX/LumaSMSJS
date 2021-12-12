@@ -15,7 +15,7 @@ import { A } from 'components';
 import { LumaMenu, LumaToolTip } from 'components';
 import theme from 'MUIConfig';
 
-export default function SubmitButton() {
+export default function SubmitButtonDesktop() {
   // Const
   const { contrastText } = theme.palette.primary;
   const menuItems = [

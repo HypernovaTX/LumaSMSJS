@@ -53,6 +53,12 @@ export const styles: { [key: string]: React.CSSProperties } = {
     backgroundColor: theme.palette.primary.dark,
     border: `2px solid ${theme.palette.primary.dark}`,
   },
+  navAvatarMobile: {
+    width: 32,
+    height: 32,
+    backgroundColor: theme.palette.primary.main,
+    border: `1px solid ${theme.palette.primary.main}`,
+  },
   placeholderContainer: {
     background: `linear-gradient(0deg, rgba(0,0,0,0.75) 0%, rgba(0,0,0,0.75) 100%), url(${image})`,
     backgroundSize: 'cover',
