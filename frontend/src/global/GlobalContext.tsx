@@ -58,7 +58,8 @@ export function GlobalProviderChild(props: ContextProps) {
   const isTinyMobile = useMemo(isTinyMobileMemo, [displayWidth]);
 
   // Effects
-  useEffect(documentTitleEffect, [title]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(initEffect, []);
 
   // Return
   return (
@@ -92,7 +93,7 @@ export function GlobalProviderChild(props: ContextProps) {
   function toast(message: string, variant: VariantType) {
     enqueueSnackbar(message, {
       variant,
-      autoHideDuration: 3000,
+      autoHideDuration: 2500,
       anchorOrigin: {
         horizontal: 'center',
         vertical: 'top',
@@ -109,7 +110,7 @@ export function GlobalProviderChild(props: ContextProps) {
   }
 
   // Effect hoists
-  function documentTitleEffect() {
+  function initEffect() {
     const pageTitle = `${CF.SITE_NAME} - ${title}`;
     if (document.title !== pageTitle) {
       document.title = pageTitle;
@@ -119,7 +120,7 @@ export function GlobalProviderChild(props: ContextProps) {
 
 export default function GlobalProvider(props: ContextProps) {
   // Const
-  const Gap = <Box width={8} />;
+  const Gap = <Box width={8} key="gap" />;
 
   // Ref
   const snackbarRef = createRef<SnackbarProvider>();
@@ -130,10 +131,10 @@ export default function GlobalProvider(props: ContextProps) {
       maxSnack={3}
       ref={snackbarRef}
       iconVariant={{
-        success: [<CheckCircle />, Gap],
-        error: [<Dangerous />, Gap],
-        warning: [<Warning />, Gap],
-        info: [<Info />, Gap],
+        success: [<CheckCircle key="success" />, Gap],
+        error: [<Dangerous key="danger" />, Gap],
+        warning: [<Warning key="warning" />, Gap],
+        info: [<Info key="info" />, Gap],
       }}
       action={(key: SnackbarKey) => (
         <IconButton
@@ -147,6 +148,7 @@ export default function GlobalProvider(props: ContextProps) {
       )}
     >
       <GlobalProviderChild>{props.children}</GlobalProviderChild>
+      <style>{`body { background-color: ${theme.palette.primary.dark} }`}</style>
     </SnackbarProvider>
   );
 

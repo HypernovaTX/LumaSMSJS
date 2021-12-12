@@ -2,13 +2,14 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 
 import {
+  Box,
   ListItemIcon,
   ListItemText,
   MenuItem,
   Typography,
 } from '@mui/material';
 
-import menu from 'global/navigation/MenuOptions';
+import menu from 'global/navigation/ConfigMenu';
 import {
   A,
   LumaAccordion,
@@ -40,24 +41,22 @@ export default function NavMenuMobile(props: NavMobileType) {
             <Typography>{t(`nav.${m.id}`)}</Typography>
           </LumaAccordionItem>
           <LumaAccordionContent>
-            {m.items.map((i, k2) =>
-              i.external ? (
+            {m.items.map((i, k2) => (
+              <A url={i.external || i.navigate} key={k2} color={contrastText}>
                 <MenuItem
-                  onClick={() => handleOpenExternal(i.external)}
-                  key={k2}
+                  onClick={
+                    i.external
+                      ? () => handleOpenExternal(i.external)
+                      : handleCloseMenu
+                  }
                 >
-                  <ListItemIcon>{i.icon}</ListItemIcon>
-                  <ListItemText>{t(`nav.${i.id}`)}</ListItemText>
-                </MenuItem>
-              ) : (
-                <A url={`/${i.id.toLowerCase()}`} key={k2} color={contrastText}>
-                  <MenuItem onClick={handleCloseMenu}>
+                  <Box my={1} display="inline-flex">
                     <ListItemIcon>{i.icon}</ListItemIcon>
                     <ListItemText>{t(`nav.${i.id}`)}</ListItemText>
-                  </MenuItem>
-                </A>
-              )
-            )}
+                  </Box>
+                </MenuItem>
+              </A>
+            ))}
           </LumaAccordionContent>
         </LumaAccordion>
       ))}

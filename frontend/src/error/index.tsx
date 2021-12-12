@@ -6,6 +6,7 @@ import { LumaButton } from 'components';
 import { ErrorContext } from 'error/ErrorContext';
 import { GlobalContext } from 'global/GlobalContext';
 import { styles } from 'MUIConfig';
+import routes from 'route.config';
 
 export default function Error() {
   // Custom hooks
@@ -13,7 +14,7 @@ export default function Error() {
 
   // Context
   const { error } = useContext(ErrorContext);
-  const { navigate } = useContext(GlobalContext);
+  const { isMobile, navigate } = useContext(GlobalContext);
 
   return (
     <Box
@@ -28,20 +29,20 @@ export default function Error() {
       <Container>
         <Grid container flexDirection="column">
           <Box mx={2} my={1}>
-            <Typography variant="h2">
+            <Typography variant={isMobile ? 'h4' : 'h2'}>
               {error
                 ? `${t('error.error')} ${error?.code ?? ''}`
                 : t('test.title')}
             </Typography>
           </Box>
           <Box mx={2} my={1}>
-            <Typography variant="h5">
+            <Typography variant={isMobile ? 'h6' : 'h5'}>
               {error?.message ?? t('test.sub')}
             </Typography>
           </Box>
           <Box mx={2} my={1}>
             <LumaButton
-              onClick={() => navigate('/')}
+              onClick={() => navigate(routes._index)}
               variant="contained"
               size="large"
             >

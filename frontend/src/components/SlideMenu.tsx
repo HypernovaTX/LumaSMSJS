@@ -50,6 +50,7 @@ export class SlideMenu extends React.Component {
         in={props.show}
         mountOnEnter
         unmountOnExit
+        timeout={300}
       >
         <Box
           style={{

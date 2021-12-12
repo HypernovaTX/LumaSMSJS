@@ -41,6 +41,33 @@ export const styles: { [key: string]: React.CSSProperties } = {
     textShadow: '2px 2px 10px #000',
     marginBottom: 8,
   },
+  hamburgerBG: {
+    position: 'fixed',
+    top: 0,
+    left: 0,
+    width: 80,
+    height: 80,
+    transition: '200ms linear all',
+    background: `linear-gradient(90deg, ${theme.palette.primary.dark} 0%, ${theme.palette.primary.dark} 80%, rgba(0,185,255,0) 100%)`,
+  },
+  navAvatar: {
+    width: 48,
+    height: 48,
+    backgroundColor: theme.palette.primary.main,
+    border: `1px solid ${theme.palette.primary.main}`,
+  },
+  navAvatarMenu: {
+    width: 128,
+    height: 128,
+    backgroundColor: theme.palette.primary.dark,
+    border: `2px solid ${theme.palette.primary.dark}`,
+  },
+  navAvatarMobile: {
+    width: 36,
+    height: 36,
+    backgroundColor: theme.palette.primary.main,
+    border: `1px solid ${theme.palette.primary.main}`,
+  },
   placeholderContainer: {
     background: `linear-gradient(0deg, rgba(0,0,0,0.75) 0%, rgba(0,0,0,0.75) 100%), url(${image})`,
     backgroundSize: 'cover',

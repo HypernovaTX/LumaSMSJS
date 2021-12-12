@@ -22,10 +22,11 @@ const URLTxt = styled(Box)({
 });
 
 type URLProps = {
+  blocked?: boolean; // Enabled but cannot use it
   children: ReactNode;
-  url: string;
-  disabled?: boolean;
   color?: string;
+  disabled?: boolean;
+  url: string;
 };
 export function A(props: URLProps) {
   // Const
@@ -36,7 +37,7 @@ export function A(props: URLProps) {
 
   // Callbacks
   const href = () => {
-    if (!props.disabled) navigate(props.url);
+    if (!props.disabled && !props.blocked) navigate(props.url);
   };
   const clearA = (e: React.MouseEvent<HTMLAnchorElement, MouseEvent>) => {
     e.preventDefault();

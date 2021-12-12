@@ -22,8 +22,8 @@ export const LumaInput = styled(TextField)({
     cursor: 'not-allowed',
   },
   '& input:-internal-autofill-selected, & input:-webkit-autofill': {
-    '-webkit-box-shadow': `0 0 0 50px ${theme.palette.primary.main} inset`,
-    '-webkit-text-fill-color': theme.palette.primary.contrastText,
+    boxShadow: `0 0 0 50px ${theme.palette.primary.main} inset`,
+    textFillColor: theme.palette.primary.contrastText,
     zIndex: 1,
   },
   '& .MuiOutlinedInput-root': {

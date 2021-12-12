@@ -15,7 +15,7 @@ import { A } from 'components';
 import { LumaMenu, LumaToolTip } from 'components';
 import theme from 'MUIConfig';
 
-export default function SubmitButton() {
+export default function SubmitButtonDesktop() {
   // Const
   const { contrastText } = theme.palette.primary;
   const menuItems = [
@@ -42,9 +42,12 @@ export default function SubmitButton() {
         <ExpandMore fontSize="small" />
       </Box>
       <LumaToolTip title={`${t('nav.submitFile')}`}>
-        <IconButton id="submit-button" onClick={handleOpenMenu}>
+        <IconButton
+          id="submit-button"
+          onClick={handleOpenMenu}
+          style={{ color: contrastText }}
+        >
           <Box
-            color={contrastText}
             display="flex"
             flexDirection="column"
             alignItems="center"
