@@ -10,7 +10,7 @@ import { GlobalContext } from 'global/GlobalContext';
 import logo from 'image/logo.svg';
 import theme from 'MUIConfig';
 import { UserContext } from 'user/UserContext';
-import NavMenuMobile from 'global/navigation/MenuMobile';
+import NavMenuMobile from 'global/navigation/MobileMenu';
 
 export default function NavMobile() {
   // Custom hooks

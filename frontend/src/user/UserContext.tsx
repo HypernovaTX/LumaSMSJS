@@ -15,6 +15,7 @@ import { isError } from 'lib';
 type UserContextType = {
   avatar?: string;
   checkPermit: (p: PermissionKind) => boolean;
+  clearUser: () => void;
   loading: boolean;
   loadUser?: () => void;
   login: boolean;
@@ -26,6 +27,7 @@ const defaultUserContext: UserContextType = {
   checkPermit: () => {
     return false;
   },
+  clearUser: noop,
   loading: false,
   login: false,
   logout: noop,
@@ -94,6 +96,7 @@ export default function UserProvider(props: ContextProps) {
       value={{
         avatar,
         checkPermit,
+        clearUser,
         loading,
         loadUser: loadUser,
         login,

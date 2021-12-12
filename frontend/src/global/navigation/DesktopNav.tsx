@@ -6,8 +6,8 @@ import { Search } from '@mui/icons-material';
 import { A } from 'components';
 import logo from 'image/logo.svg';
 import theme, { styles } from 'MUIConfig';
-import NavMenuDesktop from 'global/navigation/MenuDesktop';
-import NavUserDesktop from 'global/navigation/UserDesktop';
+import NavMenuDesktop from 'global/navigation/DesktopMenu';
+import NavUserDesktop from 'global/navigation/DesktopUser';
 
 export default function NavDesktop() {
   // Custom hooks

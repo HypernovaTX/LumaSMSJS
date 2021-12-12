@@ -41,6 +41,18 @@ export const styles: { [key: string]: React.CSSProperties } = {
     textShadow: '2px 2px 10px #000',
     marginBottom: 8,
   },
+  navAvatar: {
+    width: 48,
+    height: 48,
+    backgroundColor: theme.palette.primary.main,
+    border: `1px solid ${theme.palette.primary.main}`,
+  },
+  navAvatarMenu: {
+    width: 128,
+    height: 128,
+    backgroundColor: theme.palette.primary.dark,
+    border: `2px solid ${theme.palette.primary.dark}`,
+  },
   placeholderContainer: {
     background: `linear-gradient(0deg, rgba(0,0,0,0.75) 0%, rgba(0,0,0,0.75) 100%), url(${image})`,
     backgroundSize: 'cover',

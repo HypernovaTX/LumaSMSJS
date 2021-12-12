@@ -1,4 +1,5 @@
 import React, { useContext, useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   Box,
   CircularProgress,
@@ -6,13 +7,13 @@ import {
   FormGroup,
   Typography,
 } from '@mui/material';
-import { useTranslation } from 'react-i18next';
-
 import LoginIcon from '@mui/icons-material/Login';
+
 import { useAPI_userLogin } from 'api';
 import { LumaButton, LumaCheckbox, LumaInput, A } from 'components';
-import { styles } from 'MUIConfig';
 import { GlobalContext } from 'global/GlobalContext';
+import { useSetTitle } from 'lib';
+import { styles } from 'MUIConfig';
 import { UserContext } from 'user/UserContext';
 
 type UserLogin = {
@@ -29,10 +30,11 @@ const defaultForm = {
 export default function Login() {
   // Custom hooks
   const { t } = useTranslation();
+  useSetTitle(t('title.login'));
 
   // Context
   const { loadUser: reloadUser } = useContext(UserContext);
-  const { setTitle, toast, nativateToPrevious } = useContext(GlobalContext);
+  const { isMobile, nativateToPrevious, toast } = useContext(GlobalContext);
 
   // States
   const [loginForm, setLoginForm] = useState<UserLogin>(defaultForm);
@@ -53,8 +55,8 @@ export default function Login() {
   });
 
   // Effect
-  useEffect(setTitleEffect, [setTitle, t]);
-  // NOTE - Add auto
+  // NOTE - Add auto "go back" when user is already logged in
+  useEffect(() => {}, []);
 
   // Output
   return (
@@ -68,7 +70,7 @@ export default function Login() {
       justifyContent="center"
     >
       <Box
-        my={8}
+        my={isMobile ? 4 : 8}
         mx={4}
         display="flex"
         flexDirection="column"
@@ -77,7 +79,7 @@ export default function Login() {
         minWidth="25vw"
       >
         {/* Title */}
-        <Typography variant="h2" style={styles.bigText}>
+        <Typography variant={isMobile ? 'h4' : 'h2'} style={styles.bigText}>
           {t('user.login')}
         </Typography>
         {/* Username/password input */}
@@ -89,6 +91,7 @@ export default function Login() {
             name="username"
             onChange={handleInputChange}
             value={loginForm.username}
+            size={isMobile ? 'small' : 'medium'}
           />
         </Box>
         <Box my={1} width="100%">
@@ -100,6 +103,7 @@ export default function Login() {
             type="password"
             onChange={handleInputChange}
             value={loginForm.password}
+            size={isMobile ? 'small' : 'medium'}
           />
         </Box>
         {/* Remember Me */}
@@ -112,6 +116,7 @@ export default function Login() {
                   name="remember"
                   onChange={handleCheckbox}
                   value={!!loginForm.remember}
+                  size={isMobile ? 'small' : 'medium'}
                 />
               }
               label={`${t('user.remember')}`}
@@ -125,9 +130,9 @@ export default function Login() {
             color="secondary"
             variant="contained"
             fullWidth
-            size="large"
+            size={isMobile ? 'medium' : 'large'}
             startIcon={loginLoading ? undefined : <LoginIcon />}
-            onClick={loginButtionClick}
+            onClick={handleLoginButton}
           >
             {loginLoading ? (
               <CircularProgress size={26} color="secondary" />
@@ -137,7 +142,7 @@ export default function Login() {
           </LumaButton>
         </Box>
         {/* Bottom texts */}
-        <Box my={1} width="100%">
+        <Box my={isMobile ? 0 : 1} width="100%">
           <Box>
             {t('user.dontHaveAccount')}{' '}
             <A disabled={loginLoading} url="#">
@@ -154,7 +159,7 @@ export default function Login() {
     </Box>
   );
 
-  // Callbacks
+  // Handles
   function handleInputChange(e: React.ChangeEvent<HTMLInputElement>) {
     let form = loginForm;
     if (e.target.name === 'username') {
@@ -174,13 +179,8 @@ export default function Login() {
     setLoginForm(form);
   }
 
-  function loginButtionClick() {
+  function handleLoginButton() {
     if (loginLoading) return;
     login();
-  }
-
-  // Effect hoists
-  function setTitleEffect() {
-    setTitle(t('title.login'));
   }
 }

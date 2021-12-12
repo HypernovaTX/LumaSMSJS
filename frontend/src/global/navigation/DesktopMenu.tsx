@@ -4,15 +4,14 @@ import { useTranslation } from 'react-i18next';
 import {
   Box,
   Button,
-  Divider,
   Grid,
   ListItemIcon,
   ListItemText,
   MenuItem,
 } from '@mui/material';
 
-import menu, { Menus } from 'global/navigation/MenuOptions';
-import { A, LumaMenu } from 'components';
+import menu, { Menus } from 'global/navigation/ConfigMenu';
+import { A, LumaDivider, LumaMenu } from 'components';
 import theme from 'MUIConfig';
 
 export default function NavMenuDesktop() {
@@ -49,32 +48,27 @@ export default function NavMenuDesktop() {
               open={open === m.id}
               onClose={handleCloseMenu}
             >
-              {m.items.map((i, k2) =>
-                i.external ? (
-                  <Box key={k2}>
+              {m.items.map((i, k2) => (
+                <Box key={k2}>
+                  <A
+                    url={i.external || i.navigate}
+                    color={contrastText}
+                    blocked={!!i.external}
+                  >
                     <MenuItem
-                      onClick={() => handleOpenExternal(i.external)}
-                      key={k2}
+                      onClick={
+                        i.external
+                          ? () => handleOpenExternal(i.external)
+                          : handleCloseMenu
+                      }
                     >
                       <ListItemIcon>{i.icon}</ListItemIcon>
                       <ListItemText>{t(`nav.${i.id}`)}</ListItemText>
                     </MenuItem>
-                    {i.divider ? <Divider /> : null}
-                  </Box>
-                ) : (
-                  <A
-                    url={`/${i.id.toLowerCase()}`}
-                    key={k2}
-                    color={contrastText}
-                  >
-                    <MenuItem onClick={handleCloseMenu}>
-                      <ListItemIcon>{i.icon}</ListItemIcon>
-                      <ListItemText>{t(`nav.${i.id}`)}</ListItemText>
-                    </MenuItem>
-                    {i.divider ? <Divider /> : null}
                   </A>
-                )
-              )}
+                  {i.divider ? <LumaDivider /> : null}
+                </Box>
+              ))}
             </LumaMenu>
           </Box>
         </Grid>

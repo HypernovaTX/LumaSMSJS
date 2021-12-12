@@ -59,13 +59,15 @@
     "sub": "This is a test page, please disregard."
   },
   "title": {
-    "login": "Sign In"
+    "login": "Sign In",
+    "logoff": "Signing Out"
   },
   "user": {
     "dontHaveAccount": "Don't have an account?",
     "forget": "Forgot your username and/or password?",
     "login": "Sign In",
     "logout": "Log Out",
+    "logoutMessage": "Signing off...",
     "password": "Password",
     "register": "Register",
     "remember": "Remember Me",
