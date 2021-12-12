@@ -67,8 +67,8 @@ export class SlideMenu extends React.Component {
           </Box>
           <Box
             style={{
-              height: '100%',
-              overflowY: 'scroll',
+              height: props.gap ? `calc(100vh - ${props.gap}px)` : '100vh',
+              overflowY: 'auto',
             }}
           >
             {props.children}

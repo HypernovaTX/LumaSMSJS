@@ -51,7 +51,7 @@ export default function NavMenuDesktop() {
             >
               {m.items.map((i, k2) =>
                 i.external ? (
-                  <React.Fragment key={k2}>
+                  <Box key={k2}>
                     <MenuItem
                       onClick={() => handleOpenExternal(i.external)}
                       key={k2}
@@ -60,7 +60,7 @@ export default function NavMenuDesktop() {
                       <ListItemText>{t(`nav.${i.id}`)}</ListItemText>
                     </MenuItem>
                     {i.divider ? <Divider /> : null}
-                  </React.Fragment>
+                  </Box>
                 ) : (
                   <A
                     url={`/${i.id.toLowerCase()}`}

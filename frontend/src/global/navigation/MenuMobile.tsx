@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { useTranslation } from 'react-i18next';
 
 import {
@@ -8,7 +8,7 @@ import {
   Typography,
 } from '@mui/material';
 
-import menu, { Menus } from 'global/navigation/MenuOptions';
+import menu from 'global/navigation/MenuOptions';
 import {
   A,
   LumaAccordion,
@@ -24,27 +24,15 @@ interface NavMobileType {
 export default function NavMenuMobile(props: NavMobileType) {
   // Const
   const { contrastText } = theme.palette.primary;
+
   // Custom hooks
   const { t } = useTranslation();
-
-  // State
-  const [open, setOpen] = useState<Menus>();
-
-  // Special Handle
-  const handleChange =
-    (panel: Menus) => (event: React.SyntheticEvent, newExpanded: boolean) => {
-      setOpen(newExpanded ? panel : undefined);
-    };
 
   // Output
   return (
     <>
       {menu.map((m, k) => (
-        <LumaAccordion
-          expanded={open === m.id}
-          onChange={handleChange(m.id)}
-          key={k}
-        >
+        <LumaAccordion key={k}>
           <LumaAccordionItem
             aria-controls={`${m.id}-content`}
             id={`${m.id}-header`}
