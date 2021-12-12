@@ -11,7 +11,7 @@ import { useSetTitle } from 'lib';
 export default function Logout() {
   // Custom hooks
   const { t } = useTranslation();
-  useSetTitle(t('title.logout'));
+  useSetTitle(t('title.logoff'));
 
   // Context
   const { clearUser } = useContext(UserContext);

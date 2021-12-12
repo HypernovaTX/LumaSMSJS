@@ -29,7 +29,7 @@ interface GlobalContextType {
   nativateToPrevious: () => void;
   prevPath?: string;
   setTitle: (p: string) => void;
-  title: string;
+  title?: string;
   toast: (m: string, v: VariantType) => void;
 }
 export const GlobalContext = createContext<GlobalContextType>({
@@ -51,7 +51,7 @@ export function GlobalProviderChild(props: ContextProps) {
 
   // States
   const [prevPath, setPrevPath] = useState<string>();
-  const [title, setTitle] = useState('(null)');
+  const [title, setTitle] = useState<string>();
 
   // Memo
   const isMobile = useMemo(isMobileMemo, [displayWidth]);
@@ -59,7 +59,7 @@ export function GlobalProviderChild(props: ContextProps) {
 
   // Effects
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  useEffect(initEffect, []);
+  useEffect(pageTitleEffect, [title]);
 
   // Return
   return (
@@ -110,8 +110,8 @@ export function GlobalProviderChild(props: ContextProps) {
   }
 
   // Effect hoists
-  function initEffect() {
-    const pageTitle = `${CF.SITE_NAME} - ${title}`;
+  function pageTitleEffect() {
+    const pageTitle = `${CF.SITE_NAME} - ${title ?? '(null)'}`;
     if (document.title !== pageTitle) {
       document.title = pageTitle;
     }

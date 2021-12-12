@@ -2,7 +2,7 @@
   "error": {
     "error": "Error",
     "error400": "Request Failure (400)",
-    "error404": "Not Found (404)",
+    "error404Page": "Page Not Found",
     "noError": "No errors found at this moment",
     "tooManyRequests": "Too many network requests! Please try again later!",
     "unknown": "An unknown error as occured!"
@@ -60,8 +60,10 @@
     "sub": "This is a test page, please disregard."
   },
   "title": {
+    "error": "Error",
     "login": "Sign In",
-    "logoff": "Signing Out"
+    "logoff": "Signing Out",
+    "testPage": "Placeholder Page"
   },
   "user": {
     "dontHaveAccount": "Don't have an account?",

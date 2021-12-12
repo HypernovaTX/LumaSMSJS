@@ -6,7 +6,7 @@ type ErrorContextBase = {
 };
 
 interface ErrorContextType extends ErrorContextBase {
-  setError: (inputs: ErrorObj) => void;
+  setError: (inputs?: ErrorObj) => void;
   resetError: () => void;
 }
 
