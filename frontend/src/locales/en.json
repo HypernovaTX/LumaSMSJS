@@ -8,7 +8,23 @@
     "unknown": "An unknown error as occured!"
   },
   "footer": {
-    "copyright": "Mario Fan Games Galaxy, 2001 - {{year}}"
+    "disclaimer": "MFGG does not own any user-submitted content, which is © the submitter or a third party. All remaining material is © MFGG. MFGG is a non-profit site ran by passionate fans, with no affiliation to Nintendo.",
+    "copyright": "MFGG is powered by LumaSMS, © 2021-{{year}}. Made by: ",
+    "easterEgg": "If you're reading this, you're breathing manually now. :^)",
+    "links": {
+      "about": "About MFGG",
+      "faq": "Frequently Asked Questions",
+      "rules": "Site Rules",
+      "staff": "The Staff",
+      "affiliates": "Affiliates",
+      "patcher": "BPS Patcher",
+      "newsArchive": "News Archive",
+      "wiki": "Legacy Wiki",
+      "forums": "MyBB Forums Archive",
+      "privacy": "Privacy Policy",
+      "cookie": "Cookie Policy",
+      "contact": "Contact Us"
+    }
   },
   "main": {
     "goHome": "Return to Home",
@@ -23,13 +39,13 @@
     "discord": "Discord",
     "DM": "Direct Messages",
     "favorites": "My Favorites",
-    "forums": "Discussions",
+    "discussions": "Discussions",
     "games": "Games",
     "graphics": "Graphics",
     "hacks": "Hacks",
     "hallOfFame": "Hall of Fame",
     "logout": "Log Out",
-    "misc": "Misc",
+    "misc": "Misc.",
     "models": "Models",
     "mySubmissions": "My Submissions",
     "notifications": "Notifications",
@@ -40,7 +56,7 @@
     "signedInAs": "Signed in as: ",
     "sounds": "Sounds",
     "staff": "Staff CP",
-    "submitAs": "Submit:",
+    "submitAs": "New Submission",
     "submitFile": "Submit File",
     "tutorials": "Tutorials",
     "twitter": "Twitter",
@@ -50,7 +66,7 @@
     "games": "Games",
     "graphics": "Graphics",
     "hacks": "Hacks",
-    "misc": "Misc",
+    "misc": "Misc.",
     "models": "Models",
     "sounds": "Sounds",
     "tutorials": "Tutorials"

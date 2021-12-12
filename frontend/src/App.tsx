@@ -31,9 +31,7 @@ export default function App() {
                 <Box display="flex" flexDirection="column" flex="1 0 auto">
                   <Routes />
                 </Box>
-                <Box>
-                  <Footer />
-                </Box>
+                <Footer />
               </Box>
             </UserProvider>
           </ErrorProvider>

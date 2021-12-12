@@ -56,8 +56,7 @@ export default function NavUserDesktop() {
   // Output
   return (
     <Grid item container alignContent="center" xs="auto">
-      {!loading ? (
-        login && user ? (
+      {login && user ? (
           // logged in
           <Grid container item>
             <Grid container item alignContent="center" xs="auto">
@@ -84,12 +83,18 @@ export default function NavUserDesktop() {
             </Grid>
             <Grid container item xs="auto">
               <IconButton id="user-button" onClick={handleOpenMenu}>
+                {!loading ? (
+                  // The user avatar
                 <Avatar
                   sx={styles.navAvatar}
                   variant="rounded"
                   alt={username}
                   src={avatar}
                 />
+                ) : (
+                  // If the avatar is loading show the loading icon in place of it
+                  <CircularProgress size={32} />
+                )}
               </IconButton>
               <LumaMenu
                 id="user-menu"
@@ -116,7 +121,7 @@ export default function NavUserDesktop() {
                     </Box>
                   </Grid>
                   <Grid item>
-                    <Box my={1}>
+                    <Box mt={1} mb={2}>
                       <Avatar
                         sx={styles.navAvatarMenu}
                         alt={username}
@@ -148,6 +153,8 @@ export default function NavUserDesktop() {
         ) : (
           // guest
           <>
+          {!loading ? (
+            <>
             <Button
               color="secondary"
               variant="contained"
@@ -166,12 +173,14 @@ export default function NavUserDesktop() {
             >
               {t('user.register')}
             </Button>
+            </>
+          ) : (
+            // Only show the loading icon when the page is loading
+            // and when we are unsure if the user is logged in or not
+            <CircularProgress size={32} />
+          )}
           </>
-        )
-      ) : (
-        // loading
-        <CircularProgress size={32} />
-      )}
+        )}
     </Grid>
   );
 

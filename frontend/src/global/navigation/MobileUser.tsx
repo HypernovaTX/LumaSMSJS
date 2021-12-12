@@ -59,17 +59,22 @@ export default function NavUserMobile() {
   return (
     <Grid item container alignContent="center" xs="auto">
       <Grid item container xs="auto">
-        {!loading ? (
-          login && user ? (
+        {login && user ? (
             // logged in
             <Box>
               <IconButton id="user-button" onClick={handleOpenMenu}>
+              {!loading ? (
+                  // The user avatar
                 <Avatar
                   sx={styles.navAvatarMobile}
                   variant="rounded"
                   alt={username}
                   src={avatar}
                 />
+                ) : (
+                  // If the avatar is loading show the loading icon in place of it
+                  <CircularProgress size={32} />
+                )}
               </IconButton>
               <LumaDrawer
                 anchor="right"
@@ -94,6 +99,16 @@ export default function NavUserMobile() {
                         {username}
                       </Typography>
                     </Grid>
+                  </Grid>
+                <Grid container justifyContent="center">
+                    <Box my={1}>
+                      <Avatar
+                        sx={styles.navAvatarMenuMobile}
+                        alt={username}
+                        src={avatar}
+                        variant="rounded"
+                      />
+                    </Box>
                   </Grid>
                   <Box position="absolute" top={-12} right={-12}>
                     <IconButton
@@ -159,6 +174,8 @@ export default function NavUserMobile() {
             </Box>
           ) : (
             // guest
+            <>
+            {!loading ? (
             <Box>
               <IconButton
                 id="user-button"
@@ -202,11 +219,13 @@ export default function NavUserMobile() {
                 </A>
               </LumaMenu>
             </Box>
-          )
-        ) : (
-          // loading
-          <CircularProgress size={32} />
-        )}
+            ) : (
+              // Only show the loading icon when the page is loading
+              // and when we are unsure if the user is logged in or not
+              <CircularProgress size={32} />
+            )}
+            </>
+          )}
       </Grid>
     </Grid>
   );

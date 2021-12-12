@@ -25,7 +25,7 @@ const theme = createTheme({
     info: {
       main: '#fff266',
     },
-    divider: 'rgba(255,255,255,0.25)',
+    divider: 'rgba(255, 255, 255, 0.25)',
   },
   shape: {
     borderRadius: 8,
@@ -62,8 +62,8 @@ export const styles: { [key: string]: React.CSSProperties } = {
     border: `1px solid ${theme.palette.primary.main}`,
   },
   navAvatarMenu: {
-    width: 128,
-    height: 128,
+    width: 112,
+    height: 112,
     backgroundColor: theme.palette.primary.dark,
     border: `2px solid ${theme.palette.primary.dark}`,
   },
@@ -72,6 +72,12 @@ export const styles: { [key: string]: React.CSSProperties } = {
     height: 36,
     backgroundColor: theme.palette.primary.main,
     border: `1px solid ${theme.palette.primary.main}`,
+  },
+  navAvatarMenuMobile: {
+    width: 96,
+    height: 96,
+    backgroundColor: theme.palette.primary.main,
+    border: `2px solid ${theme.palette.primary.main}`,
   },
   placeholderContainer: {
     background: `linear-gradient(0deg, rgba(0,0,0,0.75) 0%, rgba(0,0,0,0.75) 100%), url(${image})`,
