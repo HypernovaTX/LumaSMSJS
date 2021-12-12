@@ -3,12 +3,7 @@ import { noop } from 'lodash-es';
 
 import { PermissionKind, User } from 'schema/userSchema';
 import { ContextProps } from 'schema';
-import {
-  useAPI_verify,
-  useAPI_image,
-  useAPI_permissions,
-  useAPI_userLogout,
-} from 'api';
+import { useAPI_verify, useAPI_image, useAPI_permissions } from 'api';
 import { isError } from 'lib';
 
 // Init context
@@ -19,7 +14,7 @@ type UserContextType = {
   loading: boolean;
   loadUser?: () => void;
   login: boolean;
-  logout: () => void;
+  logoutError?: boolean;
   permission: PermissionKind[];
   user?: User;
 };
@@ -30,7 +25,6 @@ const defaultUserContext: UserContextType = {
   clearUser: noop,
   loading: false,
   login: false,
-  logout: noop,
   permission: [],
 };
 export const UserContext = createContext<UserContextType>(defaultUserContext);
@@ -38,6 +32,7 @@ export const UserContext = createContext<UserContextType>(defaultUserContext);
 // Main Provider
 export default function UserProvider(props: ContextProps) {
   // State
+
   const [avatar, setAvatar] = useState<string>();
   const [login, setLogin] = useState(false);
   const [permission, setPermission] = useState<PermissionKind[]>([]);
@@ -79,16 +74,9 @@ export default function UserProvider(props: ContextProps) {
       clearUser();
     },
   });
-  // - User log out
-  const { loading: loadL, execute: logout } = useAPI_userLogout({
-    skip: true,
-    onComplete: () => {
-      clearUser();
-    },
-  });
 
   // Memo
-  const loading = useMemo(loadingMemo, [loadA, loadP, loadU, loadL]);
+  const loading = useMemo(loadingMemo, [loadA, loadP, loadU]);
 
   // Output
   return (
@@ -100,7 +88,6 @@ export default function UserProvider(props: ContextProps) {
         loading,
         loadUser: loadUser,
         login,
-        logout,
         permission,
         user,
       }}
@@ -119,7 +106,8 @@ export default function UserProvider(props: ContextProps) {
 
   function clearUser() {
     setLogin(false);
-    setUser({});
+    setUser(undefined);
+    setAvatar(undefined);
     setPermission([]);
   }
 
@@ -129,6 +117,6 @@ export default function UserProvider(props: ContextProps) {
 
   // Memo hoists
   function loadingMemo() {
-    return loadU || loadA || loadP || loadL;
+    return loadU || loadA || loadP;
   }
 }

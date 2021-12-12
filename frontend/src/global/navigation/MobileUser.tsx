@@ -57,7 +57,7 @@ export default function NavUserMobile() {
       {!loading ? (
         login && user ? (
           // logged in
-          <Grid container xs="auto">
+          <Grid item container xs="auto">
             <IconButton id="user-button" onClick={handleOpenMenu}>
               <Avatar
                 sx={styles.navAvatarMobile}

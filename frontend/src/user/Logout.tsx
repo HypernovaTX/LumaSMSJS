@@ -1,7 +1,8 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useContext, useEffect } from 'react';
 import { Box, CircularProgress, Typography } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 
+import { useAPI_userLogout } from 'api';
 import { styles } from 'MUIConfig';
 import { GlobalContext } from 'global/GlobalContext';
 import { UserContext } from 'user/UserContext';
@@ -12,16 +13,29 @@ export default function Logout() {
   const { t } = useTranslation();
   useSetTitle(t('title.logout'));
 
-  // State
-  const [started, setStarted] = useState(false);
-
   // Context
-  const { logout, user, clearUser } = useContext(UserContext);
-  const { isMobile, nativateToPrevious } = useContext(GlobalContext);
+  const { clearUser } = useContext(UserContext);
+  const { isMobile, nativateToPrevious, toast } = useContext(GlobalContext);
+
+  // Data
+  // - User log out
+  const { execute: logout } = useAPI_userLogout({
+    skip: true,
+    onComplete: () => {
+      clearUser();
+      setTimeout(() => {
+        nativateToPrevious();
+      }, 2000);
+    },
+    onError: (err) => {
+      toast(err.message, 'error');
+      nativateToPrevious();
+    },
+  });
 
   // Effects
-  useEffect(initEffect, [logout, started]);
-  useEffect(signOffEffect, [clearUser, nativateToPrevious, user]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(initEffect, []);
 
   // Output
   return (
@@ -55,14 +69,6 @@ export default function Logout() {
 
   // Effect hoists
   function initEffect() {
-    if (started) return;
-    setStarted(true);
     logout();
-  }
-
-  function signOffEffect() {
-    if (user) return;
-    clearUser();
-    nativateToPrevious();
   }
 }
