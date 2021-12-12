@@ -89,18 +89,18 @@ export default function NavUserMobile() {
                       <Typography
                         align="center"
                         fontWeight={600}
-                        sx={{ overflowWrap: 'break-word', maxWidth: '20ch' }}
+                        sx={{ overflowWrap: 'break-word', maxWidth: '16ch' }}
                       >
                         {username}
                       </Typography>
                     </Grid>
                   </Grid>
-                  <Box position="absolute" top="0" right="0">
+                  <Box position="absolute" top={-12} right={-12}>
                     <IconButton
                       onClick={handleCloseMenu}
                       style={{ color: theme.palette.primary.contrastText }}
                     >
-                      <Close />
+                      <Close style={{ width: 32, height: 32 }} />
                     </IconButton>
                   </Box>
                 </Box>
