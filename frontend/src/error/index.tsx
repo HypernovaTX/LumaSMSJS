@@ -6,6 +6,7 @@ import { LumaButton } from 'components';
 import { ErrorContext } from 'error/ErrorContext';
 import { GlobalContext } from 'global/GlobalContext';
 import { styles } from 'MUIConfig';
+import routes from 'route.config';
 
 export default function Error() {
   // Custom hooks
@@ -41,7 +42,7 @@ export default function Error() {
           </Box>
           <Box mx={2} my={1}>
             <LumaButton
-              onClick={() => navigate('/')}
+              onClick={() => navigate(routes._index)}
               variant="contained"
               size="large"
             >

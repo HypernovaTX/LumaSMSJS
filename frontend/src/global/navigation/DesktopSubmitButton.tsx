@@ -42,9 +42,12 @@ export default function SubmitButtonDesktop() {
         <ExpandMore fontSize="small" />
       </Box>
       <LumaToolTip title={`${t('nav.submitFile')}`}>
-        <IconButton id="submit-button" onClick={handleOpenMenu}>
+        <IconButton
+          id="submit-button"
+          onClick={handleOpenMenu}
+          style={{ color: contrastText }}
+        >
           <Box
-            color={contrastText}
             display="flex"
             flexDirection="column"
             alignItems="center"

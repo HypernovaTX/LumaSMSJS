@@ -15,14 +15,15 @@ import {
   PopoverOrigin,
   Typography,
 } from '@mui/material';
-import { Login, PersonAdd } from '@mui/icons-material';
+import { Login, NotificationsNone, PersonAdd } from '@mui/icons-material';
 
+import { A, LumaDivider, LumaMenu, LumaToolTip } from 'components';
 import { GlobalContext } from 'global/GlobalContext';
-import { A, LumaDivider, LumaMenu } from 'components';
-import theme, { styles } from 'MUIConfig';
-import { UserContext } from 'user/UserContext';
-import SubmitButtonDesktop from 'global/navigation/DesktopSubmitButton';
 import useUserOptions from 'global/navigation/ConfigUser';
+import SubmitButtonDesktop from 'global/navigation/DesktopSubmitButton';
+import theme, { styles } from 'MUIConfig';
+import routes from 'route.config';
+import { UserContext } from 'user/UserContext';
 
 const anchorOrigin: PopoverOrigin = {
   vertical: 'bottom',
@@ -59,6 +60,25 @@ export default function NavUserDesktop() {
         login && user ? (
           // logged in
           <Grid container item>
+            <Grid container item alignContent="center" xs="auto">
+              <LumaToolTip title={`${t('nav.notifications')}`}>
+                <IconButton
+                  id="submit-button"
+                  onClick={() => navigate(routes.profileNotifications)}
+                  style={{ color: contrastText }}
+                >
+                  <Box
+                    width={32}
+                    height={32}
+                    display="flex"
+                    justifyContent="center"
+                    alignItems="center"
+                  >
+                    <NotificationsNone style={{ width: 26, height: 26 }} />
+                  </Box>
+                </IconButton>
+              </LumaToolTip>
+            </Grid>
             <Grid container item alignContent="center" xs="auto">
               <SubmitButtonDesktop />
             </Grid>
@@ -133,7 +153,7 @@ export default function NavUserDesktop() {
               variant="contained"
               startIcon={<Login />}
               sx={{ mr: 1, height: '2rem' }}
-              onClick={() => navigate('/login')}
+              onClick={() => navigate(routes.userLogin)}
             >
               {t('user.login')}
             </Button>
@@ -142,7 +162,7 @@ export default function NavUserDesktop() {
               variant="outlined"
               startIcon={<PersonAdd />}
               sx={{ ml: 1, height: '2rem' }}
-              onClick={() => navigate('/register')}
+              onClick={() => navigate(routes.userRegister)}
             >
               {t('user.register')}
             </Button>

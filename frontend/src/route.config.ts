@@ -12,6 +12,7 @@ const routes = {
   profile: '/profile',
   profileDM: '/profile/messages',
   profileFavorites: '/profile/favorites',
+  profileNotifications: '/profile/notifications',
   profileSettings: '/profile/preferences',
   profileSubmissions: '/profile/uploads',
   profileSubmit: '/profile/submit',
