@@ -58,5 +58,10 @@ const routes = {
   userLogin: '/login',
   userLogout: '/logout',
   userRegister: '/register',
+
+  // URLs
+  urlDiscord: 'https://discord.gg/jchgfw5',
+  urlTwitter: 'https://twitter.com/OfficialMFGG',
+  urlWiki: 'https://wiki.mfgg.net/',
 } as const;
 export default routes;

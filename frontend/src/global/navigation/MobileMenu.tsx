@@ -42,14 +42,13 @@ export default function NavMenuMobile(props: NavMobileType) {
           </LumaAccordionItem>
           <LumaAccordionContent>
             {m.items.map((i, k2) => (
-              <A url={i.external || i.navigate} key={k2} color={contrastText}>
-                <MenuItem
-                  onClick={
-                    i.external
-                      ? () => handleOpenExternal(i.external)
-                      : handleCloseMenu
-                  }
-                >
+              <A
+                url={i.url}
+                key={k2}
+                color={contrastText}
+                newWindow={i.newWindow}
+              >
+                <MenuItem onClick={handleCloseMenu}>
                   <Box my={1} display="inline-flex">
                     <ListItemIcon>{i.icon}</ListItemIcon>
                     <ListItemText>{t(`nav.${i.id}`)}</ListItemText>
@@ -66,9 +65,5 @@ export default function NavMenuMobile(props: NavMobileType) {
   // Handles
   function handleCloseMenu() {
     props.close();
-  }
-  function handleOpenExternal(url: string) {
-    window.open(url, '_blank');
-    handleCloseMenu();
   }
 }

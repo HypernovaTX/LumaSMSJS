@@ -5,6 +5,7 @@ import { styled } from '@mui/material/styles';
 import theme, { styles } from 'MUIConfig';
 import { GlobalContext } from 'global/GlobalContext';
 
+const httpRegExp = /^(http|https):\/\//gm;
 const URLTxt = styled(Box)({
   '&': {
     ...styles.transition,
@@ -27,6 +28,7 @@ type URLProps = {
   color?: string;
   disabled?: boolean;
   url: string;
+  newWindow?: boolean;
 };
 export function A(props: URLProps) {
   // Const
@@ -37,7 +39,14 @@ export function A(props: URLProps) {
 
   // Callbacks
   const href = () => {
-    if (!props.disabled && !props.blocked) navigate(props.url);
+    const { url, newWindow } = props;
+    if (!props.disabled && !props.blocked) {
+      if (url.match(httpRegExp)) {
+        window.open(url, newWindow ? '_blank' : '_self');
+      } else {
+        navigate(url);
+      }
+    }
   };
   const clearA = (e: React.MouseEvent<HTMLAnchorElement, MouseEvent>) => {
     e.preventDefault();
