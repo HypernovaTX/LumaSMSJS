@@ -1,5 +1,8 @@
-import { Box, Container, Grid, Typography, Link } from '@mui/material';
+import React from 'react';
+import { Box, Container, Grid, Typography } from '@mui/material';
 import { useTranslation } from 'react-i18next';
+
+import { A } from 'components';
 
 import theme from 'MUIConfig';
 
@@ -20,27 +23,24 @@ export default function Footer() {
             <Typography align="center">&nbsp;</Typography>
             <Typography align="center">
               {t('footer.copyright', { year })}
-              <Link color="secondary" href="https://github.com/HypernovaTX">Hypernova</Link> 
+              <A url="https://github.com/HypernovaTX">Hypernova</A> 
               {' & '}
-              <Link color="secondary" href="https://mors-games.com/">Mors</Link>
+              <A url="https://mors-games.com/">Mors</A>
             </Typography>
-            <Typography align="center">{t('footer.easterEgg')}</Typography>
           </Grid>
           <Grid item xs={6} md={3}>  
-            <Typography align="center"><Link color="secondary" href="#">{t('footer.links.about')}</Link></Typography>
-            <Typography align="center"><Link color="secondary" href="#">{t('footer.links.faq')}</Link></Typography>
-            <Typography align="center"><Link color="secondary" href="#">{t('footer.links.rules')}</Link></Typography>
-            <Typography align="center"><Link color="secondary" href="#">{t('footer.links.staff')}</Link></Typography>
-            <Typography align="center"><Link color="secondary" href="#">{t('footer.links.affiliates')}</Link></Typography>
-            <Typography align="center"><Link color="secondary" href="#">{t('footer.links.patcher')}</Link></Typography>
+            <Typography align="center"><A url="#">{t('footer.links.about')}</A></Typography>
+            <Typography align="center"><A url="#">{t('footer.links.faq')}</A></Typography>
+            <Typography align="center"><A url="#">{t('footer.links.rules')}</A></Typography>
+            <Typography align="center"><A url="#">{t('footer.links.staff')}</A></Typography>
+            <Typography align="center"><A url="#">{t('footer.links.affiliates')}</A></Typography>
           </Grid>
           <Grid item xs={6} md={3}>
-            <Typography align="center"><Link color="secondary" href="#">{t('footer.links.newsArchive')}</Link></Typography>
-            <Typography align="center"><Link color="secondary" href="http://wiki.mfgg.net/">{t('footer.links.wiki')}</Link></Typography>
-            <Typography align="center"><Link color="secondary" href="http://forums.mfgg.net/">{t('footer.links.forums')}</Link></Typography>
-            <Typography align="center"><Link color="secondary" href="#">{t('footer.links.privacy')}</Link></Typography>
-            <Typography align="center"><Link color="secondary" href="#">{t('footer.links.cookie')}</Link></Typography>
-            <Typography align="center"><Link color="secondary" href="#">{t('footer.links.contact')}</Link></Typography>
+            <Typography align="center"><A url="#">{t('footer.links.newsArchive')}</A></Typography>
+            <Typography align="center"><A url="http://wiki.mfgg.net/">{t('footer.links.wiki')}</A></Typography>
+            <Typography align="center"><A url="#">{t('footer.links.privacy')}</A></Typography>
+            <Typography align="center"><A url="#">{t('footer.links.cookie')}</A></Typography>
+            <Typography align="center"><A url="#">{t('footer.links.contact')}</A></Typography>
           </Grid>
         </Grid>
       </Container>

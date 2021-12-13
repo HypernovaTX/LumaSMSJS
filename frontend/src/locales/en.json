@@ -10,17 +10,14 @@
   "footer": {
     "disclaimer": "MFGG does not own any user-submitted content, which is © the submitter or a third party. All remaining material is © MFGG. MFGG is a non-profit site ran by passionate fans, with no affiliation to Nintendo.",
     "copyright": "MFGG is powered by LumaSMS, © 2021-{{year}}. Made by: ",
-    "easterEgg": "If you're reading this, you're breathing manually now. :^)",
     "links": {
       "about": "About MFGG",
       "faq": "Frequently Asked Questions",
       "rules": "Site Rules",
-      "staff": "The Staff",
+      "staff": "Staff",
       "affiliates": "Affiliates",
-      "patcher": "BPS Patcher",
       "newsArchive": "News Archive",
       "wiki": "Legacy Wiki",
-      "forums": "MyBB Forums Archive",
       "privacy": "Privacy Policy",
       "cookie": "Cookie Policy",
       "contact": "Contact Us"
