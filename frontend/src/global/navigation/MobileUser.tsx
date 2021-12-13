@@ -63,18 +63,18 @@ export default function NavUserMobile() {
           // logged in
           <Box>
             <IconButton id="user-button" onClick={handleOpenMenu}>
-            {!loading ? (
-              // The user avatar
-              <Avatar
-                sx={styles.navAvatarMobile}
-                variant="rounded"
-                alt={username}
-                src={avatar}
-              />
-            ) : (
-              // If the avatar is loading show the loading icon in place of it
-              <CircularProgress size={32} />
-            )}
+              {!loading ? (
+                // The user avatar
+                <Avatar
+                  sx={styles.navAvatarMobile}
+                  variant="rounded"
+                  alt={username}
+                  src={avatar}
+                />
+              ) : (
+                // If the avatar is loading show the loading icon in place of it
+                <CircularProgress size={32} />
+              )}
             </IconButton>
             <LumaDrawer
               anchor="right"
@@ -100,7 +100,7 @@ export default function NavUserMobile() {
                     </Typography>
                   </Grid>
                 </Grid>
-              <Grid container justifyContent="center">
+                <Grid container justifyContent="center">
                   <Box my={1}>
                     <Avatar
                       sx={styles.navAvatarMenuMobile}
@@ -176,49 +176,53 @@ export default function NavUserMobile() {
           // guest
           <>
             {!loading ? (
-            <Box>
-              <IconButton
-                id="user-button"
-                onClick={handleOpenMenu}
-                style={{ color: theme.palette.primary.contrastText }}
-              >
-                <AccountCircle style={{ width: 40, height: 40 }} />
-              </IconButton>
-              <LumaMenu
-                id="user-menu"
-                aria-labelledby="user-button"
-                anchorEl={anchorEl}
-                open={open}
-                onClose={handleCloseMenu}
-                anchorOrigin={anchorOrigin}
-                transformOrigin={transformOrigin}
-              >
-                <A url={routes.userLogin} color={contrastText}>
-                  <MenuItem onClick={handleCloseMenu}>
-                    <Box my={1} display="inline-flex">
-                      <ListItemIcon>
-                        <Login
-                          style={{ color: theme.palette.primary.contrastText }}
-                        />
-                      </ListItemIcon>
-                      <ListItemText>{t('user.login')}</ListItemText>
-                    </Box>
-                  </MenuItem>
-                </A>
-                <A url={routes.userRegister} color={contrastText}>
-                  <MenuItem onClick={handleCloseMenu}>
-                    <Box my={1} display="inline-flex">
-                      <ListItemIcon>
-                        <PersonAdd
-                          style={{ color: theme.palette.primary.contrastText }}
-                        />
-                      </ListItemIcon>
-                      <ListItemText>{t('user.register')}</ListItemText>
-                    </Box>
-                  </MenuItem>
-                </A>
-              </LumaMenu>
-            </Box>
+              <Box>
+                <IconButton
+                  id="user-button"
+                  onClick={handleOpenMenu}
+                  style={{ color: theme.palette.primary.contrastText }}
+                >
+                  <AccountCircle style={{ width: 40, height: 40 }} />
+                </IconButton>
+                <LumaMenu
+                  id="user-menu"
+                  aria-labelledby="user-button"
+                  anchorEl={anchorEl}
+                  open={open}
+                  onClose={handleCloseMenu}
+                  anchorOrigin={anchorOrigin}
+                  transformOrigin={transformOrigin}
+                >
+                  <A url={routes.userLogin} color={contrastText}>
+                    <MenuItem onClick={handleCloseMenu}>
+                      <Box my={1} display="inline-flex">
+                        <ListItemIcon>
+                          <Login
+                            style={{
+                              color: theme.palette.primary.contrastText,
+                            }}
+                          />
+                        </ListItemIcon>
+                        <ListItemText>{t('user.login')}</ListItemText>
+                      </Box>
+                    </MenuItem>
+                  </A>
+                  <A url={routes.userRegister} color={contrastText}>
+                    <MenuItem onClick={handleCloseMenu}>
+                      <Box my={1} display="inline-flex">
+                        <ListItemIcon>
+                          <PersonAdd
+                            style={{
+                              color: theme.palette.primary.contrastText,
+                            }}
+                          />
+                        </ListItemIcon>
+                        <ListItemText>{t('user.register')}</ListItemText>
+                      </Box>
+                    </MenuItem>
+                  </A>
+                </LumaMenu>
+              </Box>
             ) : (
               // Only show the loading icon when the page is loading
               // and when we are unsure if the user is logged in or not

@@ -50,18 +50,8 @@ export default function NavMenuDesktop() {
             >
               {m.items.map((i, k2) => (
                 <Box key={k2}>
-                  <A
-                    url={i.external || i.navigate}
-                    color={contrastText}
-                    blocked={!!i.external}
-                  >
-                    <MenuItem
-                      onClick={
-                        i.external
-                          ? () => handleOpenExternal(i.external)
-                          : handleCloseMenu
-                      }
-                    >
+                  <A url={i.url} color={contrastText} newWindow={i.newWindow}>
+                    <MenuItem onClick={handleCloseMenu}>
                       <ListItemIcon>{i.icon}</ListItemIcon>
                       <ListItemText>{t(`nav.${i.id}`)}</ListItemText>
                     </MenuItem>
@@ -80,9 +70,5 @@ export default function NavMenuDesktop() {
   function handleCloseMenu() {
     setOpen(undefined);
     setAnchorEl(null);
-  }
-  function handleOpenExternal(url: string) {
-    window.open(url, '_blank');
-    handleCloseMenu();
   }
 }
