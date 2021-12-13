@@ -2,15 +2,7 @@ import React, { useContext, useEffect, useMemo, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 
-import {
-  Box,
-  Container,
-  Grid,
-  ListItemIcon,
-  ListItemText,
-  MenuItem,
-} from '@mui/material';
-import { Person, Settings } from '@mui/icons-material';
+import { Box, Container, Grid, ListItemText, MenuItem } from '@mui/material';
 
 import { useAPI_userUpdate } from 'api';
 import { A, LumaText } from 'components';
@@ -25,13 +17,32 @@ import UserProfileSettings from './UserProfile';
 const { contrastText } = theme.palette.primary;
 const menuOptions = [
   {
-    id: 'profile',
-    icon: <Person style={{ color: contrastText }} />,
+    id: 'main',
     text: 'user.profile',
   },
   {
+    id: 'avatar',
+    text: 'user.avatar',
+  },
+  {
+    id: 'banner',
+    text: 'user.banner',
+  },
+  {
+    id: 'username',
+    text: 'user.username',
+  },
+  {
+    id: 'email',
+    text: 'user.email',
+  },
+  {
+    id: 'password',
+    text: 'user.password',
+  },
+
+  {
     id: 'site',
-    icon: <Settings style={{ color: contrastText }} />,
     text: 'user.siteSettings',
   },
 ] as const;
@@ -49,7 +60,7 @@ export default function UserSettings() {
   const { isMobile } = useContext(GlobalContext);
 
   // States
-  const [kind, setKind] = useState<SettingMenuItems>('profile');
+  const [kind, setKind] = useState<SettingMenuItems>('main');
   const [userProfile, setUserProfile] = useState<User>();
 
   // Data
@@ -98,7 +109,6 @@ export default function UserSettings() {
                     <A url={url} key={k} color={contrastText}>
                       <MenuItem>
                         <Box my={1} display="inline-flex">
-                          <ListItemIcon>{i.icon}</ListItemIcon>
                           <ListItemText>{t(i.text)}</ListItemText>
                         </Box>
                       </MenuItem>
@@ -125,7 +135,7 @@ export default function UserSettings() {
   // Memo hoist
   function childComponentMemo() {
     switch (kind) {
-      case 'profile':
+      case 'main':
         return <UserProfileSettings user={user} update={setUser} />;
       case 'site':
         return null;

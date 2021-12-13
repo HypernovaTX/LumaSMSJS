@@ -14,18 +14,19 @@ export const LumaInput = styled(TextField)({
   '& .MuiInput-underline:after': {
     borderBottomColor: theme.palette.primary.light,
   },
-  '& input': {
+  '& input, & textarea': {
     zIndex: 1,
     color: theme.palette.primary.contrastText,
   },
-  '& input:Disabled': {
+  '& input:disabled, & textarea:disabled': {
     cursor: 'not-allowed',
   },
-  '& input:-internal-autofill-selected, & input:-webkit-autofill': {
-    boxShadow: `0 0 0 50px ${theme.palette.primary.main} inset`,
-    textFillColor: theme.palette.primary.contrastText,
-    zIndex: 1,
-  },
+  '& input:-internal-autofill-selected, & input:-webkit-autofill, & textarea:-internal-autofill-selected, & textarea:-webkit-autofill':
+    {
+      boxShadow: `0 0 0 50px ${theme.palette.primary.main} inset`,
+      textFillColor: theme.palette.primary.contrastText,
+      zIndex: 1,
+    },
   '& .MuiOutlinedInput-root': {
     transition: '200ms linear all',
     '& fieldset': {
@@ -33,13 +34,13 @@ export const LumaInput = styled(TextField)({
       zIndex: 0,
       color: theme.palette.primary.light,
       border: 'none',
-      backgroundColor: theme.palette.primary.dark,
+      backgroundColor: theme.palette.primary.main,
     },
     '&:hover fieldset': {
       backgroundColor: theme.palette.primary.main,
     },
     '&.Mui-focused fieldset': {
-      color: theme.palette.primary.light,
+      color: theme.palette.primary.contrastText,
       backgroundColor: theme.palette.primary.main,
     },
   },

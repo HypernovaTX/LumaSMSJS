@@ -80,7 +80,11 @@
     "settings": "Preferences"
   },
   "user": {
+    "avatar": "Avatar",
+    "banner": "Banner",
+    "bio": "Bio",
     "dontHaveAccount": "Don't have an account?",
+    "email": "Email",
     "forget": "Forgot your username and/or password?",
     "login": "Sign In",
     "logout": "Log Out",
@@ -91,6 +95,6 @@
     "remember": "Remember Me",
     "signup": "Sign up!",
     "siteSettings": "Site Settings",
-    "username": "username"
+    "username": "Username"
   }
 }
