@@ -16,6 +16,7 @@ type UserContextType = {
   login: boolean;
   logoutError?: boolean;
   permission: PermissionKind[];
+  setUser: (u: User) => void;
   user?: User;
 };
 const defaultUserContext: UserContextType = {
@@ -26,6 +27,7 @@ const defaultUserContext: UserContextType = {
   loading: false,
   login: false,
   permission: [],
+  setUser: noop,
 };
 export const UserContext = createContext<UserContextType>(defaultUserContext);
 
@@ -89,6 +91,7 @@ export default function UserProvider(props: ContextProps) {
         loadUser: loadUser,
         login,
         permission,
+        setUser,
         user,
       }}
     >

@@ -7,4 +7,5 @@ export * from './Drawer';
 export * from './Input';
 export * from './Menu';
 export * from './SlideMenu';
+export * from './Text';
 export * from './Tooltip';

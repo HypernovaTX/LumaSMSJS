@@ -48,6 +48,12 @@ export function useAPI_userLogout(p: GetUserLogoutProps) {
   return useSend(payload) as APINoResponse<{}>;
 }
 
+// Update user settings
+export function useAPI_userUpdate(p: UpdateUserProps) {
+  const payload = { ...p, kind: 'patch', url: 'user' } as APIProp;
+  return useSend(payload) as APINoResponse<{}>;
+}
+
 // Body Types
 type GetUserBody = { id: number };
 interface GetUserProps extends APIPropTemplate {
@@ -55,11 +61,11 @@ interface GetUserProps extends APIPropTemplate {
   onComplete?: OnComplete<User>;
 }
 
-type GetUserListBody = {
+interface GetUserListBody {
   page?: number;
   count?: number;
   filter?: [string, string][];
-};
+}
 interface GetUserListProps extends APIPropTemplate {
   body: GetUserListBody;
   onComplete?: OnComplete<User>;
@@ -72,16 +78,25 @@ interface GetUserPermitProps extends Omit<APIPropTemplate, 'body'> {
   onComplete?: OnComplete<PermissionKind[]>;
 }
 
-type GetUserLoginBody = {
+interface GetUserLoginBody {
   username: string;
   password: string;
   remember?: boolean;
-};
+}
 interface GetUserLoginProps extends APIPropTemplate {
   body: GetUserLoginBody;
   onComplete?: OnComplete<User>;
 }
 
 interface GetUserLogoutProps extends Omit<APIPropTemplate, 'body'> {
+  onComplete?: OnComplete<null>;
+}
+
+interface UpdateUserBody {
+  data: User;
+}
+
+interface UpdateUserProps extends Omit<APIPropTemplate, 'body'> {
+  body: UpdateUserBody;
   onComplete?: OnComplete<null>;
 }

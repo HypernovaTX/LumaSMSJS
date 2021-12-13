@@ -76,7 +76,8 @@
     "error": "Error",
     "login": "Sign In",
     "logoff": "Signing Out",
-    "testPage": "Placeholder Page"
+    "testPage": "Placeholder Page",
+    "settings": "Preferences"
   },
   "user": {
     "dontHaveAccount": "Don't have an account?",
@@ -84,10 +85,12 @@
     "login": "Sign In",
     "logout": "Log Out",
     "logoutMessage": "Signing off...",
+    "profile": "Profile",
     "password": "Password",
     "register": "Register",
     "remember": "Remember Me",
     "signup": "Sign up!",
+    "siteSettings": "Site Settings",
     "username": "username"
   }
 }

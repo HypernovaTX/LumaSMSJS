@@ -31,7 +31,9 @@ const theme = createTheme({
     borderRadius: 8,
   },
   typography: {
-    fontFamily: '"Nunito", "Helvetica", "Arial", sans-serif',
+    fontFamily: '"Lato", "Nunito", "Helvetica", "Arial", sans-serif',
+    fontWeightRegular: 300,
+    fontWeightLight: 100,
   },
 });
 export default theme;
@@ -44,7 +46,7 @@ export const styles: { [key: string]: React.CSSProperties } = {
   bigText: {
     fontWeight: 600,
     textShadow: '2px 2px 10px #000',
-    marginBottom: 8,
+    marginBottom: 16,
   },
   hamburgerBG: {
     position: 'fixed',
