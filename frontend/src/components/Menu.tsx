@@ -15,11 +15,11 @@ export const LumaMenu = (props: MenuProps) => {
     <CustomMenu
       anchorOrigin={{
         vertical: 'bottom',
-        horizontal: 'center',
+        horizontal: 'left',
       }}
       transformOrigin={{
         vertical: 'top',
-        horizontal: 'center',
+        horizontal: 'left',
       }}
       {...props}
     >

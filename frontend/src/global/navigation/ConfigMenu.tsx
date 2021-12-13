@@ -94,7 +94,7 @@ const menu = [
     id: 'community',
     items: [
       {
-        id: 'forums',
+        id: 'discussions',
         icon: <FontAwesomeIcon icon={faComments} color={iconColor} />,
         external: '',
         divider: false,

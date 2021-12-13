@@ -6,7 +6,7 @@ const routes = {
   commonStaff: '/staff',
 
   // Discussion (forums)
-  forum: '/forums',
+  forum: '/discussions',
 
   // Profile (for logged in users)
   profile: '/profile',

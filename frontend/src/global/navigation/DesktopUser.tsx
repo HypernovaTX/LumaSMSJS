@@ -56,121 +56,130 @@ export default function NavUserDesktop() {
   // Output
   return (
     <Grid item container alignContent="center" xs="auto">
-      {!loading ? (
-        login && user ? (
-          // logged in
-          <Grid container item>
-            <Grid container item alignContent="center" xs="auto">
-              <LumaToolTip title={`${t('nav.notifications')}`}>
-                <IconButton
-                  id="submit-button"
-                  onClick={() => navigate(routes.profileNotifications)}
-                  style={{ color: contrastText }}
+      {login && user ? (
+        // logged in
+        <Grid container item>
+          <Grid container item alignContent="center" xs="auto">
+            <LumaToolTip title={`${t('nav.notifications')}`}>
+              <IconButton
+                id="submit-button"
+                onClick={() => navigate(routes.profileNotifications)}
+                style={{ color: contrastText }}
+              >
+                <Box
+                  width={32}
+                  height={32}
+                  display="flex"
+                  justifyContent="center"
+                  alignItems="center"
                 >
-                  <Box
-                    width={32}
-                    height={32}
-                    display="flex"
-                    justifyContent="center"
-                    alignItems="center"
-                  >
-                    <NotificationsNone style={{ width: 26, height: 26 }} />
-                  </Box>
-                </IconButton>
-              </LumaToolTip>
-            </Grid>
-            <Grid container item alignContent="center" xs="auto">
-              <SubmitButtonDesktop />
-            </Grid>
-            <Grid container item xs="auto">
-              <IconButton id="user-button" onClick={handleOpenMenu}>
+                  <NotificationsNone style={{ width: 26, height: 26 }} />
+                </Box>
+              </IconButton>
+            </LumaToolTip>
+          </Grid>
+          <Grid container item alignContent="center" xs="auto">
+            <SubmitButtonDesktop />
+          </Grid>
+          <Grid container item xs="auto">
+            <IconButton id="user-button" onClick={handleOpenMenu}>
+              {!loading ? (
+                // The user avatar
                 <Avatar
                   sx={styles.navAvatar}
                   variant="rounded"
                   alt={username}
                   src={avatar}
                 />
-              </IconButton>
-              <LumaMenu
-                id="user-menu"
-                aria-labelledby="user-button"
-                anchorEl={anchorEl}
-                open={open}
-                onClose={handleCloseMenu}
-                anchorOrigin={anchorOrigin}
-                transformOrigin={transformOrigin}
-              >
-                {/* Info */}
-                <Grid container direction="column" alignItems="center">
-                  <Grid item>
-                    <Box mx={2} textAlign="center">
-                      <Typography variant="body2">
-                        {t('nav.signedInAs')}
-                      </Typography>
-                      <Typography
-                        fontWeight={600}
-                        sx={{ overflowWrap: 'break-word', maxWidth: 160 }}
-                      >
-                        {username}
-                      </Typography>
-                    </Box>
-                  </Grid>
-                  <Grid item>
-                    <Box my={1}>
-                      <Avatar
-                        sx={styles.navAvatarMenu}
-                        alt={username}
-                        src={avatar}
-                        variant="rounded"
-                      />
-                    </Box>
-                  </Grid>
+              ) : (
+                // If the avatar is loading show the loading icon in place of it
+                <CircularProgress size={32} />
+              )}
+            </IconButton>
+            <LumaMenu
+              id="user-menu"
+              aria-labelledby="user-button"
+              anchorEl={anchorEl}
+              open={open}
+              onClose={handleCloseMenu}
+              anchorOrigin={anchorOrigin}
+              transformOrigin={transformOrigin}
+            >
+              {/* Info */}
+              <Grid container direction="column" alignItems="center">
+                <Grid item>
+                  <Box mx={2} textAlign="center">
+                    <Typography variant="body2">
+                      {t('nav.signedInAs')}
+                    </Typography>
+                    <Typography
+                      fontWeight={600}
+                      sx={{ overflowWrap: 'break-word', maxWidth: 160 }}
+                    >
+                      {username}
+                    </Typography>
+                  </Box>
                 </Grid>
-                <Divider />
-                {/* Rest of the items */}
-                {userMenu.map((i, k) =>
-                  (!i.staff || (i.staff && checkPermit('acp_access'))) &&
-                  i.showDesktop ? (
-                    <Box key={k}>
-                      <A url={i.url} color={contrastText}>
-                        <MenuItem onClick={handleCloseMenu}>
-                          <ListItemIcon>{i.icon}</ListItemIcon>
-                          <ListItemText>{t(i.translation)}</ListItemText>
-                        </MenuItem>
-                      </A>
-                      {i.divider ? <LumaDivider /> : null}
-                    </Box>
-                  ) : null
-                )}
-              </LumaMenu>
-            </Grid>
+                <Grid item>
+                  <Box mt={1} mb={2}>
+                    <Avatar
+                      sx={styles.navAvatarMenu}
+                      alt={username}
+                      src={avatar}
+                      variant="rounded"
+                    />
+                  </Box>
+                </Grid>
+              </Grid>
+              <Divider />
+              {/* Rest of the items */}
+              {userMenu.map((i, k) =>
+                (!i.staff || (i.staff && checkPermit('acp_access'))) &&
+                i.showDesktop ? (
+                  <Box key={k}>
+                    <A url={i.url} color={contrastText}>
+                      <MenuItem onClick={handleCloseMenu}>
+                        <ListItemIcon>{i.icon}</ListItemIcon>
+                        <ListItemText>{t(i.translation)}</ListItemText>
+                      </MenuItem>
+                    </A>
+                    {i.divider ? <LumaDivider /> : null}
+                  </Box>
+                ) : null
+              )}
+            </LumaMenu>
           </Grid>
-        ) : (
-          // guest
-          <>
-            <Button
-              color="secondary"
-              variant="contained"
-              startIcon={<Login />}
-              sx={{ mr: 1, height: '2rem' }}
-              onClick={() => navigate(routes.userLogin)}
-            >
-              {t('user.login')}
-            </Button>
-            <Button
-              color="secondary"
-              variant="outlined"
-              startIcon={<PersonAdd />}
-              sx={{ ml: 1, height: '2rem' }}
-              onClick={() => navigate(routes.userRegister)}
-            >
-              {t('user.register')}
-            </Button>
-          </>
-        )
+        </Grid>
       ) : (
-        // loading
-        <CircularProgress size={32} />
+        // guest
+        <>
+          {!loading ? (
+            <>
+              <Button
+                color="secondary"
+                variant="contained"
+                startIcon={<Login />}
+                sx={{ mr: 1, height: '2rem' }}
+                onClick={() => navigate(routes.userLogin)}
+              >
+                {t('user.login')}
+              </Button>
+              <Button
+                color="secondary"
+                variant="outlined"
+                startIcon={<PersonAdd />}
+                sx={{ ml: 1, height: '2rem' }}
+                onClick={() => navigate(routes.userRegister)}
+              >
+                {t('user.register')}
+              </Button>
+            </>
+          ) : (
+            // Only show the loading icon when the page is loading
+            // and when we are unsure if the user is logged in or not
+            <CircularProgress size={32} />
+          )}
+        </>
       )}
     </Grid>
   );

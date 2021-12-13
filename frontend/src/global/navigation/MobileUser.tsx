@@ -59,106 +59,123 @@ export default function NavUserMobile() {
   return (
     <Grid item container alignContent="center" xs="auto">
       <Grid item container xs="auto">
-        {!loading ? (
-          login && user ? (
-            // logged in
-            <Box>
-              <IconButton id="user-button" onClick={handleOpenMenu}>
-                <Avatar
-                  sx={styles.navAvatarMobile}
-                  variant="rounded"
-                  alt={username}
-                  src={avatar}
-                />
-              </IconButton>
-              <LumaDrawer
-                anchor="right"
-                open={open}
-                onClose={handleCloseMenu}
-                color={theme.palette.primary.dark}
-              >
-                {/* Info */}
-                <Box mx={2} my={2} position="relative">
-                  <Grid container direction="column">
-                    <Grid item container justifyContent="center" xs={12}>
-                      <Typography variant="body2">
-                        {t('nav.signedInAs')}
-                      </Typography>
-                    </Grid>
-                    <Grid item container justifyContent="center" xs={12}>
-                      <Typography
-                        align="center"
-                        fontWeight={600}
-                        sx={{ overflowWrap: 'break-word', maxWidth: '16ch' }}
-                      >
-                        {username}
-                      </Typography>
-                    </Grid>
+        {login && user ? (
+          // logged in
+          <Box>
+            <IconButton id="user-button" onClick={handleOpenMenu}>
+            {!loading ? (
+              // The user avatar
+              <Avatar
+                sx={styles.navAvatarMobile}
+                variant="rounded"
+                alt={username}
+                src={avatar}
+              />
+            ) : (
+              // If the avatar is loading show the loading icon in place of it
+              <CircularProgress size={32} />
+            )}
+            </IconButton>
+            <LumaDrawer
+              anchor="right"
+              open={open}
+              onClose={handleCloseMenu}
+              color={theme.palette.primary.dark}
+            >
+              {/* Info */}
+              <Box mx={2} my={2} position="relative">
+                <Grid container direction="column">
+                  <Grid item container justifyContent="center" xs={12}>
+                    <Typography variant="body2">
+                      {t('nav.signedInAs')}
+                    </Typography>
                   </Grid>
-                  <Box position="absolute" top={-12} right={-12}>
-                    <IconButton
-                      onClick={handleCloseMenu}
-                      style={{ color: theme.palette.primary.contrastText }}
+                  <Grid item container justifyContent="center" xs={12}>
+                    <Typography
+                      align="center"
+                      fontWeight={600}
+                      sx={{ overflowWrap: 'break-word', maxWidth: '16ch' }}
                     >
-                      <Close style={{ width: 32, height: 32 }} />
-                    </IconButton>
-                  </Box>
-                </Box>
-                {/* Inbox / Notifications */}
-                <Box mx={2} mb={2}>
-                  <Grid container justifyContent="center">
-                    <Grid item xs={5}>
-                      <A url={routes.profileDM}>
-                        <LumaButton
-                          variant="contained"
-                          fullWidth
-                          size="large"
-                          startIcon={<Email />}
-                          onClick={handleCloseMenu}
-                          style={{
-                            paddingRight: 10,
-                          }}
-                        />
-                      </A>
-                    </Grid>
-                    <Grid item xs={1} />
-                    <Grid item xs={5}>
-                      <A url={routes.profileDM}>
-                        <LumaButton
-                          variant="contained"
-                          fullWidth
-                          size="large"
-                          startIcon={<Notifications />}
-                          onClick={handleCloseMenu}
-                          style={{
-                            paddingRight: 10,
-                          }}
-                        />
-                      </A>
-                    </Grid>
+                      {username}
+                    </Typography>
                   </Grid>
+                </Grid>
+              <Grid container justifyContent="center">
+                  <Box my={1}>
+                    <Avatar
+                      sx={styles.navAvatarMenuMobile}
+                      alt={username}
+                      src={avatar}
+                      variant="rounded"
+                    />
+                  </Box>
+                </Grid>
+                <Box position="absolute" top={-12} right={-12}>
+                  <IconButton
+                    onClick={handleCloseMenu}
+                    style={{ color: theme.palette.primary.contrastText }}
+                  >
+                    <Close style={{ width: 32, height: 32 }} />
+                  </IconButton>
                 </Box>
-                {/* Rest of the items */}
-                {userMenu.map((i, k) =>
-                  (!i.staff || (i.staff && checkPermit('acp_access'))) &&
-                  i.showMobile ? (
-                    <Box key={k}>
-                      <A url={i.url} color={contrastText}>
-                        <MenuItem onClick={handleCloseMenu}>
-                          <Box my={1} display="inline-flex">
-                            <ListItemIcon>{i.icon}</ListItemIcon>
-                            <ListItemText>{t(i.translation)}</ListItemText>
-                          </Box>
-                        </MenuItem>
-                      </A>
-                      {i.divider ? <LumaDivider /> : null}
-                    </Box>
-                  ) : null
-                )}
-              </LumaDrawer>
-            </Box>
-          ) : (
-            // guest
+              </Box>
+              {/* Inbox / Notifications */}
+              <Box mx={2} mb={2}>
+                <Grid container justifyContent="center">
+                  <Grid item xs={5}>
+                    <A url={routes.profileDM}>
+                      <LumaButton
+                        variant="contained"
+                        fullWidth
+                        size="large"
+                        startIcon={<Email />}
+                        onClick={handleCloseMenu}
+                        style={{
+                          paddingRight: 10,
+                        }}
+                      />
+                    </A>
+                  </Grid>
+                  <Grid item xs={1} />
+                  <Grid item xs={5}>
+                    <A url={routes.profileDM}>
+                      <LumaButton
+                        variant="contained"
+                        fullWidth
+                        size="large"
+                        startIcon={<Notifications />}
+                        onClick={handleCloseMenu}
+                        style={{
+                          paddingRight: 10,
+                        }}
+                      />
+                    </A>
+                  </Grid>
+                </Grid>
+              </Box>
+              {/* Rest of the items */}
+              {userMenu.map((i, k) =>
+                (!i.staff || (i.staff && checkPermit('acp_access'))) &&
+                i.showMobile ? (
+                  <Box key={k}>
+                    <A url={i.url} color={contrastText}>
+                      <MenuItem onClick={handleCloseMenu}>
+                        <Box my={1} display="inline-flex">
+                          <ListItemIcon>{i.icon}</ListItemIcon>
+                          <ListItemText>{t(i.translation)}</ListItemText>
+                        </Box>
+                      </MenuItem>
+                    </A>
+                    {i.divider ? <LumaDivider /> : null}
+                  </Box>
+                ) : null
+              )}
+            </LumaDrawer>
+          </Box>
+        ) : (
+          // guest
+          <>
+            {!loading ? (
             <Box>
               <IconButton
                 id="user-button"
@@ -202,10 +219,12 @@ export default function NavUserMobile() {
                 </A>
               </LumaMenu>
             </Box>
-          )
-        ) : (
-          // loading
-          <CircularProgress size={32} />
+            ) : (
+              // Only show the loading icon when the page is loading
+              // and when we are unsure if the user is logged in or not
+              <CircularProgress size={32} />
+            )}
+          </>
         )}
       </Grid>
     </Grid>

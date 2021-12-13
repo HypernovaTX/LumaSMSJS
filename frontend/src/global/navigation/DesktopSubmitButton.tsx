@@ -9,6 +9,7 @@ import {
   MenuItem,
   Typography,
 } from '@mui/material';
+
 import { Add, ExpandMore } from '@mui/icons-material';
 
 import { A } from 'components';
@@ -63,6 +64,14 @@ export default function SubmitButtonDesktop() {
         anchorEl={anchorEl}
         open={open}
         onClose={handleCloseMenu}
+        anchorOrigin={{
+          vertical: 'bottom',
+          horizontal: 'right',
+        }}
+        transformOrigin={{
+          vertical: 'top',
+          horizontal: 'right',
+        }}
       >
         <Grid container direction="column" alignItems="center">
           <Grid item>
@@ -75,9 +84,7 @@ export default function SubmitButtonDesktop() {
         {menuItems.map((i, k) => (
           <A url={`/submit/${i.toLowerCase()}`} key={k} color={contrastText}>
             <MenuItem onClick={handleCloseMenu}>
-              <Box width={64} textAlign="center">
-                {t(`submission.${i}`)}
-              </Box>
+              {t(`submission.${i}`)}
             </MenuItem>
           </A>
         ))}
