@@ -6,11 +6,11 @@ import { Variant } from '@mui/material/styles/createTypography';
 import { GlobalContext } from 'global/GlobalContext';
 import { styles } from 'MUIConfig';
 
-interface TextProps extends TypographyProps {
+export interface LumaTextProps extends TypographyProps {
   isTitle?: boolean;
 }
 
-export function LumaText(props: TextProps) {
+export function LumaText(props: LumaTextProps) {
   // Context
   const { isMobile } = useContext(GlobalContext);
 

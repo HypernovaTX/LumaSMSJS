@@ -6,7 +6,6 @@ import { Box, Grid } from '@mui/material';
 import { LumaInput, LumaText } from 'components';
 import { User } from 'schema/userSchema';
 import inputCF from './config';
-import theme from 'MUIConfig';
 import { dateToDash } from 'lib';
 
 const today = dateToDash(new Date());
@@ -31,15 +30,15 @@ export default function UserProfileSettings(props: ProfileSettingsProps) {
             <LumaText variant="body2">{t('user.bio')}</LumaText>
           </Box>
           <LumaInput
-            fullWidth
-            inputProps={{ maxLength: inputCF.MAX_BIO }}
-            maxRows={3}
-            multiline
             name="bio"
-            onChange={handleInputChange}
+            multiline
+            fullWidth
             rows={3}
+            maxRows={3}
             size="small"
             value={inputs.bio ?? ''}
+            onChange={handleInputChange}
+            inputProps={{ maxLength: inputCF.MAX_BIO }}
           />
           <Box width="100%" textAlign="right" mr={2} mb={1}>
             <LumaText variant="body2">
@@ -52,19 +51,15 @@ export default function UserProfileSettings(props: ProfileSettingsProps) {
             <LumaText variant="body2">{t('user.birthday')}</LumaText>
           </Box>
           <LumaInput
-            id="birthday"
+            name="birthday"
             type="date"
             defaultValue={today}
+            value={inputs.birthday ?? ''}
             sx={{ width: 180 }}
-            InputLabelProps={{
-              shrink: true,
-            }}
+            onChange={handleInputChange}
+            InputLabelProps={{ shrink: true }}
           />
-          <Box width="100%" textAlign="right" mr={2} mb={1}>
-            <LumaText variant="body2">
-              {`${inputs.bio ? inputs.bio.length : 0}/${inputCF.MAX_BIO}`}
-            </LumaText>
-          </Box>
+          <Box width="100%" textAlign="right" mr={2} mb={1} />
         </Grid>
       </Grid>
     </Box>
@@ -77,6 +72,9 @@ export default function UserProfileSettings(props: ProfileSettingsProps) {
     switch (e.target.name) {
       case 'bio':
         data.bio = e.target.value;
+        break;
+      case 'birthday':
+        data.birthday = e.target.value;
         break;
     }
     setInputs({ ...inputs, ...data });
