@@ -25,10 +25,30 @@ export default function UserProfileSettings(props: ProfileSettingsProps) {
   return (
     <Box mx={4} my={2} width="100%">
       <Grid container direction="column" alignContent="stretch">
+        {/* -------------------- Title -------------------- */}
         <Grid container item direction="column">
-          <Box mx={1}>
-            <LumaText variant="body2">{t('user.bio')}</LumaText>
+          <LumaText variant="body2">
+            <b>{t('user.title')}</b>
+          </LumaText>
+          <LumaInput
+            name="title"
+            fullWidth
+            size="small"
+            value={inputs.title ?? ''}
+            onChange={handleInputChange}
+            inputProps={{ maxLength: inputCF.MAX_TITLE }}
+          />
+          <Box width="100%" textAlign="right" mr={2} mb={1}>
+            <LumaText variant="body2">
+              {`${inputs.title ? inputs.title.length : 0}/${inputCF.MAX_TITLE}`}
+            </LumaText>
           </Box>
+        </Grid>
+        {/* -------------------- Bio -------------------- */}
+        <Grid container item direction="column">
+          <LumaText variant="body2">
+            <b>{t('user.bio')}</b>
+          </LumaText>
           <LumaInput
             name="bio"
             multiline
@@ -46,10 +66,11 @@ export default function UserProfileSettings(props: ProfileSettingsProps) {
             </LumaText>
           </Box>
         </Grid>
+        {/* -------------------- Birthday -------------------- */}
         <Grid container item direction="column">
-          <Box mx={1}>
-            <LumaText variant="body2">{t('user.birthday')}</LumaText>
-          </Box>
+          <LumaText variant="body2">
+            <b>{t('user.birthday')}</b>
+          </LumaText>
           <LumaInput
             name="birthday"
             type="date"
@@ -75,6 +96,9 @@ export default function UserProfileSettings(props: ProfileSettingsProps) {
         break;
       case 'birthday':
         data.birthday = e.target.value;
+        break;
+      case 'title':
+        data.title = e.target.value;
         break;
     }
     setInputs({ ...inputs, ...data });
