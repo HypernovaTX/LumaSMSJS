@@ -107,7 +107,7 @@ export default function UserSettings() {
                   const url = `${routes.profileSettings}/${i.id}`;
                   return (
                     <A url={url} key={k} color={contrastText}>
-                      <MenuItem>
+                      <MenuItem onClick={handleMenuItem(i.id)}>
                         <Box my={1} display="inline-flex">
                           <ListItemText>{t(i.text)}</ListItemText>
                         </Box>
@@ -126,6 +126,13 @@ export default function UserSettings() {
     </Box>
   );
 
+  // Handles
+  function handleMenuItem(kind: SettingMenuItems) {
+    return function () {
+      setKind(kind);
+    };
+  }
+
   // Effect hoist
   function initEffect() {
     if (kindParam) setKind(kindParam);
@@ -137,7 +144,7 @@ export default function UserSettings() {
     switch (kind) {
       case 'main':
         return <UserProfileSettings user={user} update={setUser} />;
-      case 'site':
+      default:
         return null;
     }
   }

@@ -16,3 +16,15 @@ export function isStringJSON(toCheck: string) {
   }
   return true;
 }
+
+export function dateToDash(date: string | number | Date) {
+  const d = new Date(date);
+  let month = `${d.getMonth() + 1}`;
+  let day = `${d.getDate()}`;
+  let year = `${d.getFullYear()}`;
+
+  month = month.length < 2 ? `0${month}` : month;
+  day = day.length < 2 ? `0${day}` : day;
+
+  return [year, month, day].join('-');
+}

@@ -27,6 +27,7 @@ export const LumaInput = styled(TextField)({
       textFillColor: theme.palette.primary.contrastText,
       zIndex: 1,
     },
+  '&::-webkit-calendar-picker-indicator': { folor: 'invert(1)' },
   '& .MuiOutlinedInput-root': {
     transition: '200ms linear all',
     '& fieldset': {
