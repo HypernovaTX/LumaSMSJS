@@ -49,7 +49,9 @@ export default function UserProfileSettings(props: ProfileSettingsProps) {
           />
           <Box width="100%" textAlign="right" mr={2} mb={1}>
             <LumaText variant="body2">
-              {`${inputs.title ? inputs.title.length : 0}/${CF.MAX_128}`}
+              {`${inputs.title?.length ?? props?.user?.title?.length ?? 0}/${
+                CF.MAX_128
+              }`}
             </LumaText>
           </Box>
         </Grid>
@@ -71,9 +73,9 @@ export default function UserProfileSettings(props: ProfileSettingsProps) {
           />
           <Box width="100%" textAlign="right" mr={2} mb={1}>
             <LumaText variant="body2">
-              {`${inputs.signature ? inputs.signature.length : 0}/${
-                CF.MAX_X24
-              }`}
+              {`${
+                inputs.signature?.length ?? props?.user?.signature?.length ?? 0
+              }/${CF.MAX_X24}`}
             </LumaText>
           </Box>
         </Grid>
@@ -95,7 +97,9 @@ export default function UserProfileSettings(props: ProfileSettingsProps) {
           />
           <Box width="100%" textAlign="right" mr={2} mb={1}>
             <LumaText variant="body2">
-              {`${inputs.bio ? inputs.bio.length : 0}/${CF.MAX_512}`}
+              {`${inputs.bio?.length ?? props?.user?.bio?.length ?? 0}/${
+                CF.MAX_512
+              }`}
             </LumaText>
           </Box>
         </Grid>
@@ -115,16 +119,14 @@ export default function UserProfileSettings(props: ProfileSettingsProps) {
               onBlur={handleInputChange}
               InputLabelProps={{ shrink: true }}
             />
-            {inputs.birthday ? (
-              <LumaButton
-                size="small"
-                sx={{ height: '2rem' }}
-                color="secondary"
-                onClick={() => handleButton('birthday')}
-              >
-                {t('main.clear')}
-              </LumaButton>
-            ) : null}
+            <LumaButton
+              size="small"
+              sx={{ height: '2rem' }}
+              color="secondary"
+              onClick={() => handleButton('birthday')}
+            >
+              {t('main.clear')}
+            </LumaButton>
           </Grid>
           <Box width="100%" textAlign="right" mr={2} mb={1} height="1rem" />
         </Grid>
@@ -185,7 +187,9 @@ export default function UserProfileSettings(props: ProfileSettingsProps) {
           />
           <Box width="100%" textAlign="right" mr={2} mb={1}>
             <LumaText variant="body2">
-              {`${inputs.location ? inputs.location.length : 0}/${CF.MAX_128}`}
+              {`${
+                inputs.location?.length ?? props?.user?.location?.length ?? 0
+              }/${CF.MAX_128}`}
             </LumaText>
           </Box>
         </Grid>
@@ -205,9 +209,11 @@ export default function UserProfileSettings(props: ProfileSettingsProps) {
           />
           <Box width="100%" textAlign="right" mr={2} mb={1}>
             <LumaText variant="body2">
-              {`${inputs.favorite_game ? inputs.favorite_game.length : 0}/${
-                CF.MAX_064
-              }`}
+              {`${
+                inputs.favorite_game?.length ??
+                props?.user?.favorite_game?.length ??
+                0
+              }/${CF.MAX_064}`}
             </LumaText>
           </Box>
         </Grid>
@@ -277,7 +283,7 @@ export default function UserProfileSettings(props: ProfileSettingsProps) {
     const handleData = inputs;
     switch (kind) {
       case 'birthday':
-        handleData.birthday = undefined;
+        handleData.birthday = '';
         break;
     }
     setInputs({ ...handleData } as User);
