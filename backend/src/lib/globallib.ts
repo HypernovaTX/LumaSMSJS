@@ -48,6 +48,10 @@ export function currentTime() {
   return Math.ceil(Date.now() / 1000);
 }
 
+export function isEmptyObject(toCheck: { [key: string]: any }) {
+  return Object.keys(toCheck).length === 0;
+}
+
 export function isStringJSON(toCheck: string) {
   try {
     JSON.parse(toCheck);

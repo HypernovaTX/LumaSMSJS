@@ -1,9 +1,13 @@
 import { TextField } from '@mui/material';
 import { styled } from '@mui/material/styles';
+import mixColor from 'mix-color';
 
 import theme, { styles } from 'MUIConfig';
 
 export const LumaInput = styled(TextField)({
+  '& textarea': {
+    cursor: 'initial',
+  },
   '& label': {
     color: theme.palette.primary.light,
     zIndex: 2,
@@ -47,5 +51,17 @@ export const LumaInput = styled(TextField)({
       color: theme.palette.primary.contrastText,
       backgroundColor: theme.palette.primary.main,
     },
+  },
+  '& ::-webkit-scrollbar': {
+    width: '10px',
+  },
+  '& ::-webkit-scrollbar-track': {
+    background: theme.palette.primary.dark,
+    borderRadius: '1rem',
+  },
+  '& ::-webkit-scrollbar-thumb': {
+    cursor: 'pointer',
+    background: mixColor(theme.palette.primary.main, '#FFF', 0.2),
+    borderRadius: '1rem',
   },
 });

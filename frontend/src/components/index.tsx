@@ -6,6 +6,7 @@ export * from './Divider';
 export * from './Drawer';
 export * from './Input';
 export * from './Menu';
+export * from './Select';
 export * from './SlideMenu';
 export * from './Text';
 export * from './Tooltip';

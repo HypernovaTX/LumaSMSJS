@@ -93,10 +93,10 @@ interface GetUserLogoutProps extends Omit<APIPropTemplate, 'body'> {
 }
 
 interface UpdateUserBody {
-  data: User;
+  data: string;
 }
 
-interface UpdateUserProps extends Omit<APIPropTemplate, 'body'> {
+interface UpdateUserProps extends APIPropTemplate {
   body: UpdateUserBody;
   onComplete?: OnComplete<null>;
 }

@@ -17,6 +17,10 @@ export function isStringJSON(toCheck: string) {
   return true;
 }
 
+export function isEmptyObject(obj: { [key: string]: any }) {
+  return Object.keys(obj).length === 0;
+}
+
 export function dateToDash(date: string | number | Date) {
   const d = new Date(date);
   let month = `${d.getMonth() + 1}`;

@@ -6,7 +6,7 @@ import bcrypt from 'bcryptjs';
 
 import CF from '../config';
 import ERR, { ErrorObj, isError } from '../lib/error';
-import { clientIP, sanitizeInput } from '../lib/globallib';
+import { clientIP, isEmptyObject, sanitizeInput } from '../lib/globallib';
 import { NoResponse } from '../lib/result';
 import {
   checkExistingUser,
@@ -145,6 +145,7 @@ export async function updateUserProfile(_request: Request, inputs: User) {
     return getLogin as ErrorObj;
   }
   const currentUser = getLogin as User;
+
   // Ensure user is not banned
   const permitted = await validatePermission(_request, [
     'can_msg',
@@ -154,6 +155,12 @@ export async function updateUserProfile(_request: Request, inputs: User) {
   if (!permitted) {
     return ERR('userPermission');
   }
+
+  // Ensure the object is not empty
+  if (isEmptyObject(inputs)) {
+    return ERR('emptyParam');
+  }
+
   // Ensure `inputs` does not have keys that are not allowed to update to the DB
   const invalidKeys = Object.keys(inputs).filter((key) =>
     invalidUserUpdateKeys.includes(key)

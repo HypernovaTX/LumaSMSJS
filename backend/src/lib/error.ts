@@ -15,6 +15,7 @@ export interface ErrorObj {
 export const errors = {
   // default errors
   default: 'An unknown error has occured.',
+  emptyParam: 'The provided object for the request is empty!',
   invalidJson: 'Invalid JSON format used within the request!',
   invalidParam: 'Invalid parameters used in the request!',
   notAllowedCors: 'Not allowed by CORS',

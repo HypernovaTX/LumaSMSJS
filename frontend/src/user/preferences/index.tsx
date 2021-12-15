@@ -3,6 +3,7 @@ import { useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 
 import { Box, Container, Grid, ListItemText, MenuItem } from '@mui/material';
+import mixColor from 'mix-color';
 
 import { useAPI_userUpdate } from 'api';
 import { A, LumaText } from 'components';
@@ -15,6 +16,7 @@ import { UserContext } from 'user/UserContext';
 import UserProfileSettings from './UserProfile';
 
 const { contrastText } = theme.palette.primary;
+const navHighlight = mixColor(theme.palette.primary.main, '#FFF', 0.2);
 const menuOptions = [
   {
     id: 'main',
@@ -57,26 +59,34 @@ export default function UserSettings() {
 
   // Context
   const { user, setUser } = useContext(UserContext);
-  const { isMobile } = useContext(GlobalContext);
+  const { isMobile, isSmallMobile, toast } = useContext(GlobalContext);
 
   // States
   const [kind, setKind] = useState<SettingMenuItems>('main');
-  const [userProfile, setUserProfile] = useState<User>();
+  const [userProfile, setUserProfile] = useState<User>(user ?? {});
 
   // Data
-  const { execute: updateUser } = useAPI_userUpdate({
+  const { execute: updateUser, loading: updateLoading } = useAPI_userUpdate({
     skip: true,
     body: {
-      data: {},
+      data: '{}',
     },
     onComplete: () => {
-      if (userProfile) setUser(userProfile);
+      toast(t('user.updateDone'), 'success');
+      setUser(userProfile);
     },
-    onError: () => {},
+    onError: (err) => {
+      toast(err.message, 'error');
+    },
   });
 
   // Memo
-  const childComponent = useMemo(childComponentMemo, [kind, setUser, user]);
+  const childComponent = useMemo(childComponentMemo, [
+    kind,
+    updateLoading,
+    updateUser,
+    user,
+  ]);
 
   // Effects
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -95,10 +105,12 @@ export default function UserSettings() {
       <Container maxWidth="md">
         <Box
           width="100%"
+          mb={isMobile ? 4 : 8}
           style={{ backgroundColor: theme.palette.primary.dark }}
         >
           <Grid container>
-            <Grid container item xs={3}>
+            {/* Nav Menu */}
+            <Grid container item xs={isSmallMobile ? 12 : 3}>
               <Box
                 width="100%"
                 style={{ backgroundColor: theme.palette.primary.main }}
@@ -107,8 +119,15 @@ export default function UserSettings() {
                   const url = `${routes.profileSettings}/${i.id}`;
                   return (
                     <A url={url} key={k} color={contrastText}>
-                      <MenuItem onClick={handleMenuItem(i.id)}>
-                        <Box my={1} display="inline-flex">
+                      <MenuItem
+                        onClick={handleMenuItem(i.id)}
+                        sx={
+                          i.id === kind
+                            ? { backgroundColor: navHighlight }
+                            : undefined
+                        }
+                      >
+                        <Box my={isSmallMobile ? 0 : 1} display="inline-flex">
                           <ListItemText>{t(i.text)}</ListItemText>
                         </Box>
                       </MenuItem>
@@ -117,7 +136,8 @@ export default function UserSettings() {
                 })}
               </Box>
             </Grid>
-            <Grid container item xs={9}>
+            {/* Settings section */}
+            <Grid container item xs={isSmallMobile ? 12 : 9}>
               {childComponent}
             </Grid>
           </Grid>
@@ -141,9 +161,19 @@ export default function UserSettings() {
 
   // Memo hoist
   function childComponentMemo() {
+    function handleUpdateUser(body: User) {
+      setUserProfile({ ...user, ...body } as User);
+      updateUser({ data: JSON.stringify(body) });
+    }
     switch (kind) {
       case 'main':
-        return <UserProfileSettings user={user} update={setUser} />;
+        return (
+          <UserProfileSettings
+            user={user}
+            update={handleUpdateUser}
+            loading={updateLoading}
+          />
+        );
       default:
         return null;
     }

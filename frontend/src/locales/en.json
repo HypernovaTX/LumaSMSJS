@@ -24,11 +24,15 @@
     }
   },
   "main": {
+    "applyChanges": "Apply Changes",
+    "clear": "Clear",
     "goHome": "Return to Home",
+    "reset": "Reset",
     "search": "Search",
     "siteName": "MFGG",
     "siteNameLong": "Mario Fan Games Galaxy",
     "unknown": "unknown",
+    "unspecified": "Unspecified",
     "welcomeBack": "Welcome back, {{username}}!"
   },
   "nav": {
@@ -84,13 +88,21 @@
     "banner": "Banner",
     "bio": "Bio",
     "birthday": "Birthday",
+    "country": "Country",
     "dontHaveAccount": "Don't have an account?",
     "email": "Email",
+    "favoriteGame": "Favorite Game",
     "forget": "Forgot your username and/or password?",
+    "location": "Location",
     "login": "Sign In",
     "logout": "Log Out",
     "logoutMessage": "Signing off...",
     "profile": "Profile",
+    "pronoun": "Pronoun",
+    "pronounHe": "He",
+    "pronounShe": "She",
+    "pronounThey": "They",
+    "pronounZe": "Ze",
     "password": "Password",
     "register": "Register",
     "remember": "Remember Me",
@@ -98,6 +110,7 @@
     "signup": "Sign up!",
     "siteSettings": "Site Settings",
     "title": "Title",
+    "updateDone": "Successfully updated user preferences!",
     "username": "Username"
   }
 }

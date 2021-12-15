@@ -6,7 +6,7 @@ import { Request } from 'express';
 import { checkLogin, validatePermission } from './userlib';
 import CF from '../../config';
 import ERR, { ErrorObj, isError } from '../../lib/error';
-import { currentTime, isStringJSON } from '../../lib/globallib';
+import { currentTime, isEmptyObject, isStringJSON } from '../../lib/globallib';
 import { NoResponse } from '../../lib/result';
 import SubmissionQuery from '../../queries/submissionQuery';
 import {
@@ -76,6 +76,11 @@ export default class Submission {
       return ERR(ownSubmission ? 'userPermission' : 'userStaffPermit');
     }
 
+    // Ensure the object is not empty
+    if (isEmptyObject(payload)) {
+      return ERR('emptyParam');
+    }
+
     // Validate/Prepare payload
     if (!this.validateDataKeys(payload)) return ERR('submissionMissingParam');
     const uid = ownSubmission ? currentUser.uid : otherUid;
@@ -100,6 +105,11 @@ export default class Submission {
     // Verify permission
     const permitted = await validatePermission(_request, 'can_submit');
     if (!permitted) return ERR('userPermission');
+
+    // Ensure the object is not empty
+    if (isEmptyObject(payload)) {
+      return ERR('emptyParam');
+    }
 
     // Verify submission exists
     const checkSubmission = await this.getSubmissionDetails(id);
@@ -252,6 +262,11 @@ export default class Submission {
     // Verify permission
     const permitted = await validatePermission(_request, 'acp_modq');
     if (!permitted) return ERR('userStaffPermit');
+
+    // Ensure the object is not empty
+    if (isEmptyObject(payload)) {
+      return ERR('emptyParam');
+    }
 
     // Verify submission exists
     const checkSubmission = await this.getSubmissionDetails(id);
