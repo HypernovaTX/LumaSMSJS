@@ -276,13 +276,9 @@ function prepareRequestBodyFormData(body: AnyObject) {
   const formData = new FormData();
   bodyEntries.forEach((item) => {
     const [key, value] = item;
-    console.log(typeof value);
     if (value instanceof File) {
-      console.log(value);
       formData.append(key, value, value.name);
     }
   });
-
-  console.log(formData);
   return formData;
 }
