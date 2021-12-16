@@ -4,6 +4,7 @@
     "error400": "Request Failure (400)",
     "error404Page": "Page Not Found",
     "noError": "No errors found at this moment",
+    "noMultiFile": "Multiple files are not allowed!",
     "tooManyRequests": "Too many network requests! Please try again later!",
     "unknown": "An unknown error as occured!"
   },
@@ -26,9 +27,13 @@
   "main": {
     "applyChanges": "Apply Changes",
     "clear": "Clear",
+    "dndFile": "Drag & Drop a File Here to Upload",
     "goHome": "Return to Home",
+    "or": "or",
     "reset": "Reset",
     "search": "Search",
+    "selectFile": "Select File",
+    "selectedFile": "File to upload",
     "siteName": "MFGG",
     "siteNameLong": "Mario Fan Games Galaxy",
     "unknown": "unknown",
@@ -89,6 +94,7 @@
     "bio": "Bio",
     "birthday": "Birthday",
     "country": "Country",
+    "currentAvatar": "Your current avatar",
     "dontHaveAccount": "Don't have an account?",
     "email": "Email",
     "favoriteGame": "Favorite Game",
@@ -111,6 +117,7 @@
     "siteSettings": "Site Settings",
     "title": "Title",
     "updateDone": "Successfully updated user preferences!",
+    "updateYourAvatar": "Change your avatar",
     "username": "Username"
   }
 }

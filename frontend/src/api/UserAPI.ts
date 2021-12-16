@@ -54,6 +54,17 @@ export function useAPI_userUpdate(p: UpdateUserProps) {
   return useSend(payload) as APINoResponse<{}>;
 }
 
+// Update user avatar
+export function useAPI_userAvatar(p: UpdateUserAvatarProps) {
+  const payload = {
+    ...p,
+    kind: 'patch',
+    url: 'user/avatar',
+    file: true,
+  } as APIProp;
+  return useSend(payload) as APINoResponse<{}>;
+}
+
 // Body Types
 type GetUserBody = { id: number };
 interface GetUserProps extends APIPropTemplate {
@@ -98,5 +109,13 @@ interface UpdateUserBody {
 
 interface UpdateUserProps extends APIPropTemplate {
   body: UpdateUserBody;
+  onComplete?: OnComplete<null>;
+}
+interface UpdateUserAvatarBody {
+  avatar: File | null;
+}
+
+interface UpdateUserAvatarProps extends APIPropTemplate {
+  body: UpdateUserAvatarBody;
   onComplete?: OnComplete<null>;
 }

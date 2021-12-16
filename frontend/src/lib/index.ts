@@ -21,6 +21,13 @@ export function isEmptyObject(obj: { [key: string]: any }) {
   return Object.keys(obj).length === 0;
 }
 
+export function bytesToSize(bytes: number) {
+  const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+  if (bytes === 0) return '0 Byte';
+  const i = Math.floor(Math.log(bytes) / Math.log(1024));
+  return `${Math.round((bytes / Math.pow(1024, i)) * 100) / 100} ${sizes[i]}`;
+}
+
 export function dateToDash(date: string | number | Date) {
   const d = new Date(date);
   let month = `${d.getMonth() + 1}`;

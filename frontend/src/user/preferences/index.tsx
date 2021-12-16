@@ -13,7 +13,8 @@ import theme, { styles } from 'MUIConfig';
 import routes from 'route.config';
 import { User } from 'schema/userSchema';
 import { UserContext } from 'user/UserContext';
-import UserProfileSettings from './UserProfile';
+import UserAvatarSettings from 'user/preferences/UserAvatar';
+import UserProfileSettings from 'user/preferences/UserProfile';
 
 const { contrastText } = theme.palette.primary;
 const navHighlight = mixColor(theme.palette.primary.main, '#FFF', 0.2);
@@ -58,7 +59,7 @@ export default function UserSettings() {
   useSetTitle(t('title.settings'));
 
   // Context
-  const { user, setUser } = useContext(UserContext);
+  const { loading: userLoading, user, setUser } = useContext(UserContext);
   const { isMobile, isSmallMobile, toast } = useContext(GlobalContext);
 
   // States
@@ -81,9 +82,10 @@ export default function UserSettings() {
   });
 
   // Memo
+  const loading = useMemo(loadingMemo, [updateLoading, userLoading]);
   const childComponent = useMemo(childComponentMemo, [
     kind,
-    updateLoading,
+    loading,
     updateUser,
     user,
   ]);
@@ -171,11 +173,16 @@ export default function UserSettings() {
           <UserProfileSettings
             user={user}
             update={handleUpdateUser}
-            loading={updateLoading}
+            loading={loading}
           />
         );
+      case 'avatar':
+        return <UserAvatarSettings />;
       default:
         return null;
     }
+  }
+  function loadingMemo() {
+    return userLoading || updateLoading;
   }
 }

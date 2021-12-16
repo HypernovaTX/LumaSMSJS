@@ -4,6 +4,7 @@ export * from './Button';
 export * from './Checkbox';
 export * from './Divider';
 export * from './Drawer';
+export * from './FileUploader';
 export * from './Input';
 export * from './Menu';
 export * from './Select';
