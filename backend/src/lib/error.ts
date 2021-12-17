@@ -47,6 +47,8 @@ export const errors = {
   submissionUpdateData: 'Update data is invalid!',
 
   // user
+  userAvatarDelete: 'User does not have avatar to delete!',
+  userBannerDelete: 'User does not have banner to delete!',
   userCookie: 'User cookie not found!',
   userCookieInvalid: 'User cookie is invalid!',
   userDeleteOwn: 'You cannot delete your own account!',

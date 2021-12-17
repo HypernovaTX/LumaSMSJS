@@ -2,6 +2,7 @@ export * from './A';
 export * from './Accordion';
 export * from './Button';
 export * from './Checkbox';
+export * from './Diaglog';
 export * from './Divider';
 export * from './Drawer';
 export * from './FileUploader';

@@ -48,9 +48,13 @@ export default function UserProvider(props: ContextProps) {
       setUser(data);
       setLogin(true);
       loadPermit();
-      loadAvatar({
-        path: `avatar/${data?.avatar_file ?? ''}`,
-      });
+      if (data?.avatar_file) {
+        loadAvatar({
+          path: `avatar/${data.avatar_file ?? ''}`,
+        });
+      } else {
+        setAvatar(undefined);
+      }
     },
     onError: () => {
       clearUser();
@@ -64,6 +68,9 @@ export default function UserProvider(props: ContextProps) {
     },
     onComplete: (data) => {
       updateAvatar(data);
+    },
+    onError: (err) => {
+      updateAvatar(err);
     },
   });
   // - User permission

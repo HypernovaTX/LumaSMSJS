@@ -276,6 +276,26 @@ export async function updateUserAvatar(
   return await updateUser(currentUser?.uid, { avatar_file: file.filename });
 }
 
+export async function deleteUserAvatar(_request: Request) {
+  const directory = `${CF.UPLOAD_DIRECTORY}/${CF.UPLOAD_AVATAR}`;
+
+  // Ensure user is logged in
+  const getLogin = await checkLogin(_request);
+  if (isError(getLogin)) return getLogin as ErrorObj;
+
+  // Avatar file doesn't exists
+  const currentUser = getLogin as User;
+  if (!currentUser.avatar_file) {
+    return ERR('userAvatarDelete');
+  }
+
+  // Remove user's old avatar file
+  if (currentUser?.avatar_file) unlinkFile(directory, currentUser.avatar_file);
+
+  // Apply
+  return await updateUser(currentUser?.uid, { avatar_file: '' });
+}
+
 export async function updateUserBanner(
   _request: Request,
   file: Express.Multer.File
@@ -306,4 +326,24 @@ export async function updateUserBanner(
 
   // Apply
   return await updateUser(currentUser?.uid, { banner_file: file.filename });
+}
+
+export async function deleteUserBanner(_request: Request) {
+  const directory = `${CF.UPLOAD_DIRECTORY}/${CF.UPLOAD_AVATAR}`;
+
+  // Ensure user is logged in
+  const getLogin = await checkLogin(_request);
+  if (isError(getLogin)) return getLogin as ErrorObj;
+
+  // Banner file doesn't exists
+  const currentUser = getLogin as User;
+  if (!currentUser.banner_file) {
+    return ERR('userBannerDelete');
+  }
+
+  // Remove user's old banner file
+  if (currentUser?.banner_file) unlinkFile(directory, currentUser.banner_file);
+
+  // Apply
+  return await updateUser(currentUser?.uid, { banner_file: '' });
 }

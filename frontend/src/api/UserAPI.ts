@@ -43,7 +43,7 @@ export function useAPI_userLogin(p: GetUserLoginProps) {
 }
 
 // Log out
-export function useAPI_userLogout(p: GetUserLogoutProps) {
+export function useAPI_userLogout(p: APIPropsNoBody) {
   const payload = { ...p, kind: 'get', url: 'user/logout' } as APIProp;
   return useSend(payload) as APINoResponse<{}>;
 }
@@ -62,6 +62,12 @@ export function useAPI_userAvatar(p: UpdateUserAvatarProps) {
     url: 'user/avatar',
     file: true,
   } as APIProp;
+  return useSend(payload) as APINoResponse<{}>;
+}
+
+// Delete avatar
+export function useAPI_userDeleteAvatar(p: APIPropsNoBody) {
+  const payload = { ...p, kind: 'delete', url: 'user/avatar' } as APIProp;
   return useSend(payload) as APINoResponse<{}>;
 }
 
@@ -99,7 +105,7 @@ interface GetUserLoginProps extends APIPropTemplate {
   onComplete?: OnComplete<User>;
 }
 
-interface GetUserLogoutProps extends Omit<APIPropTemplate, 'body'> {
+interface APIPropsNoBody extends Omit<APIPropTemplate, 'body'> {
   onComplete?: OnComplete<null>;
 }
 

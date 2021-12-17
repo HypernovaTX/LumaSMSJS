@@ -46,7 +46,8 @@ export function FileUploader(props: FileUploaderProp) {
   return props.file ? (
     <Box
       p={1}
-      my={1}
+      mt={1}
+      mb={3}
       width="100%"
       textAlign="center"
       color={props.disabled ? mainColor : contrastText}
@@ -84,7 +85,8 @@ export function FileUploader(props: FileUploaderProp) {
   ) : (
     <Box
       p={1}
-      my={1}
+      mt={1}
+      mb={3}
       width="100%"
       textAlign="center"
       color={

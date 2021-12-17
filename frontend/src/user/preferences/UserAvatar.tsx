@@ -3,11 +3,12 @@ import { useTranslation } from 'react-i18next';
 
 import { Avatar, Box, CircularProgress, Grid } from '@mui/material';
 
-import { FileUploader, LumaButton, LumaText } from 'components';
+import { FileUploader, LumaButton, LumaDiaglog, LumaText } from 'components';
 import { GlobalContext } from 'global/GlobalContext';
 import { UserContext } from 'user/UserContext';
 import { styles } from 'MUIConfig';
-import { useAPI_userAvatar } from 'api';
+import { useAPI_userAvatar, useAPI_userDeleteAvatar } from 'api';
+import { ErrorObj } from 'schema';
 
 export default function UserAvatarSettings() {
   // Custom hooks
@@ -19,31 +20,34 @@ export default function UserAvatarSettings() {
 
   // State
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [open, setOpen] = useState(false);
 
   // Data
   const { execute: uploadAvatar, loading: avatarLoading } = useAPI_userAvatar({
-    skip: true,
     body: { avatar: null },
-    onComplete: () => {
-      toast(t('user.updateDone'), 'success');
-      handleReset();
-      if (loadUser) loadUser();
-    },
-    onError: (err) => {
-      toast(err.message, 'error');
-    },
+    onComplete: completedData,
+    onError: errorData,
+  });
+  const { execute: delAvatar, loading: delLoading } = useAPI_userDeleteAvatar({
+    onComplete: completedData,
+    onError: errorData,
   });
 
   // Memo
-  const loading = useMemo(loadingMemo, [userLoading, avatarLoading]);
+  const loading = useMemo(loadingMemo, [
+    userLoading,
+    avatarLoading,
+    delLoading,
+  ]);
   const noChange = useMemo(noChangeMemo, [selectedFile]);
 
   // Output
   return (
     <Box mx={4} my={2} width="100%">
       <Grid container direction="column" alignContent="stretch">
-        {/* Your avatar */}
+        {/* -------------------- Inputs -------------------- */}
         <Grid container item direction="column">
+          {/* Current avatar */}
           <LumaText>
             <b>{t('user.currentAvatar')}</b>
           </LumaText>
@@ -66,6 +70,7 @@ export default function UserAvatarSettings() {
               <Avatar src={avatar} sx={styles.navAvatar} />
             </Grid>
           </Grid>
+          {/* Update avatar */}
           <LumaText>
             <b>{t('user.updateYourAvatar')}</b>
           </LumaText>
@@ -78,9 +83,24 @@ export default function UserAvatarSettings() {
               onReset={handleReset}
             />
           </Grid>
+          {/* Delete avatar */}
+          <LumaText>
+            <b>{t('user.clearAvatar')}</b>
+          </LumaText>
+          <LumaButton
+            disabled={loading || !avatar || open}
+            color="error"
+            variant="contained"
+            size="small"
+            onClick={() => setOpen(true)}
+            sx={{ mt: 1, width: 64 }}
+          >
+            {t('main.delete')}
+          </LumaButton>
         </Grid>
+
         {/* -------------------- Submit/reset buttons -------------------- */}
-        <Box my={2} width="100%">
+        <Box mt={6} mb={2} width="100%">
           <LumaButton
             disabled={loading || noChange}
             color="secondary"
@@ -96,18 +116,16 @@ export default function UserAvatarSettings() {
               t('main.applyChanges')
             )}
           </LumaButton>
-          {/* <LumaButton
-            disabled={loading || noChange}
-            color="primary"
-            variant="contained"
-            size={isMobile ? 'medium' : 'large'}
-            fullWidth={isSmallMobile}
-            onClick={handleReset}
-            sx={isSmallMobile ? { mt: 2 } : { ml: 2 }}
-          >
-            {t('main.reset')}
-          </LumaButton> */}
         </Box>
+
+        {/* -------------------- Diaglog -------------------- */}
+        <LumaDiaglog
+          title={t('user.clearAvatar')}
+          message={t('user.diaglogAvatarDelete')}
+          open={open}
+          onConfirm={() => delAvatar()}
+          onClose={() => setOpen(false)}
+        />
       </Grid>
     </Box>
   );
@@ -122,11 +140,21 @@ export default function UserAvatarSettings() {
     setSelectedFile(null);
   }
 
-  // Memo def
+  // Memo hoists
   function noChangeMemo() {
     return !selectedFile;
   }
   function loadingMemo() {
-    return userLoading || avatarLoading;
+    return userLoading || avatarLoading || delLoading;
+  }
+
+  // Data hoists
+  function completedData() {
+    toast(t('user.updateAvatarDone'), 'success');
+    handleReset();
+    if (loadUser) loadUser();
+  }
+  function errorData(err: ErrorObj) {
+    toast(err.message, 'error');
   }
 }
