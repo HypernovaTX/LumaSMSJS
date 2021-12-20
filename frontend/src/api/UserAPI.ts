@@ -71,6 +71,23 @@ export function useAPI_userDeleteAvatar(p: APIPropsNoBody) {
   return useSend(payload) as APINoResponse<{}>;
 }
 
+// Update user banner
+export function useAPI_userBanner(p: UpdateUserBannerProps) {
+  const payload = {
+    ...p,
+    kind: 'patch',
+    url: 'user/banner',
+    file: true,
+  } as APIProp;
+  return useSend(payload) as APINoResponse<{}>;
+}
+
+// Delete avatar
+export function useAPI_userDeleteBanner(p: APIPropsNoBody) {
+  const payload = { ...p, kind: 'delete', url: 'user/banner' } as APIProp;
+  return useSend(payload) as APINoResponse<{}>;
+}
+
 // Body Types
 type GetUserBody = { id: number };
 interface GetUserProps extends APIPropTemplate {
@@ -123,5 +140,14 @@ interface UpdateUserAvatarBody {
 
 interface UpdateUserAvatarProps extends APIPropTemplate {
   body: UpdateUserAvatarBody;
+  onComplete?: OnComplete<null>;
+}
+
+interface UpdateUserBannerBody {
+  banner: File | null;
+}
+
+interface UpdateUserBannerProps extends APIPropTemplate {
+  body: UpdateUserBannerBody;
   onComplete?: OnComplete<null>;
 }

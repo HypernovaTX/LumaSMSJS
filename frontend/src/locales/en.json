@@ -97,9 +97,12 @@
     "bio": "Bio",
     "birthday": "Birthday",
     "clearAvatar": "Delete your avatar",
+    "clearBanner": "Delete your banner",
     "country": "Country",
     "currentAvatar": "Your current avatar",
+    "currentBannner": "Your current banner",
     "diaglogAvatarDelete": "Are you sure you want to delete your avatar?",
+    "diaglogBannerDelete": "Are you sure you want to delete your banner?",
     "dontHaveAccount": "Don't have an account?",
     "email": "Email",
     "favoriteGame": "Favorite Game",
@@ -123,7 +126,9 @@
     "title": "Title",
     "updateDone": "Successfully updated user preferences!",
     "updateAvatarDone": "Successfully updated user avatar!",
+    "updateBannerDone": "Successfully updated user banner!",
     "updateYourAvatar": "Change your avatar",
+    "updateYourBanner": "Change your banner",
     "username": "Username"
   }
 }

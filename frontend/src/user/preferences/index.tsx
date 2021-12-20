@@ -14,6 +14,7 @@ import routes from 'route.config';
 import { User } from 'schema/userSchema';
 import { UserContext } from 'user/UserContext';
 import UserAvatarSettings from 'user/preferences/UserAvatar';
+import UserBannerSettings from 'user/preferences/UserBanner';
 import UserProfileSettings from 'user/preferences/UserProfile';
 
 const { contrastText } = theme.palette.primary;
@@ -178,6 +179,8 @@ export default function UserSettings() {
         );
       case 'avatar':
         return <UserAvatarSettings />;
+      case 'banner':
+        return <UserBannerSettings />;
       default:
         return null;
     }
