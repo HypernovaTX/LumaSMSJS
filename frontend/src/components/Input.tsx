@@ -2,7 +2,7 @@ import { TextField } from '@mui/material';
 import { styled } from '@mui/material/styles';
 import mixColor from 'mix-color';
 
-import theme, { styles } from 'MUIConfig';
+import theme, { styles } from 'theme/styles';
 
 export const LumaInput = styled(TextField)({
   '& textarea': {

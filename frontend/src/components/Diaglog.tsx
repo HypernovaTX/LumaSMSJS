@@ -9,7 +9,7 @@ import {
 } from '@mui/material';
 import { LumaButton } from 'components';
 import { useTranslation } from 'react-i18next';
-import theme from 'MUIConfig';
+import theme from 'theme/styles';
 import { GlobalContext } from 'global/GlobalContext';
 
 const CustomDiaglog = styled(Dialog)({

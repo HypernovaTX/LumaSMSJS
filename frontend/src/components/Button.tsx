@@ -2,7 +2,7 @@ import { Button } from '@mui/material';
 import { styled } from '@mui/material/styles';
 import mixColor from 'mix-color';
 
-import theme from 'MUIConfig';
+import theme from 'theme/styles';
 
 export const LumaButton = styled(Button)({
   '&:Disabled': {

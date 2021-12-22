@@ -7,7 +7,7 @@ import { A, SlideMenu } from 'components';
 import NavMenuMobile from 'global/navigation/MobileMenu';
 import NavUserMobile from 'global/navigation/MobileUser';
 import logo from 'image/logo.svg';
-import { styles } from 'MUIConfig';
+import { styles } from 'theme/styles';
 import SearchBar from './SearchBar';
 
 export default function NavMobile() {

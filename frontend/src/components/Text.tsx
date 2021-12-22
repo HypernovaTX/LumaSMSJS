@@ -4,7 +4,7 @@ import { Typography, TypographyProps } from '@mui/material';
 import { Variant } from '@mui/material/styles/createTypography';
 
 import { GlobalContext } from 'global/GlobalContext';
-import { styles } from 'MUIConfig';
+import { styles } from 'theme/styles';
 
 export interface LumaTextProps extends TypographyProps {
   isTitle?: boolean;

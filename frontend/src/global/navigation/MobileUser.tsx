@@ -23,7 +23,7 @@ import {
 } from '@mui/icons-material';
 
 import { A, LumaButton, LumaDivider, LumaDrawer, LumaMenu } from 'components';
-import theme, { styles } from 'MUIConfig';
+import theme, { styles } from 'theme/styles';
 import { UserContext } from 'user/UserContext';
 import useUserOptions from 'global/navigation/ConfigUser';
 import routes from 'route.config';

@@ -13,7 +13,7 @@ import {
 } from '@fortawesome/free-solid-svg-icons';
 import { Logout } from '@mui/icons-material';
 
-import theme from 'MUIConfig';
+import theme from 'theme/styles';
 import routes from 'route.config';
 import { UserContext } from 'user/UserContext';
 

@@ -12,7 +12,7 @@ import {
 
 import menu, { Menus } from 'global/navigation/ConfigMenu';
 import { A, LumaDivider, LumaMenu } from 'components';
-import theme from 'MUIConfig';
+import theme from 'theme/styles';
 
 export default function NavMenuDesktop() {
   // Const

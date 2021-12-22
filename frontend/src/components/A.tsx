@@ -2,7 +2,7 @@ import React, { ReactNode, useContext } from 'react';
 import { Box } from '@mui/material';
 import { styled } from '@mui/material/styles';
 
-import theme, { styles } from 'MUIConfig';
+import theme, { styles } from 'theme/styles';
 import { GlobalContext } from 'global/GlobalContext';
 
 const httpRegExp = /^(http|https):\/\//gm;

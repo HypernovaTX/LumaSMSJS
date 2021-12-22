@@ -18,7 +18,7 @@ import {
 } from '@mui/icons-material';
 
 import CF from 'config';
-import theme from 'MUIConfig';
+import theme from 'theme/styles';
 import { useWindowWidth } from 'lib';
 import { ContextProps } from 'schema';
 

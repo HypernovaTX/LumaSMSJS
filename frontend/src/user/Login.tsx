@@ -12,7 +12,7 @@ import { useAPI_userLogin } from 'api';
 import { A, LumaButton, LumaCheckbox, LumaInput, LumaText } from 'components';
 import { GlobalContext } from 'global/GlobalContext';
 import { useSetTitle } from 'lib';
-import { styles } from 'MUIConfig';
+import { styles } from 'theme/styles';
 import { UserContext } from 'user/UserContext';
 
 type UserLogin = {

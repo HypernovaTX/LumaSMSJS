@@ -16,7 +16,7 @@ import {
   LumaAccordionContent,
   LumaAccordionItem,
 } from 'components';
-import theme from 'MUIConfig';
+import theme from 'theme/styles';
 
 interface NavMobileType {
   close: () => void;

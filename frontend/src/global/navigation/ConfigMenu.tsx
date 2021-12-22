@@ -13,7 +13,7 @@ import {
 } from '@fortawesome/free-solid-svg-icons';
 import { faDiscord, faTwitter } from '@fortawesome/free-brands-svg-icons';
 
-import theme from 'MUIConfig';
+import theme from 'theme/styles';
 import routes from 'route.config';
 
 // Types

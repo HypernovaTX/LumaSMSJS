@@ -3,7 +3,7 @@ import { Box, CircularProgress, Typography } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 
 import { useAPI_userLogout } from 'api';
-import { styles } from 'MUIConfig';
+import { styles } from 'theme/styles';
 import { GlobalContext } from 'global/GlobalContext';
 import { UserContext } from 'user/UserContext';
 import { useSetTitle } from 'lib';

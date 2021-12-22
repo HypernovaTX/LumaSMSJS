@@ -9,7 +9,7 @@ import { useAPI_userUpdate } from 'api';
 import { A, LumaText } from 'components';
 import { GlobalContext } from 'global/GlobalContext';
 import { useSetTitle } from 'lib';
-import theme, { styles } from 'MUIConfig';
+import theme, { styles } from 'theme/styles';
 import routes from 'route.config';
 import { User } from 'schema/userSchema';
 import { UserContext } from 'user/UserContext';

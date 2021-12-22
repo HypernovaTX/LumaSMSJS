@@ -6,7 +6,7 @@ import { Avatar, Box, CircularProgress, Grid } from '@mui/material';
 import { FileUploader, LumaButton, LumaDiaglog, LumaText } from 'components';
 import { GlobalContext } from 'global/GlobalContext';
 import { UserContext } from 'user/UserContext';
-import { styles } from 'MUIConfig';
+import { styles } from 'theme/styles';
 import { useAPI_userAvatar, useAPI_userDeleteAvatar } from 'api';
 import { ErrorObj } from 'schema';
 

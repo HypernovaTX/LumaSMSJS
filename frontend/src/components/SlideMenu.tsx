@@ -1,6 +1,6 @@
 import React, { ReactNode } from 'react';
 import { Box, Slide } from '@mui/material';
-import theme from 'MUIConfig';
+import theme from 'theme/styles';
 import {
   disableBodyScroll,
   enableBodyScroll,

@@ -4,6 +4,7 @@ import image from 'psyw_screen_mfgg.png';
 
 const theme = createTheme({
   palette: {
+    mode: 'light',
     primary: {
       light: '#1EB7F3',
       main: '#044BF0',
@@ -17,6 +18,8 @@ const theme = createTheme({
     },
     error: {
       main: '#F04254',
+      light: '#F04254',
+      dark: '#F04254',
       contrastText: '#fff',
     },
     background: {

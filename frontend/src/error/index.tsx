@@ -6,7 +6,7 @@ import { LumaButton } from 'components';
 import { ErrorContext } from 'error/ErrorContext';
 import { GlobalContext } from 'global/GlobalContext';
 import { useSetTitle } from 'lib';
-import { styles } from 'MUIConfig';
+import { styles } from 'theme/styles';
 import routes from 'route.config';
 import { ErrorObj } from 'schema';
 

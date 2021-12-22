@@ -1,4 +1,4 @@
-import React, { useContext, useMemo, useState } from 'react';
+import React, { useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { Box, CircularProgress, Grid } from '@mui/material';
@@ -6,15 +6,14 @@ import { Box, CircularProgress, Grid } from '@mui/material';
 import { FileUploader, LumaButton, LumaDiaglog, LumaText } from 'components';
 import { GlobalContext } from 'global/GlobalContext';
 import { UserContext } from 'user/UserContext';
-import { styles } from 'MUIConfig';
-import {
-  useAPI_image,
-  useAPI_userBanner,
-  useAPI_userDeleteAvatar,
-  useAPI_userDeleteBanner,
-} from 'api';
+import { useAPI_userBanner, useAPI_userDeleteBanner } from 'api';
 import { ErrorObj } from 'schema';
-import { isError } from 'lib';
+import theme from 'theme/styles';
+
+type BannerSize = {
+  width?: number;
+  height?: number;
+};
 
 export default function UserBannerSettings() {
   // Custom hooks
@@ -27,6 +26,10 @@ export default function UserBannerSettings() {
   // State
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [open, setOpen] = useState(false);
+  const [bannerSize, setBannerSize] = useState<BannerSize>({});
+
+  // Ref
+  const bannerBox = useRef() as React.RefObject<HTMLDivElement>;
 
   // Data
   const { execute: uploadBanner, loading: bannerLoading } = useAPI_userBanner({
@@ -47,9 +50,16 @@ export default function UserBannerSettings() {
   ]);
   const noChange = useMemo(noChangeMemo, [selectedFile]);
 
+  // Effect
+  useEffect(bannerSizeEffect, [
+    banner,
+    bannerBox?.current?.clientWidth,
+    isSmallMobile,
+  ]);
+
   // Output
   return (
-    <Box mx={4} my={2} width="100%">
+    <Box mx={4} my={2} width="100%" ref={bannerBox} overflow="hidden">
       <Grid container direction="column" alignContent="stretch">
         {/* -------------------- Inputs -------------------- */}
         <Grid container item direction="column">
@@ -67,8 +77,25 @@ export default function UserBannerSettings() {
             xs={12}
             sx={{ my: 2 }}
           >
-            <Grid item>
-              <img src={banner} alt="banner" style={{ width: '100%' }} />
+            <Grid item xs={12}>
+              {banner ? (
+                <img
+                  src={banner}
+                  alt="banner"
+                  style={{ ...bannerSize, objectFit: 'cover' }}
+                />
+              ) : (
+                <Box
+                  border={`2px solid ${theme.palette.primary.main}`}
+                  textAlign="center"
+                  p={2}
+                  borderRadius="8px"
+                >
+                  <LumaText variant="body2" sx={{ fontWeight: 300 }}>
+                    <b>{t('user.noBanner')}</b>
+                  </LumaText>
+                </Box>
+              )}
             </Grid>
           </Grid>
           {/* Update banner */}
@@ -135,7 +162,7 @@ export default function UserBannerSettings() {
     setSelectedFile(file);
   }
   function handleSubmit() {
-    uploadBanner({ avatar: selectedFile });
+    uploadBanner({ banner: selectedFile });
   }
   function handleReset() {
     setSelectedFile(null);
@@ -148,6 +175,8 @@ export default function UserBannerSettings() {
   function loadingMemo() {
     return userLoading || bannerLoading || delLoading;
   }
+
+  // Data hoists
   function completedData() {
     toast(t('user.updateBannerDone'), 'success');
     handleReset();
@@ -155,5 +184,18 @@ export default function UserBannerSettings() {
   }
   function errorData(err: ErrorObj) {
     toast(err.message, 'error');
+  }
+
+  // Effect hoists
+  function bannerSizeEffect() {
+    const updateSize = () => {
+      const [ratioX, ratioY] = isSmallMobile ? [2, 1] : [8, 3];
+      setBannerSize({
+        width: bannerBox.current?.clientWidth,
+        height: (bannerBox.current?.clientWidth ?? 0 * ratioY) / ratioX,
+      });
+    };
+    window.addEventListener('resize', updateSize);
+    return () => window.removeEventListener('resize', updateSize);
   }
 }

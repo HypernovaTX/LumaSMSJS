@@ -7,7 +7,7 @@ import { UploadFile } from '@mui/icons-material';
 import { LumaButton, LumaText } from 'components';
 import { GlobalContext } from 'global/GlobalContext';
 import { bytesToSize } from 'lib';
-import theme, { slightlyDark } from 'MUIConfig';
+import theme, { slightlyDark } from 'theme/styles';
 
 interface FileUploaderProp {
   accepts: string;
