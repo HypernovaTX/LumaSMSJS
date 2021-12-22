@@ -51,10 +51,12 @@ export default function UserBannerSettings() {
   const noChange = useMemo(noChangeMemo, [selectedFile]);
 
   // Effect
+  useEffect(initEffect, [updateBannerSize]);
   useEffect(bannerSizeEffect, [
     banner,
     bannerBox?.current?.clientWidth,
     isSmallMobile,
+    updateBannerSize,
   ]);
 
   // Output
@@ -188,14 +190,19 @@ export default function UserBannerSettings() {
 
   // Effect hoists
   function bannerSizeEffect() {
-    const updateSize = () => {
-      const [ratioX, ratioY] = isSmallMobile ? [2, 1] : [8, 3];
-      setBannerSize({
-        width: bannerBox.current?.clientWidth,
-        height: (bannerBox.current?.clientWidth ?? 0 * ratioY) / ratioX,
-      });
-    };
-    window.addEventListener('resize', updateSize);
-    return () => window.removeEventListener('resize', updateSize);
+    window.addEventListener('resize', updateBannerSize);
+    return () => window.removeEventListener('resize', updateBannerSize);
+  }
+  function initEffect() {
+    updateBannerSize();
+  }
+
+  // Specials
+  function updateBannerSize() {
+    const [ratioX, ratioY] = isSmallMobile ? [2, 1] : [8, 3];
+    setBannerSize({
+      width: bannerBox.current?.clientWidth,
+      height: (bannerBox.current?.clientWidth ?? 0 * ratioY) / ratioX,
+    });
   }
 }
