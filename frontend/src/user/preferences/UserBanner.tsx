@@ -1,4 +1,11 @@
-import React, { useContext, useEffect, useMemo, useRef, useState } from 'react';
+import React, {
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { Box, CircularProgress, Grid } from '@mui/material';
@@ -50,8 +57,12 @@ export default function UserBannerSettings() {
   ]);
   const noChange = useMemo(noChangeMemo, [selectedFile]);
 
+  // Callbacks
+  const updateBannerSize = useCallback(bannerSizeCallback, [isSmallMobile]);
+
   // Effect
-  useEffect(initEffect, [updateBannerSize]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(initEffect, []);
   useEffect(bannerSizeEffect, [
     banner,
     bannerBox?.current?.clientWidth,
@@ -198,7 +209,7 @@ export default function UserBannerSettings() {
   }
 
   // Specials
-  function updateBannerSize() {
+  function bannerSizeCallback() {
     const [ratioX, ratioY] = isSmallMobile ? [2, 1] : [8, 3];
     setBannerSize({
       width: bannerBox.current?.clientWidth,

@@ -79,7 +79,6 @@ export function useAPI_userBanner(p: UpdateUserBannerProps) {
     url: 'user/banner',
     file: true,
   } as APIProp;
-  console.log(payload);
   return useSend(payload) as APINoResponse<{}>;
 }
 
