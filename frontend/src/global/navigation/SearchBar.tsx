@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Box, IconButton, InputBase } from '@mui/material';
 import { Search } from '@mui/icons-material';
 
-import theme, { styles } from 'MUIConfig';
+import theme, { styles } from 'theme/styles';
 
 interface SearchBarProps {
   disabled?: boolean;

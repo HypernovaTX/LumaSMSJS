@@ -1,23 +1,22 @@
 import { Box } from '@mui/material';
-import { ThemeProvider } from '@emotion/react';
 import { BrowserRouter } from 'react-router-dom';
 
 import 'index.css';
 import 'languages';
-import theme from 'MUIConfig';
 
 import ErrorProvider from 'error/ErrorContext';
 import Footer from 'global/Footer';
+import GlobalProvider from 'global/GlobalContext';
+import LumaThemeProvider from 'theme/ThemeContext';
 import Navigation from 'global/navigation';
 import Routes from 'Routes';
 import UserProvider from 'user/UserContext';
-import GlobalProvider from 'global/GlobalContext';
 
 // Root APP
 export default function App() {
   return (
     <BrowserRouter>
-      <ThemeProvider theme={theme}>
+      <LumaThemeProvider>
         <GlobalProvider>
           <ErrorProvider>
             <UserProvider>
@@ -36,7 +35,7 @@ export default function App() {
             </UserProvider>
           </ErrorProvider>
         </GlobalProvider>
-      </ThemeProvider>
+      </LumaThemeProvider>
     </BrowserRouter>
   );
 }

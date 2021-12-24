@@ -14,6 +14,7 @@ const routes = {
   profileFavorites: '/profile/favorites',
   profileNotifications: '/profile/notifications',
   profileSettings: '/profile/preferences',
+  profileSettingsR: '/profile/preferences/:kind?',
   profileSubmissions: '/profile/uploads',
   profileSubmit: '/profile/submit',
 

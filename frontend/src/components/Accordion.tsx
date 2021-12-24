@@ -9,7 +9,7 @@ import {
 } from '@mui/material';
 import { styled } from '@mui/material/styles';
 import { ArrowForward } from '@mui/icons-material';
-import theme from 'MUIConfig';
+import theme from 'theme/styles';
 
 export const LumaAccordion = styled((props: AccordionProps) => (
   <Accordion disableGutters elevation={0} square {...props} />

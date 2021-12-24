@@ -15,6 +15,7 @@ export interface ErrorObj {
 export const errors = {
   // default errors
   default: 'An unknown error has occured.',
+  emptyParam: 'The provided object for the request is empty!',
   invalidJson: 'Invalid JSON format used within the request!',
   invalidParam: 'Invalid parameters used in the request!',
   notAllowedCors: 'Not allowed by CORS',
@@ -46,6 +47,8 @@ export const errors = {
   submissionUpdateData: 'Update data is invalid!',
 
   // user
+  userAvatarDelete: 'User does not have avatar to delete!',
+  userBannerDelete: 'User does not have banner to delete!',
   userCookie: 'User cookie not found!',
   userCookieInvalid: 'User cookie is invalid!',
   userDeleteOwn: 'You cannot delete your own account!',

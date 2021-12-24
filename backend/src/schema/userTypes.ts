@@ -47,7 +47,7 @@ export interface User {
   title?: string;
   bio?: string;
   signature?: string;
-  favorite_game?: number;
+  favorite_game?: string;
   switch_code?: string;
 }
 export type UserKeys = keyof User;

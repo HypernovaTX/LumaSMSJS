@@ -7,7 +7,7 @@ import { checkLogin, updateUser, validatePermission } from '../lib/userlib';
 import CF from '../../config';
 import ERR, { ErrorObj, isError } from '../../lib/error';
 import { unlinkFile, verifyImageFile } from '../../lib/filemanager';
-import { objIntoArrays } from '../../lib/globallib';
+import { isEmptyObject, objIntoArrays } from '../../lib/globallib';
 import UserQuery from '../../queries/userquery';
 import {
   invalidStaffUserUpdateKeys,
@@ -28,6 +28,11 @@ export async function updateOtherUser(
   const query = new UserQuery();
   const getUser = await query.getUserById(uid);
   if (isError(getUser)) return getUser as ErrorObj;
+
+  // Ensure the object is not empty
+  if (isEmptyObject(inputs)) {
+    return ERR('emptyParam');
+  }
 
   // Ensure `inputs` does not have keys that are not allowed to update to the DB
   const invalidKeys = Object.keys(inputs).filter((key) =>
@@ -174,6 +179,11 @@ export async function createRole(
   const permitted = await validatePermission(_request, 'acp_users');
   if (!permitted) return ERR('userStaffPermit');
 
+  // Ensure the object is not empty
+  if (isEmptyObject(inputs)) {
+    return ERR('emptyParam');
+  }
+
   // Ensure `inputs` does not have keys that are not allowed to update to the DB
   const invalidKeys = Object.keys(inputs).filter((key) => key === 'gid');
   if (invalidKeys.length) return ERR('userRoleGid');
@@ -192,6 +202,11 @@ export async function updateRole(
   // Verify permission
   const permitted = await validatePermission(_request, 'acp_users');
   if (!permitted) return ERR('userStaffPermit');
+
+  // Ensure the object is not empty
+  if (isEmptyObject(inputs)) {
+    return ERR('emptyParam');
+  }
 
   // Ensure `inputs` does not have keys that are not allowed to update to the DB
   const invalidKeys = Object.keys(inputs).filter((key) => key === 'gid');

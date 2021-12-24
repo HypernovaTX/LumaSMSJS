@@ -8,6 +8,7 @@ import { APIDownloadProp, APIProp, RequestKinds } from 'schema/apiSchema';
 
 // Init
 const host = CF.HOST;
+const otherErrorRegExp = /^(<!DOCTYPE html>)/gm;
 axios.defaults.withCredentials = true;
 const headerConfig = {
   headers: {
@@ -39,13 +40,17 @@ export function useFetch(props: APIProp) {
       newBody || props.body,
       props.file,
       (data) => {
-        if (!isError(data) && props.onComplete) {
-          props.onComplete(data);
-          setData(data);
-        }
-        if (isError(data) && props.onError) {
+        if ((isError(data) || otherErrorRegExp.test(data)) && props.onError) {
           props.onError(data as ErrorObj);
           setError(data);
+        }
+        if (
+          !isError(data) &&
+          !otherErrorRegExp.test(data) &&
+          props.onComplete
+        ) {
+          props.onComplete(data);
+          setData(data);
         }
         setLoading(false);
         setRequested(true);
@@ -63,13 +68,17 @@ export function useFetch(props: APIProp) {
         props.body,
         props.file,
         (data) => {
-          if (!isError(data) && props.onComplete) {
-            props.onComplete(data);
-            setData(data);
-          }
-          if (isError(data) && props.onError) {
+          if ((isError(data) || otherErrorRegExp.test(data)) && props.onError) {
             props.onError(data as ErrorObj);
             setError(data);
+          }
+          if (
+            !isError(data) &&
+            !otherErrorRegExp.test(data) &&
+            props.onComplete
+          ) {
+            props.onComplete(data);
+            setData(data);
           }
           setLoading(false);
           setRequested(true);
@@ -94,13 +103,13 @@ export function useDownload(props: APIDownloadProp) {
   const execute = async (newBody?: AnyObject) => {
     setLoading(true);
     await APIDownload(newBody || props.body, (data) => {
-      if (!isError(data) && props.onComplete) {
-        props.onComplete(data);
-        setData(data);
-      }
-      if (isError(data) && props.onError) {
+      if ((isError(data) || otherErrorRegExp.test(data)) && props.onError) {
         props.onError(data);
         setError(data);
+      }
+      if (!isError(data) && !otherErrorRegExp.test(data) && props.onComplete) {
+        props.onComplete(data);
+        setData(data);
       }
       setLoading(false);
       setRequested(true);
@@ -144,13 +153,17 @@ export function useSend(props: APIProp) {
       newBody || props.body,
       props.file,
       (data) => {
-        if (!isError(data) && props.onComplete) {
-          props.onComplete(data);
-          setData(data);
-        }
-        if (isError(data) && props.onError) {
+        if ((isError(data) || otherErrorRegExp.test(data)) && props.onError) {
           props.onError(data as ErrorObj);
           setError(data);
+        }
+        if (
+          !isError(data) &&
+          !otherErrorRegExp.test(data) &&
+          props.onComplete
+        ) {
+          props.onComplete(data);
+          setData(data);
         }
         setLoading(false);
         setRequested(true);
@@ -174,8 +187,8 @@ export async function mainAPICall(
   } else {
     getData = await APICall(kind, url);
   }
-  if (loadedFunction) loadedFunction(getData?.data);
-  return getData?.data;
+  if (loadedFunction) loadedFunction(getData?.data || getData);
+  return getData?.data || getData;
 }
 
 // All requests
@@ -208,7 +221,9 @@ async function APICallBody(
   if (kind === 'get' || kind === 'delete') {
     return defaultAPIError;
   }
-  const params = prepareRequestBody(body);
+  const params = file
+    ? prepareRequestBodyFormData(body)
+    : prepareRequestBody(body);
   const output = await new Promise((resolve) => {
     axios[kind](
       `${host}/${url}`,
@@ -255,4 +270,15 @@ function prepareRequestBody(body: AnyObject) {
     params.append(key, value || '(null)');
   });
   return params;
+}
+function prepareRequestBodyFormData(body: AnyObject) {
+  const bodyEntries = Object.entries(body);
+  const formData = new FormData();
+  bodyEntries.forEach((item) => {
+    const [key, value] = item;
+    if (value instanceof File) {
+      formData.append(key, value, value.name);
+    }
+  });
+  return formData;
 }

@@ -5,15 +5,14 @@ import {
   CircularProgress,
   FormControlLabel,
   FormGroup,
-  Typography,
 } from '@mui/material';
 import LoginIcon from '@mui/icons-material/Login';
 
 import { useAPI_userLogin } from 'api';
-import { LumaButton, LumaCheckbox, LumaInput, A } from 'components';
+import { A, LumaButton, LumaCheckbox, LumaInput, LumaText } from 'components';
 import { GlobalContext } from 'global/GlobalContext';
 import { useSetTitle } from 'lib';
-import { styles } from 'MUIConfig';
+import { styles } from 'theme/styles';
 import { UserContext } from 'user/UserContext';
 
 type UserLogin = {
@@ -79,9 +78,7 @@ export default function Login() {
         minWidth="25vw"
       >
         {/* Title */}
-        <Typography variant={isMobile ? 'h4' : 'h2'} style={styles.bigText}>
-          {t('user.login')}
-        </Typography>
+        <LumaText isTitle>{t('user.login')}</LumaText>
         {/* Username/password input */}
         <Box my={1} width="100%">
           <LumaInput

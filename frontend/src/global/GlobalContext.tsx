@@ -18,12 +18,13 @@ import {
 } from '@mui/icons-material';
 
 import CF from 'config';
-import theme from 'MUIConfig';
+import theme from 'theme/styles';
 import { useWindowWidth } from 'lib';
 import { ContextProps } from 'schema';
 
 interface GlobalContextType {
   isMobile: boolean;
+  isSmallMobile: boolean;
   isTinyMobile: boolean;
   navigate: (p: string) => void;
   nativateToPrevious: () => void;
@@ -34,6 +35,7 @@ interface GlobalContextType {
 }
 export const GlobalContext = createContext<GlobalContextType>({
   isMobile: false,
+  isSmallMobile: false,
   isTinyMobile: false,
   navigate: noop,
   nativateToPrevious: noop,
@@ -55,6 +57,7 @@ export function GlobalProviderChild(props: ContextProps) {
 
   // Memo
   const isMobile = useMemo(isMobileMemo, [displayWidth]);
+  const isSmallMobile = useMemo(isSmallMobileMemo, [displayWidth]);
   const isTinyMobile = useMemo(isTinyMobileMemo, [displayWidth]);
 
   // Effects
@@ -66,6 +69,7 @@ export function GlobalProviderChild(props: ContextProps) {
     <GlobalContext.Provider
       value={{
         isMobile,
+        isSmallMobile,
         isTinyMobile,
         navigate,
         nativateToPrevious,
@@ -104,6 +108,9 @@ export function GlobalProviderChild(props: ContextProps) {
   // Memo hoists
   function isMobileMemo() {
     return !!displayWidth && displayWidth <= CF.MAX_MOBILESIZE;
+  }
+  function isSmallMobileMemo() {
+    return !!displayWidth && displayWidth <= CF.MAX_SMALLSIZE;
   }
   function isTinyMobileMemo() {
     return !!displayWidth && displayWidth <= CF.MAX_TINYSIZE;

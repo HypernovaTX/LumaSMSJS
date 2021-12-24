@@ -2073,6 +2073,11 @@
   resolved "https://registry.npmjs.org/@types/body-scroll-lock/-/body-scroll-lock-3.1.0.tgz#435f6abf682bf58640e1c2ee5978320b891970e7"
   integrity sha512-3owAC4iJub5WPqRhxd8INarF2bWeQq1yQHBgYhN0XLBJMpd5ED10RrJ3aKiAwlTyL5wK7RkBD4SZUQz2AAAMdA==
 
+"@types/country-list@^2.1.0":
+  version "2.1.0"
+  resolved "https://registry.yarnpkg.com/@types/country-list/-/country-list-2.1.0.tgz#047b3a1d5c9fdd3aa728aca035c56b8c81900154"
+  integrity sha512-aCE6SP9WQJkq9kNFDRdxpUfWhazvreNSPtm1BQG1B4/xSpKbRwfweVAChYx6MMLyTguCKJExGZ1C52Z8DlFSGg==
+
 "@types/downloadjs@^1.4.2":
   version "1.4.2"
   resolved "https://registry.npmjs.org/@types/downloadjs/-/downloadjs-1.4.2.tgz#6734e60840cd8df3f0f8937c80e67efe7de6f886"
@@ -2749,6 +2754,11 @@ ansi-escapes@^4.2.1, ansi-escapes@^4.3.1:
 ansi-html@0.0.7, ansi-html@^0.0.7, "ansi-html@https://registry.yarnpkg.com/ansi-html-community/-/ansi-html-community-0.0.8.tgz#69fbc4d6ccbe383f9736934ae34c3f8290f1bf41":
   version "0.0.8"
   resolved "https://registry.yarnpkg.com/ansi-html-community/-/ansi-html-community-0.0.8.tgz#69fbc4d6ccbe383f9736934ae34c3f8290f1bf41"
+
+ansi-regex@6.0.1:
+  version "6.0.1"
+  resolved "https://registry.npmjs.org/ansi-regex/-/ansi-regex-6.0.1.tgz#3183e38fae9a65d7cb5e53945cd5897d0260a06a"
+  integrity sha512-n5M855fKb2SsfMIiFFoVrABHJC8QtHwVx+mHWP3QcEqBHYienj5dHSgjbxtC0WEZXYt4wcD6zrQElDPhFuZgfA==
 
 ansi-regex@^2.0.0:
   version "2.1.1"
@@ -4058,6 +4068,11 @@ cosmiconfig@^7.0.0, cosmiconfig@^7.0.1:
     parse-json "^5.0.0"
     path-type "^4.0.0"
     yaml "^1.10.0"
+
+country-list@^2.2.0:
+  version "2.2.0"
+  resolved "https://registry.yarnpkg.com/country-list/-/country-list-2.2.0.tgz#e248338cafb97b2d86cf0784a25dceb4d52054d1"
+  integrity sha512-AS21pllCp72LmUztqXPVKXK3TRyap1XlohGLqN04cXH2rFB9vo7SnH5sMnqltZPnu9ie/x1se3UuCZJbGXErfw==
 
 create-ecdh@^4.0.0:
   version "4.0.4"
@@ -8208,7 +8223,7 @@ nth-check@^1.0.2:
 
 nth-check@^2.0.0:
   version "2.0.1"
-  resolved "https://registry.npmjs.org/nth-check/-/nth-check-2.0.1.tgz#2efe162f5c3da06a28959fbd3db75dbeea9f0fc2"
+  resolved "https://registry.yarnpkg.com/nth-check/-/nth-check-2.0.1.tgz#2efe162f5c3da06a28959fbd3db75dbeea9f0fc2"
   integrity sha512-it1vE95zF6dTT9lBsYbxvqh0Soy4SPowchj0UBGj/V6cTPnXXtQOPUbhZ6CmGzAD/rW22LQK6E96pcdJXk4A4w==
   dependencies:
     boolbase "^1.0.0"

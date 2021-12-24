@@ -43,8 +43,48 @@ export function useAPI_userLogin(p: GetUserLoginProps) {
 }
 
 // Log out
-export function useAPI_userLogout(p: GetUserLogoutProps) {
+export function useAPI_userLogout(p: APIPropsNoBody) {
   const payload = { ...p, kind: 'get', url: 'user/logout' } as APIProp;
+  return useSend(payload) as APINoResponse<{}>;
+}
+
+// Update user settings
+export function useAPI_userUpdate(p: UpdateUserProps) {
+  const payload = { ...p, kind: 'patch', url: 'user' } as APIProp;
+  return useSend(payload) as APINoResponse<{}>;
+}
+
+// Update user avatar
+export function useAPI_userAvatar(p: UpdateUserAvatarProps) {
+  const payload = {
+    ...p,
+    kind: 'patch',
+    url: 'user/avatar',
+    file: true,
+  } as APIProp;
+  return useSend(payload) as APINoResponse<{}>;
+}
+
+// Delete avatar
+export function useAPI_userDeleteAvatar(p: APIPropsNoBody) {
+  const payload = { ...p, kind: 'delete', url: 'user/avatar' } as APIProp;
+  return useSend(payload) as APINoResponse<{}>;
+}
+
+// Update user banner
+export function useAPI_userBanner(p: UpdateUserBannerProps) {
+  const payload = {
+    ...p,
+    kind: 'patch',
+    url: 'user/banner',
+    file: true,
+  } as APIProp;
+  return useSend(payload) as APINoResponse<{}>;
+}
+
+// Delete avatar
+export function useAPI_userDeleteBanner(p: APIPropsNoBody) {
+  const payload = { ...p, kind: 'delete', url: 'user/banner' } as APIProp;
   return useSend(payload) as APINoResponse<{}>;
 }
 
@@ -55,11 +95,11 @@ interface GetUserProps extends APIPropTemplate {
   onComplete?: OnComplete<User>;
 }
 
-type GetUserListBody = {
+interface GetUserListBody {
   page?: number;
   count?: number;
   filter?: [string, string][];
-};
+}
 interface GetUserListProps extends APIPropTemplate {
   body: GetUserListBody;
   onComplete?: OnComplete<User>;
@@ -72,16 +112,42 @@ interface GetUserPermitProps extends Omit<APIPropTemplate, 'body'> {
   onComplete?: OnComplete<PermissionKind[]>;
 }
 
-type GetUserLoginBody = {
+interface GetUserLoginBody {
   username: string;
   password: string;
   remember?: boolean;
-};
+}
 interface GetUserLoginProps extends APIPropTemplate {
   body: GetUserLoginBody;
   onComplete?: OnComplete<User>;
 }
 
-interface GetUserLogoutProps extends Omit<APIPropTemplate, 'body'> {
+interface APIPropsNoBody extends Omit<APIPropTemplate, 'body'> {
+  onComplete?: OnComplete<null>;
+}
+
+interface UpdateUserBody {
+  data: string;
+}
+
+interface UpdateUserProps extends APIPropTemplate {
+  body: UpdateUserBody;
+  onComplete?: OnComplete<null>;
+}
+interface UpdateUserAvatarBody {
+  avatar: File | null;
+}
+
+interface UpdateUserAvatarProps extends APIPropTemplate {
+  body: UpdateUserAvatarBody;
+  onComplete?: OnComplete<null>;
+}
+
+interface UpdateUserBannerBody {
+  banner: File | null;
+}
+
+interface UpdateUserBannerProps extends APIPropTemplate {
+  body: UpdateUserBannerBody;
   onComplete?: OnComplete<null>;
 }

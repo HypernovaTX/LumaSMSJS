@@ -4,6 +4,7 @@ import image from 'psyw_screen_mfgg.png';
 
 const theme = createTheme({
   palette: {
+    mode: 'light',
     primary: {
       light: '#1EB7F3',
       main: '#044BF0',
@@ -17,6 +18,8 @@ const theme = createTheme({
     },
     error: {
       main: '#F04254',
+      light: '#F04254',
+      dark: '#F04254',
       contrastText: '#fff',
     },
     background: {
@@ -31,20 +34,39 @@ const theme = createTheme({
     borderRadius: 8,
   },
   typography: {
-    fontFamily: '"Nunito", "Helvetica", "Arial", sans-serif',
+    fontFamily: '"Lato", "Nunito", "Helvetica", "Arial", sans-serif',
+    fontWeightRegular: 300,
+    fontWeightLight: 100,
   },
 });
 export default theme;
 
-const veryDark = mixColor('#000', theme.palette.primary.dark, 0.5);
-const veryDarkBG = mixColor('#000', theme.palette.primary.dark, 0.4);
-const veryError = mixColor('#000', theme.palette.error.main, 0.5);
-const veryErrorBG = mixColor('#000', theme.palette.error.main, 0.4);
+export const slightlyDark = mixColor(
+  theme.palette.primary.main,
+  theme.palette.primary.dark,
+  0.5
+);
+export const veryDark = mixColor('#000', theme.palette.primary.dark, 0.5);
+export const veryDarkBG = mixColor('#000', theme.palette.primary.dark, 0.4);
+export const veryError = mixColor('#000', theme.palette.error.main, 0.5);
+export const veryErrorBG = mixColor('#000', theme.palette.error.main, 0.4);
 export const styles: { [key: string]: React.CSSProperties } = {
+  avatarLarge: {
+    width: 128,
+    height: 128,
+    backgroundColor: theme.palette.primary.main,
+    border: `2px solid ${theme.palette.primary.main}`,
+  },
+  avatarMedium: {
+    width: 80,
+    height: 80,
+    backgroundColor: theme.palette.primary.main,
+    border: `2px solid ${theme.palette.primary.main}`,
+  },
   bigText: {
     fontWeight: 600,
     textShadow: '2px 2px 10px #000',
-    marginBottom: 8,
+    marginBottom: 16,
   },
   hamburgerBG: {
     position: 'fixed',

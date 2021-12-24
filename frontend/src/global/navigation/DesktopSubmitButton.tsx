@@ -14,7 +14,7 @@ import { Add, ExpandMore } from '@mui/icons-material';
 
 import { A } from 'components';
 import { LumaMenu, LumaToolTip } from 'components';
-import theme from 'MUIConfig';
+import theme from 'theme/styles';
 
 export default function SubmitButtonDesktop() {
   // Const

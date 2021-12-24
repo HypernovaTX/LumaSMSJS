@@ -1,8 +1,8 @@
 import React from 'react';
-import { Box, Container, Grid, Typography } from '@mui/material';
+import { Box, Container, Grid } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 
-import { A } from 'components';
+import { A, LumaText } from 'components';
 import route from 'route.config';
 
 // import theme from 'MUIConfig';
@@ -17,12 +17,12 @@ export default function Footer() {
   // Output
   return (
     <Box py={4}>
-      <Container>
+      <Container maxWidth="xl">
         <Grid container spacing={4}>
           <Grid item xs={12} md={6}>
-            <Typography align="center">{t('footer.disclaimer')}</Typography>
-            <Typography align="center">&nbsp;</Typography>
-            <Typography align="center">
+            <LumaText align="center">{t('footer.disclaimer')}</LumaText>
+            <LumaText align="center">&nbsp;</LumaText>
+            <LumaText align="center">
               {t('footer.copyright', { year })}
               <A url="https://github.com/HypernovaTX" newWindow>
                 Hypernova
@@ -31,41 +31,41 @@ export default function Footer() {
               <A url="https://mors-games.com/" newWindow>
                 Mors
               </A>
-            </Typography>
+            </LumaText>
           </Grid>
           <Grid item xs={6} md={3}>
-            <Typography align="center">
+            <LumaText align="center">
               <A url="#">{t('footer.links.about')}</A>
-            </Typography>
-            <Typography align="center">
+            </LumaText>
+            <LumaText align="center">
               <A url="#">{t('footer.links.faq')}</A>
-            </Typography>
-            <Typography align="center">
+            </LumaText>
+            <LumaText align="center">
               <A url="#">{t('footer.links.rules')}</A>
-            </Typography>
-            <Typography align="center">
+            </LumaText>
+            <LumaText align="center">
               <A url="#">{t('footer.links.staff')}</A>
-            </Typography>
-            <Typography align="center">
+            </LumaText>
+            <LumaText align="center">
               <A url="#">{t('footer.links.affiliates')}</A>
-            </Typography>
+            </LumaText>
           </Grid>
           <Grid item xs={6} md={3}>
-            <Typography align="center">
+            <LumaText align="center">
               <A url="#">{t('footer.links.newsArchive')}</A>
-            </Typography>
-            <Typography align="center">
+            </LumaText>
+            <LumaText align="center">
               <A url={route.urlWiki}>{t('footer.links.wiki')}</A>
-            </Typography>
-            <Typography align="center">
+            </LumaText>
+            <LumaText align="center">
               <A url="#">{t('footer.links.privacy')}</A>
-            </Typography>
-            <Typography align="center">
+            </LumaText>
+            <LumaText align="center">
               <A url="#">{t('footer.links.cookie')}</A>
-            </Typography>
-            <Typography align="center">
+            </LumaText>
+            <LumaText align="center">
               <A url="#">{t('footer.links.contact')}</A>
-            </Typography>
+            </LumaText>
           </Grid>
         </Grid>
       </Container>

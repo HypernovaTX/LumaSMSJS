@@ -21,7 +21,7 @@ import { A, LumaDivider, LumaMenu, LumaToolTip } from 'components';
 import { GlobalContext } from 'global/GlobalContext';
 import useUserOptions from 'global/navigation/ConfigUser';
 import SubmitButtonDesktop from 'global/navigation/DesktopSubmitButton';
-import theme, { styles } from 'MUIConfig';
+import theme, { styles } from 'theme/styles';
 import routes from 'route.config';
 import { UserContext } from 'user/UserContext';
 

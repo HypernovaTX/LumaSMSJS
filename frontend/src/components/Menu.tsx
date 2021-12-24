@@ -2,7 +2,7 @@ import React from 'react';
 import { Menu, MenuProps } from '@mui/material';
 import { styled } from '@mui/material/styles';
 
-import theme from 'MUIConfig';
+import theme from 'theme/styles';
 
 const CustomMenu = styled(Menu)({
   '& > .MuiPaper-root': {

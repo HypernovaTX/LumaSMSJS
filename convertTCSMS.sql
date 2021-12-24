@@ -201,3 +201,13 @@ CREATE TABLE `mfgg_mainsite`.`tsms_username_change` (
 ALTER TABLE `tsms_users` ADD `avatar_file` VARCHAR(256) NULL DEFAULT NULL AFTER `new_password`;
 ALTER TABLE `tsms_users` ADD `banner` VARCHAR(256) NULL DEFAULT NULL AFTER `avatar_file`;
 ALTER TABLE `tsms_users` ADD `banner_file` VARCHAR(256) NULL DEFAULT NULL AFTER `banner`;
+ALTER TABLE `tsms_users` ADD `birthday` VARCHAR(10) NULL DEFAULT NULL AFTER `banner_file`;
+ALTER TABLE `tsms_users` ADD `birthday_privacy` INT(2) NULL DEFAULT NULL AFTER `birthday`;
+ALTER TABLE `tsms_users` ADD `location` VARCHAR(128) NULL DEFAULT NULL AFTER `birthday_privacy`;
+ALTER TABLE `tsms_users` ADD `country` VARCHAR(64) NULL DEFAULT NULL AFTER `location`;
+ALTER TABLE `tsms_users` ADD `pronoun` VARCHAR(16) NULL DEFAULT 'Undisclosed' AFTER `country`;
+ALTER TABLE `tsms_users` ADD `title` VARCHAR(128) NULL DEFAULT NULL AFTER `pronoun`;
+ALTER TABLE `tsms_users` ADD `bio` VARCHAR(512) NULL DEFAULT NULL AFTER `title`;
+ALTER TABLE `tsms_users` ADD `signature` VARCHAR(1024) NULL DEFAULT NULL AFTER `bio`;
+ALTER TABLE `tsms_users` ADD `favorite_game` VARCHAR(64) NULL DEFAULT NULL AFTER `signature`;
+ALTER TABLE `tsms_users` ADD `switch_code` VARCHAR(32) NULL DEFAULT NULL AFTER `favorite_game`;

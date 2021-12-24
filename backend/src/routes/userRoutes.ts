@@ -19,6 +19,8 @@ import {
   updateUserRole,
 } from '../components/staff/userStaff';
 import {
+  deleteUserAvatar,
+  deleteUserBanner,
   findUsersByName,
   listUsers,
   showUserByID,
@@ -363,6 +365,21 @@ userRouter.post('/role', rateLimits.update, async (req, res) => {
 });
 
 // DELETE -------------------------------------------------------------------------------------------------------
+
+// DELETE "/avatar" - Delete user's avatar
+userRouter.delete('/avatar', rateLimits.update, async (req, res) => {
+  const result = await deleteUserAvatar(req);
+  httpStatus(res, result);
+  res.send(result);
+});
+
+// DELETE "/banner" - Delete user's banner
+userRouter.delete('/banner', rateLimits.update, async (req, res) => {
+  const result = await deleteUserBanner(req);
+  httpStatus(res, result);
+  res.send(result);
+});
+
 // DELETE "/role/:id" - Delete a role [ROOT]
 // PARAM: id
 userRouter.delete('/role/:id', rateLimits.update, async (req, res) => {
