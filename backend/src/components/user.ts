@@ -18,7 +18,11 @@ import {
   verifyPassword,
 } from './lib/userlib';
 import UserQuery from '../queries/userquery';
-import { invalidUserUpdateKeys, User } from '../schema/userTypes';
+import {
+  invalidUserUpdateKeys,
+  User,
+  UsernameChange,
+} from '../schema/userTypes';
 import { unlinkFile, verifyImageFile } from '../lib/filemanager';
 
 /**
@@ -76,7 +80,7 @@ export async function findUsersByName(
 export async function showUserByID(id: number) {
   const query = new UserQuery();
   const result = await query.getUserById(id);
-  if (isError(result)) return result as Error;
+  if (isError(result)) return result as ErrorObj;
 
   // Delete password
   const userResult = result as User;
@@ -117,6 +121,14 @@ export function userLogout(_response: Response) {
     expires: new Date(Date.now() + 2 * 1000),
     httpOnly: true,
   });
+}
+
+export async function usernameChangeHistory(id: number) {
+  const query = new UserQuery();
+  const result = await query.getUsernameChanges(id);
+  if (isError(result)) return result as ErrorObj;
+
+  return result as UsernameChange[];
 }
 
 // WRITE
