@@ -1,6 +1,7 @@
 const CF = {
   DEBUG_MODE: true,
   HOST: 'http://localhost:12026',
+  MAX_032: 32,
   MAX_064: 64,
   MAX_128: 128,
   MAX_256: 256,
@@ -12,5 +13,6 @@ const CF = {
   SITE_NAME: 'MFGG',
   SOCIAL_DISCORD: 'https://discord.gg/jchgfw5',
   SOCIAL_TWITTER: 'https://twitter.com/OfficialMFGG',
+  USERNAME_CHANGE_DAYS: 30,
 };
 export default CF;

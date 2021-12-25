@@ -39,3 +39,7 @@ export function dateToDash(date: string | number | Date) {
 
   return [year, month, day].join('-');
 }
+
+export function universalUnixTime(date: number) {
+  return Math.floor(date / 1000);
+}

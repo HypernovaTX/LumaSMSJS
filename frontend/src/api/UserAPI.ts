@@ -1,5 +1,5 @@
 import { useFetch, useSend } from 'api/apiCore';
-import { PermissionKind, User } from 'schema/userSchema';
+import { PermissionKind, User, UsernameChange } from 'schema/userSchema';
 import {
   APINoResponse,
   APIProp,
@@ -21,7 +21,7 @@ export function useAPI_user(p: GetUserProps) {
   const cleanedProps: AnyObject = p;
   delete cleanedProps.body;
   const payload = { ...cleanedProps, kind: 'get', url } as APIProp;
-  return useFetch(payload) as APIResponse<User, GetUserBody>;
+  return useFetch(payload) as APIResponse<User, undefined>;
 }
 
 // Get current user login
@@ -88,13 +88,27 @@ export function useAPI_userDeleteBanner(p: APIPropsNoBody) {
   return useSend(payload) as APINoResponse<{}>;
 }
 
+// Get username change history
+export function useAPI_usernameHistory(p: GetUsernameHistoryProps) {
+  const url = `user/${p.body.id}/usernames`;
+  const cleanedProps: AnyObject = p;
+  delete cleanedProps.body;
+  const payload = { ...cleanedProps, kind: 'get', url } as APIProp;
+  return useFetch(payload) as APIResponse<UsernameChange[], undefined>;
+}
+
+// Username change
+export function useAPI_usernameUpdate(p: UpdateUsernameProps) {
+  const payload = { ...p, kind: 'patch', url: 'user/username' } as APIProp;
+  return useSend(payload) as APINoResponse<{}>;
+}
+
 // Body Types
 type GetUserBody = { id: number };
 interface GetUserProps extends APIPropTemplate {
   body: GetUserBody;
   onComplete?: OnComplete<User>;
 }
-
 interface GetUserListBody {
   page?: number;
   count?: number;
@@ -149,5 +163,19 @@ interface UpdateUserBannerBody {
 
 interface UpdateUserBannerProps extends APIPropTemplate {
   body: UpdateUserBannerBody;
+  onComplete?: OnComplete<null>;
+}
+
+interface GetUsernameHistoryProps extends APIPropTemplate {
+  body: GetUserBody;
+  onComplete?: OnComplete<UsernameChange[]>;
+}
+interface UpdateUsernameBody {
+  username: string;
+  password: string;
+}
+
+interface UpdateUsernameProps extends APIPropTemplate {
+  body: UpdateUsernameBody;
   onComplete?: OnComplete<null>;
 }

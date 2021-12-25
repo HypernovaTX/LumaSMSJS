@@ -7,6 +7,7 @@ import { styles } from 'theme/styles';
 import { GlobalContext } from 'global/GlobalContext';
 import { UserContext } from 'user/UserContext';
 import { useSetTitle } from 'lib';
+import routes from 'route.config';
 
 export default function Logout() {
   // Custom hooks
@@ -15,7 +16,7 @@ export default function Logout() {
 
   // Context
   const { clearUser, user } = useContext(UserContext);
-  const { isMobile, nativateToPrevious, toast } = useContext(GlobalContext);
+  const { isMobile, navigate, toast } = useContext(GlobalContext);
 
   // Data
   // - User log out
@@ -24,12 +25,12 @@ export default function Logout() {
     onComplete: () => {
       clearUser();
       setTimeout(() => {
-        nativateToPrevious();
+        navigate(routes._index);
       }, 2000);
     },
     onError: (err) => {
       toast(err.message, 'error');
-      nativateToPrevious();
+      navigate(routes._index);
     },
   });
 
@@ -69,7 +70,7 @@ export default function Logout() {
 
   // Effect hoists
   function initEffect() {
-    if (!user) nativateToPrevious();
+    if (!user) navigate(routes._index);
     else logout();
   }
 }

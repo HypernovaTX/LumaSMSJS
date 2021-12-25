@@ -83,3 +83,10 @@ export type PermissionKind = keyof Omit<
   | 'name_prefix'
   | 'name_suffix'
 >;
+export interface UsernameChange {
+  unrid: number;
+  uid: number;
+  old_username: string;
+  new_username: string;
+  date: number;
+}

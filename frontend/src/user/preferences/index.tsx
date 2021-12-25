@@ -15,6 +15,7 @@ import { User } from 'schema/userSchema';
 import { UserContext } from 'user/UserContext';
 import UserAvatarSettings from 'user/preferences/UserAvatar';
 import UserBannerSettings from 'user/preferences/UserBanner';
+import UsernameSettings from 'user/preferences/Username';
 import UserProfileSettings from 'user/preferences/UserProfile';
 
 const { contrastText } = theme.palette.primary;
@@ -181,6 +182,8 @@ export default function UserSettings() {
         return <UserAvatarSettings />;
       case 'banner':
         return <UserBannerSettings />;
+      case 'username':
+        return <UsernameSettings />;
       default:
         return null;
     }
