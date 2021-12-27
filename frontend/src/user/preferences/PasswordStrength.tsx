@@ -14,7 +14,6 @@ interface PasswordStrengthProps {
   name: string;
   onChange: (e: TextInputEvent) => void;
   setCriteria: (p: boolean) => void;
-  setStrength: (p: boolean) => void;
   value: string;
 }
 interface PasswordValidation {

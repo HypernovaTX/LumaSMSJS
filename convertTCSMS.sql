@@ -212,3 +212,7 @@ ALTER TABLE `tsms_users` ADD `signature` VARCHAR(1024) NULL DEFAULT NULL AFTER `
 ALTER TABLE `tsms_users` ADD `favorite_game` VARCHAR(64) NULL DEFAULT NULL AFTER `signature`;
 ALTER TABLE `tsms_users` ADD `switch_code` VARCHAR(32) NULL DEFAULT NULL AFTER `favorite_game`;
 ALTER TABLE `tsms_users` ADD `last_password` INT(10) UNSIGNED NOT NULL AFTER `last_activity`;
+ALTER TABLE `tsms_users` ADD `github` VARCHAR(64) NOT NULL AFTER `switch_code`;
+
+/* UTF8 columns */
+ALTER TABLE `tsms_users` CONVERT TO CHARACTER SET utf8;

@@ -110,7 +110,6 @@ export default function UserPasswordSettings() {
               value={input.newpassword}
               onChange={handleInput}
               setCriteria={setCriteria}
-              setStrength={() => {}}
             />
             <Box width="100%" height={1} mb={3} />
           </Grid>

@@ -13,6 +13,7 @@ import theme, { styles } from 'theme/styles';
 import routes from 'route.config';
 import { User } from 'schema/userSchema';
 import { UserContext } from 'user/UserContext';
+import InvalidPreference from 'user/preferences/InvalidPreference';
 import { menuOptions, SettingMenuItems } from 'user/preferences/options';
 import UserAvatarSettings from 'user/preferences/UserAvatar';
 import UserBannerSettings from 'user/preferences/UserBanner';
@@ -20,6 +21,7 @@ import UserEmailSettings from './UserEmail';
 import UsernameSettings from 'user/preferences/Username';
 import UserPasswordSettings from 'user/preferences/UserPassword';
 import UserProfileSettings from 'user/preferences/UserProfile';
+import UserSocialMedia from './UserSocial';
 
 const { contrastText } = theme.palette.primary;
 const navHighlight = mixColor(theme.palette.primary.main, '#FFF', 0.2);
@@ -32,7 +34,12 @@ export default function UserSettings() {
   useSetTitle(t('title.settings'));
 
   // Context
-  const { loading: userLoading, user, setUser } = useContext(UserContext);
+  const {
+    loading: userLoading,
+    user,
+    setUser,
+    loadUser,
+  } = useContext(UserContext);
   const { isMobile, isSmallMobile, toast } = useContext(GlobalContext);
 
   // States
@@ -47,7 +54,9 @@ export default function UserSettings() {
     },
     onComplete: () => {
       toast(t('user.updateDone'), 'success');
-      setUser(userProfile);
+      setUser({ ...user, ...userProfile });
+      setUserProfile({});
+      loadUser && loadUser();
     },
     onError: (err) => {
       toast(err.message, 'error');
@@ -159,8 +168,16 @@ export default function UserSettings() {
         return <UserEmailSettings />;
       case 'password':
         return <UserPasswordSettings />;
+      case 'social':
+        return (
+          <UserSocialMedia
+            user={user}
+            update={handleUpdateUser}
+            loading={loading}
+          />
+        );
       default:
-        return null;
+        return <InvalidPreference />;
     }
   }
   function loadingMemo() {

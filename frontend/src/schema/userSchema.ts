@@ -50,6 +50,7 @@ export interface User {
   signature?: string;
   favorite_game?: string;
   switch_code?: string;
+  github?: string;
 }
 export type UserKeys = keyof User;
 export interface UserPermissions {
