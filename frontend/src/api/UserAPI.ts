@@ -99,7 +99,13 @@ export function useAPI_usernameHistory(p: GetUsernameHistoryProps) {
 
 // Username change
 export function useAPI_usernameUpdate(p: UpdateUsernameProps) {
-  const payload = { ...p, kind: 'patch', url: 'user/username' } as APIProp;
+  const payload = { ...p, kind: 'patch', url: 'use+r/username' } as APIProp;
+  return useSend(payload) as APINoResponse<{}>;
+}
+
+// Email change
+export function useAPI_emailUpdate(p: UpdateEmailProps) {
+  const payload = { ...p, kind: 'patch', url: 'user/email' } as APIProp;
   return useSend(payload) as APINoResponse<{}>;
 }
 
@@ -177,5 +183,15 @@ interface UpdateUsernameBody {
 
 interface UpdateUsernameProps extends APIPropTemplate {
   body: UpdateUsernameBody;
+  onComplete?: OnComplete<null>;
+}
+
+interface UpdateEmailBody {
+  email: string;
+  password: string;
+}
+
+interface UpdateEmailProps extends APIPropTemplate {
+  body: UpdateEmailBody;
   onComplete?: OnComplete<null>;
 }
