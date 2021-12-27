@@ -52,6 +52,7 @@ export const slightlyDark = mixColor(
   theme.palette.primary.dark,
   0.5
 );
+export const quiteDark = mixColor('#000', theme.palette.primary.dark, 0.8);
 export const veryDark = mixColor('#000', theme.palette.primary.dark, 0.5);
 export const veryDarkBG = mixColor('#000', theme.palette.primary.dark, 0.4);
 export const veryError = mixColor('#000', theme.palette.error.main, 0.5);
@@ -107,6 +108,9 @@ export const styles: { [key: string]: React.CSSProperties } = {
     backgroundColor: theme.palette.primary.main,
     border: `2px solid ${theme.palette.primary.main}`,
   },
+  passwordStrengthBar: {
+    height: 4,
+  },
   placeholderContainer: {
     background: `linear-gradient(0deg, rgba(0,0,0,0.75) 0%, rgba(0,0,0,0.75) 100%), url(${image})`,
     backgroundSize: 'cover',
@@ -117,6 +121,10 @@ export const styles: { [key: string]: React.CSSProperties } = {
     backgroundColor: theme.palette.primary.main,
     color: theme.palette.primary.light,
     borderColor: theme.palette.primary.light,
+  },
+  textIcon: {
+    fontSize: '1.2rem',
+    marginRight: 8,
   },
   transition: {
     transition: '200ms linear all',

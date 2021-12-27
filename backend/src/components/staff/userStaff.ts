@@ -43,8 +43,9 @@ export async function updateOtherUser(
 
   // Make sure the password is hashed if it exists
   if (inputs?.password) {
+    const timestamp = Math.ceil(Date.now() / 1000);
     inputs.password = await bcrypt.hash(inputs.password, CF.PASSWORD_SALT);
-    inputs.last_password = Date.now();
+    inputs.last_password = timestamp;
   }
 
   // Resolve

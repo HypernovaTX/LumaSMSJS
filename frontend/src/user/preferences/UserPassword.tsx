@@ -12,6 +12,7 @@ import routes from 'route.config';
 import { TextInputEvent } from 'schema';
 import { UserContext } from 'user/UserContext';
 import theme from 'theme/styles';
+import { PasswordStrength } from 'user/preferences/PasswordStrength';
 
 interface PasswordChangeInput {
   oldpassword: string;
@@ -37,6 +38,7 @@ export default function UserPasswordSettings() {
   // State
   const [open, setOpen] = useState(false);
   const [input, setInput] = useState(defaultPasswordInput);
+  const [criteria, setCriteria] = useState(false);
 
   // Data
   const { execute: updatePassword, loading: loadingU } = useAPI_passwordUpdate({
@@ -47,10 +49,16 @@ export default function UserPasswordSettings() {
 
   // Memo
   const loading = useMemo(loadingMemo, [userLoading, loadingU]);
-  const noChange = useMemo(noChangeMemo, [
+  const verifyMatch = useMemo(verifyMatchMemo, [
+    input.newpassword,
+    input.verify,
+  ]);
+  const cantSubmit = useMemo(cantSubmitMemo, [
     input.oldpassword,
     input.newpassword,
     input.verify,
+    verifyMatch,
+    criteria,
   ]);
   const daysSinceLastChange = useMemo(daysSinceLastChangeMemo, [user]);
 
@@ -95,15 +103,14 @@ export default function UserPasswordSettings() {
             <LumaText variant="body2">
               <b>{t('user.newPassword')}</b>
             </LumaText>
-            <LumaInput
+            {/* New password input */}
+            <PasswordStrength
               name="newpassword"
-              type="password"
-              fullWidth
-              size="small"
-              autoComplete="new-password"
-              disabled={loading}
+              loading={loading}
               value={input.newpassword}
               onChange={handleInput}
+              setCriteria={setCriteria}
+              setStrength={() => {}}
             />
             <Box width="100%" height={1} mb={3} />
           </Grid>
@@ -117,6 +124,7 @@ export default function UserPasswordSettings() {
               type="password"
               fullWidth
               size="small"
+              error={!verifyMatch}
               autoComplete="new-password"
               disabled={loading}
               value={input.verify}
@@ -136,7 +144,7 @@ export default function UserPasswordSettings() {
           <Box mt={1} mb={2} width="100%">
             <LumaButton
               type="submit"
-              disabled={loading || noChange}
+              disabled={loading || cantSubmit}
               color="secondary"
               variant="contained"
               size={isMobile ? 'medium' : 'large'}
@@ -166,28 +174,22 @@ export default function UserPasswordSettings() {
   // Handles
   function handleFormSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    // Do not make changes under certain circumstances
-    if (noChange) {
-      toast(t('error.noChangesMade'), 'error');
-      return;
-    }
-    if (loading) {
-      return;
-    }
+    if (cantSubmit || loading) return;
     setOpen(true);
   }
   function handleInput(e: TextInputEvent) {
     const name = e.target.name;
     const data = input;
+    const { value } = e.target;
     switch (name) {
       case 'oldpassword':
-        data.oldpassword = e.target.value;
+        data.oldpassword = value;
         break;
       case 'newpassword':
-        data.newpassword = e.target.value;
+        data.newpassword = value;
         break;
       case 'verify':
-        data.verify = e.target.value;
+        data.verify = value;
         break;
     }
     setInput({ ...data });
@@ -200,9 +202,12 @@ export default function UserPasswordSettings() {
   }
 
   // Memo hoists
-  function noChangeMemo() {
+  function cantSubmitMemo() {
+    console.log(`good: ${criteria}`);
     return (
       input.oldpassword === input.newpassword ||
+      !verifyMatch ||
+      !criteria ||
       !input.oldpassword ||
       !input.newpassword ||
       !input.verify
@@ -216,5 +221,8 @@ export default function UserPasswordSettings() {
     const currentTime = universalUnixTime(Date.now());
     const oneDay = 60 * 60 * 24;
     return Math.floor((currentTime - user.last_password) / oneDay);
+  }
+  function verifyMatchMemo() {
+    return input.verify === input.newpassword;
   }
 }

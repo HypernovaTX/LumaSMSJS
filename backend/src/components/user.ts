@@ -233,7 +233,7 @@ export async function updatePassword(
   const hashedNewPassword = await bcrypt.hash(newPassword, CF.PASSWORD_SALT);
 
   // Apply last password change
-  const passwordChangeDate = Date.now();
+  const passwordChangeDate = Math.ceil(Date.now() / 1000);
 
   return await updateUser(uid, {
     password: hashedNewPassword,
