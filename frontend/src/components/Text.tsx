@@ -8,6 +8,7 @@ import { styles } from 'theme/styles';
 
 export interface LumaTextProps extends TypographyProps {
   isTitle?: boolean;
+  color?: string;
 }
 
 export function LumaText(props: LumaTextProps) {
@@ -26,6 +27,8 @@ export function LumaText(props: LumaTextProps) {
         ...(props.isTitle ? styles.bigText : undefined),
         display: 'block',
         textAlign: props.align,
+        color: props.color,
+        ...props.style,
       }}
     >
       {props.children}

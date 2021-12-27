@@ -27,6 +27,7 @@ interface GlobalContextType {
   isSmallMobile: boolean;
   isTinyMobile: boolean;
   navigate: (p: string) => void;
+  nativateToHome: () => void;
   nativateToPrevious: () => void;
   prevPath?: string;
   setTitle: (p: string) => void;
@@ -38,6 +39,7 @@ export const GlobalContext = createContext<GlobalContextType>({
   isSmallMobile: false,
   isTinyMobile: false,
   navigate: noop,
+  nativateToHome: noop,
   nativateToPrevious: noop,
   setTitle: noop,
   title: '(null)',
@@ -72,6 +74,7 @@ export function GlobalProviderChild(props: ContextProps) {
         isSmallMobile,
         isTinyMobile,
         navigate,
+        nativateToHome,
         nativateToPrevious,
         prevPath,
         setTitle,
@@ -90,6 +93,9 @@ export function GlobalProviderChild(props: ContextProps) {
     history.push(url);
   }
 
+  function nativateToHome() {
+    navigate('/');
+  }
   function nativateToPrevious() {
     navigate(prevPath === location.pathname || !prevPath ? '/' : prevPath);
   }

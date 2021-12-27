@@ -1,13 +1,26 @@
 import { useFetch, useSend } from 'api/apiCore';
-import { PermissionKind, User } from 'schema/userSchema';
+import { AnyObject } from 'schema';
 import {
   APINoResponse,
   APIProp,
-  APIPropTemplate,
+  APIPropsNoBody,
   APIResponse,
-  OnComplete,
-} from 'schema/apiSchema';
-import { AnyObject } from 'schema';
+  GetUserListBody,
+  GetUserListProps,
+  GetUserLoginBody,
+  GetUserLoginProps,
+  GetUsernameHistoryProps,
+  GetUserPermitProps,
+  GetUserProps,
+  GetUserVerifyProps,
+  UpdateEmailProps,
+  UpdatePasswordProps,
+  UpdateUserAvatarProps,
+  UpdateUserBannerProps,
+  UpdateUsernameProps,
+  UpdateUserProps,
+} from 'schema/api';
+import { PermissionKind, User, UsernameChange } from 'schema/userSchema';
 
 // List users
 export function useAPI_userList(p: GetUserListProps) {
@@ -21,7 +34,7 @@ export function useAPI_user(p: GetUserProps) {
   const cleanedProps: AnyObject = p;
   delete cleanedProps.body;
   const payload = { ...cleanedProps, kind: 'get', url } as APIProp;
-  return useFetch(payload) as APIResponse<User, GetUserBody>;
+  return useFetch(payload) as APIResponse<User, undefined>;
 }
 
 // Get current user login
@@ -88,66 +101,29 @@ export function useAPI_userDeleteBanner(p: APIPropsNoBody) {
   return useSend(payload) as APINoResponse<{}>;
 }
 
-// Body Types
-type GetUserBody = { id: number };
-interface GetUserProps extends APIPropTemplate {
-  body: GetUserBody;
-  onComplete?: OnComplete<User>;
+// Get username change history
+export function useAPI_usernameHistory(p: GetUsernameHistoryProps) {
+  const url = `user/${p.body.id}/usernames`;
+  const cleanedProps: AnyObject = p;
+  delete cleanedProps.body;
+  const payload = { ...cleanedProps, kind: 'get', url } as APIProp;
+  return useFetch(payload) as APIResponse<UsernameChange[], undefined>;
 }
 
-interface GetUserListBody {
-  page?: number;
-  count?: number;
-  filter?: [string, string][];
-}
-interface GetUserListProps extends APIPropTemplate {
-  body: GetUserListBody;
-  onComplete?: OnComplete<User>;
-}
-interface GetUserVerifyProps extends Omit<APIPropTemplate, 'body'> {
-  onComplete?: OnComplete<User>;
+// Username change
+export function useAPI_usernameUpdate(p: UpdateUsernameProps) {
+  const payload = { ...p, kind: 'patch', url: 'use+r/username' } as APIProp;
+  return useSend(payload) as APINoResponse<{}>;
 }
 
-interface GetUserPermitProps extends Omit<APIPropTemplate, 'body'> {
-  onComplete?: OnComplete<PermissionKind[]>;
+// Email change
+export function useAPI_emailUpdate(p: UpdateEmailProps) {
+  const payload = { ...p, kind: 'patch', url: 'user/email' } as APIProp;
+  return useSend(payload) as APINoResponse<{}>;
 }
 
-interface GetUserLoginBody {
-  username: string;
-  password: string;
-  remember?: boolean;
-}
-interface GetUserLoginProps extends APIPropTemplate {
-  body: GetUserLoginBody;
-  onComplete?: OnComplete<User>;
-}
-
-interface APIPropsNoBody extends Omit<APIPropTemplate, 'body'> {
-  onComplete?: OnComplete<null>;
-}
-
-interface UpdateUserBody {
-  data: string;
-}
-
-interface UpdateUserProps extends APIPropTemplate {
-  body: UpdateUserBody;
-  onComplete?: OnComplete<null>;
-}
-interface UpdateUserAvatarBody {
-  avatar: File | null;
-}
-
-interface UpdateUserAvatarProps extends APIPropTemplate {
-  body: UpdateUserAvatarBody;
-  onComplete?: OnComplete<null>;
-}
-
-interface UpdateUserBannerBody {
-  banner: File | null;
-}
-
-interface UpdateUserBannerProps extends APIPropTemplate {
-  body: UpdateUserBannerBody;
-  onComplete?: OnComplete<null>;
+// Password change
+export function useAPI_passwordUpdate(p: UpdatePasswordProps) {
+  const payload = { ...p, kind: 'patch', url: 'user/password' } as APIProp;
+  return useSend(payload) as APINoResponse<{}>;
 }

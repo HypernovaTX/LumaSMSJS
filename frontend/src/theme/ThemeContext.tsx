@@ -35,6 +35,12 @@ export default function LumaThemeProvider(props: ContextProps) {
         dark: '#F04254',
         contrastText: '#fff',
       },
+      warning: {
+        main: '#ffb74d',
+        light: '#ffa726',
+        dark: '#f57c00',
+        contrastText: '#000',
+      },
       background: {
         default: '#0E0A33',
       },

@@ -41,12 +41,15 @@ export default function SearchBar(props: SearchBarProps) {
     >
       <InputBase
         fullWidth
+        type="text"
         margin="dense"
         placeholder={t('main.search')}
         sx={{
           color: searchColor,
           margin: '0.25rem',
         }}
+        name="search"
+        autoComplete="chrome-off"
         onFocus={() => setSearchFocused(true)}
         onBlur={() => setSearchFocused(false)}
         disabled={props.disabled}

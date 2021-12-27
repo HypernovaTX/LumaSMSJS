@@ -5,6 +5,7 @@ export * from './Checkbox';
 export * from './Diaglog';
 export * from './Divider';
 export * from './Drawer';
+export * from './ErrorLabel';
 export * from './FileUploader';
 export * from './Input';
 export * from './Menu';

@@ -1,10 +1,5 @@
 import { useDownload } from 'api/apiCore';
-import {
-  APIPropTemplate,
-  APIResponse,
-  OnComplete,
-  OnError,
-} from 'schema/apiSchema';
+import { APIPropTemplate, APIResponse, OnComplete, OnError } from 'schema/api';
 
 // Get image
 export function useAPI_image(props: GetImageProps) {

@@ -32,6 +32,7 @@ import {
   updateUserProfile,
   userLogin,
   userLogout,
+  usernameChangeHistory,
   userRegistration,
 } from '../components/user';
 import { diskStorage } from '../lib/filemanager';
@@ -91,6 +92,15 @@ userRouter.get('/logout', (_, res) => {
 userRouter.get('/:id', rateLimits.general, async (req, res) => {
   const id = parseInt(req.params.id) || 0;
   const result = await showUserByID(id);
+  httpStatus(res, result);
+  res.send(result);
+});
+
+// GET "/:id/usernames" - Show list of username changes
+// PARAM: id
+userRouter.get('/:id/usernames', rateLimits.general, async (req, res) => {
+  const id = parseInt(req.params.id) || 0;
+  const result = await usernameChangeHistory(id);
   httpStatus(res, result);
   res.send(result);
 });

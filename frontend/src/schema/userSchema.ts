@@ -33,6 +33,7 @@ export interface User {
   use_comment_digest?: number;
   last_visit?: number;
   last_activity?: number;
+  last_password?: number;
   last_ip?: string;
   new_password?: number;
   password?: string;
@@ -49,6 +50,7 @@ export interface User {
   signature?: string;
   favorite_game?: string;
   switch_code?: string;
+  github?: string;
 }
 export type UserKeys = keyof User;
 export interface UserPermissions {
@@ -83,3 +85,10 @@ export type PermissionKind = keyof Omit<
   | 'name_prefix'
   | 'name_suffix'
 >;
+export interface UsernameChange {
+  unrid: number;
+  uid: number;
+  old_username: string;
+  new_username: string;
+  date: number;
+}
