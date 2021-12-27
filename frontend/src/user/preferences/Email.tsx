@@ -14,7 +14,7 @@ import {
 import CF from 'config';
 import { GlobalContext } from 'global/GlobalContext';
 import { emailRegex } from 'lib';
-import { ErrorObj, TextInputEvent } from 'schema';
+import { TextInputEvent } from 'schema';
 import { UserContext } from 'user/UserContext';
 
 interface EmailChangeInput {
@@ -22,7 +22,7 @@ interface EmailChangeInput {
   password: string;
 }
 
-const defaultUsernameInput: EmailChangeInput = {
+const defaultEmailInput: EmailChangeInput = {
   email: '',
   password: '',
 };
@@ -32,19 +32,19 @@ export default function UserEmailSettings() {
   const { t } = useTranslation();
 
   // Context
-  const { loading: userLoading, user } = useContext(UserContext);
+  const { loadUser, loading: userLoading, user } = useContext(UserContext);
   const { isMobile, isSmallMobile, toast } = useContext(GlobalContext);
 
   // State
   const [open, setOpen] = useState(false);
-  const [input, setInput] = useState(defaultUsernameInput);
+  const [input, setInput] = useState(defaultEmailInput);
   const [emailError, setEmailError] = useState(false);
 
   // Data
   const { execute: updateEmail, loading: loadingUpdate } = useAPI_emailUpdate({
-    body: defaultUsernameInput,
+    body: defaultEmailInput,
     onComplete: completedData,
-    onError: errorData,
+    onError: (err) => toast(err.message, 'error'),
   });
 
   // Memo
@@ -74,7 +74,7 @@ export default function UserEmailSettings() {
             <b>{t('user.newEmail')}</b>
           </LumaText>
           <LumaInput
-            name="email"
+            name="newemail"
             fullWidth
             size="small"
             type="email"
@@ -84,6 +84,7 @@ export default function UserEmailSettings() {
             onChange={handleInput}
             onBlur={handleEmailVerify}
             error={emailError}
+            autoComplete="off"
             inputProps={{ maxLength: CF.MAX_128 }}
           />
           <Box width="100%" mr={2}>
@@ -118,7 +119,7 @@ export default function UserEmailSettings() {
             color="secondary"
             variant="contained"
             size={isMobile ? 'medium' : 'large'}
-            onClick={() => setOpen(true)}
+            onClick={hangleOpen}
             fullWidth={isSmallMobile}
             sx={isSmallMobile ? undefined : { px: loading ? 4 : undefined }}
           >
@@ -135,7 +136,7 @@ export default function UserEmailSettings() {
           title={t('user.updateYourEmail')}
           message={`${t('user.diaglogEmailUpdate')}"${input.email}"?`}
           open={open}
-          onConfirm={handleSubmit}
+          onConfirm={() => updateEmail(input)}
           onClose={() => setOpen(false)}
         />
       </Grid>
@@ -146,7 +147,7 @@ export default function UserEmailSettings() {
     const name = e.target.name;
     const data = input;
     switch (name) {
-      case 'email':
+      case 'newemail':
         data.email = e.target.value;
         if (emailError) handleEmailVerify(e);
         break;
@@ -156,9 +157,14 @@ export default function UserEmailSettings() {
     }
     setInput({ ...data });
   }
-  function handleSubmit() {
-    console.log(input);
-    updateEmail(input);
+  function hangleOpen() {
+    const checkEmail = emailRegex.test(input.email);
+    if (!checkEmail) {
+      toast(t('error.invalidEmail'), 'error');
+      setEmailError(true);
+      return;
+    }
+    setOpen(true);
   }
   function handleEmailVerify(e: TextInputEvent) {
     const inputEmail = e.target.value;
@@ -169,9 +175,8 @@ export default function UserEmailSettings() {
   // Data hoists
   function completedData() {
     toast(t('user.updateEmailDone'), 'success');
-  }
-  function errorData(err: ErrorObj) {
-    toast(err.message, 'error');
+    setInput(defaultEmailInput);
+    if (loadUser) loadUser();
   }
 
   // Memo hoists

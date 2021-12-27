@@ -9,7 +9,7 @@ import CF from 'config';
 import { GlobalContext } from 'global/GlobalContext';
 import { universalUnixTime } from 'lib';
 import routes from 'route.config';
-import { ErrorObj, TextInputEvent } from 'schema';
+import { TextInputEvent } from 'schema';
 import { UserContext } from 'user/UserContext';
 import { UsernameChange } from 'schema/userSchema';
 import theme from 'theme/styles';
@@ -44,12 +44,12 @@ export default function UsernameSettings() {
     skip: !user,
     body: { id: user?.uid ?? 0 },
     onComplete: saveLastUsernameChange,
-    onError: errorData,
+    onError: (err) => toast(err.message, 'error'),
   });
   const { execute: updateUname, loading: loadingU } = useAPI_usernameUpdate({
     body: defaultUsernameInput,
     onComplete: completedData,
-    onError: errorData,
+    onError: (err) => toast(err.message, 'error'),
   });
 
   // Memo
@@ -190,7 +190,7 @@ export default function UsernameSettings() {
           title={t('user.updateYourUsername')}
           message={`${t('user.diaglogUsernameUpdate')}"${input.username}"?`}
           open={open}
-          onConfirm={handleSubmit}
+          onConfirm={() => updateUname(input)}
           onClose={() => setOpen(false)}
         />
       </Grid>
@@ -210,9 +210,6 @@ export default function UsernameSettings() {
     }
     setInput({ ...data });
   }
-  function handleSubmit() {
-    updateUname(input);
-  }
 
   // Data hoists
   function saveLastUsernameChange(data: UsernameChange[]) {
@@ -222,9 +219,6 @@ export default function UsernameSettings() {
   function completedData() {
     toast(t('user.updateUsernameDone'), 'success');
     navigate(routes.userLogout);
-  }
-  function errorData(err: ErrorObj) {
-    toast(err.message, 'error');
   }
 
   // Memo hoists
