@@ -112,7 +112,7 @@ export function useAPI_usernameHistory(p: GetUsernameHistoryProps) {
 
 // Username change
 export function useAPI_usernameUpdate(p: UpdateUsernameProps) {
-  const payload = { ...p, kind: 'patch', url: 'use+r/username' } as APIProp;
+  const payload = { ...p, kind: 'patch', url: 'user/username' } as APIProp;
   return useSend(payload) as APINoResponse<{}>;
 }
 

@@ -44,7 +44,6 @@ export default function UsernameSettings() {
     skip: !user,
     body: { id: user?.uid ?? 0 },
     onComplete: saveLastUsernameChange,
-    onError: (err) => toast(err.message, 'error'),
   });
   const { execute: updateUname, loading: loadingU } = useAPI_usernameUpdate({
     body: defaultUsernameInput,
@@ -60,7 +59,7 @@ export default function UsernameSettings() {
     user?.username,
   ]);
   const daysSinceLastChange = useMemo(daysSinceLastChangeMemo, [lastUsername]);
-  const pastXDays = useMemo(pastXDaysMemo, [daysSinceLastChange]);
+  const pastXDays = useMemo(pastXDaysMemo, [daysSinceLastChange, lastUsername]);
 
   // Effect
   useEffect(reloadUsernameHistoryEffect, [
@@ -251,6 +250,7 @@ export default function UsernameSettings() {
     return Math.floor((currentTime - lastUsername.date) / oneDay);
   }
   function pastXDaysMemo() {
+    if (!lastUsername) return true;
     if (daysSinceLastChange === undefined) return false;
     return daysSinceLastChange >= CF.USERNAME_CHANGE_DAYS;
   }
