@@ -158,9 +158,10 @@ export function PasswordStrength(props: PasswordStrengthProps) {
               style={{
                 ...styles.passwordStrengthBar,
                 margin: 2,
-                backgroundColor: validator.strong
-                  ? colorPass
-                  : theme.palette.primary.main,
+                backgroundColor:
+                  criteria && validator.strong
+                    ? colorPass
+                    : theme.palette.primary.main,
               }}
             />
           </Grid>
