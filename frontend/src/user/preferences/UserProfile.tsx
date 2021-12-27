@@ -9,6 +9,7 @@ import CF from 'config';
 import { GlobalContext } from 'global/GlobalContext';
 import { User, UserKeys } from 'schema/userSchema';
 import { isEmptyObject } from 'lib';
+import { TextInputEvent } from 'schema';
 interface ProfileSettingsProps {
   loading?: boolean;
   user?: User;
@@ -252,9 +253,7 @@ export default function UserProfileSettings(props: ProfileSettingsProps) {
     </Box>
   );
   // Handles
-  function handleInputChange(
-    e: React.ChangeEvent<HTMLTextAreaElement | HTMLInputElement>
-  ) {
+  function handleInputChange(e: TextInputEvent) {
     const input = e.target.name as UserKeys;
     let data = {} as User;
     switch (input) {

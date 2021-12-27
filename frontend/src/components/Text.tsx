@@ -28,6 +28,7 @@ export function LumaText(props: LumaTextProps) {
         display: 'block',
         textAlign: props.align,
         color: props.color,
+        ...props.style,
       }}
     >
       {props.children}

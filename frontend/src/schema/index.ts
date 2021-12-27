@@ -1,4 +1,4 @@
-import { ReactNode } from 'react';
+import React, { ReactNode } from 'react';
 
 export type ContextProps = {
   children: ReactNode;
@@ -17,3 +17,7 @@ export interface ErrorObj {
   reason?: string;
   code?: number;
 }
+
+export type TextInputEvent = React.ChangeEvent<
+  HTMLTextAreaElement | HTMLInputElement
+>;

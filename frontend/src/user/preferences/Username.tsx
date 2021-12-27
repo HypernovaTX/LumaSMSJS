@@ -9,7 +9,7 @@ import CF from 'config';
 import { GlobalContext } from 'global/GlobalContext';
 import { universalUnixTime } from 'lib';
 import routes from 'route.config';
-import { ErrorObj } from 'schema';
+import { ErrorObj, TextInputEvent } from 'schema';
 import { UserContext } from 'user/UserContext';
 import { UsernameChange } from 'schema/userSchema';
 import theme from 'theme/styles';
@@ -114,6 +114,7 @@ export default function UsernameSettings() {
           <LumaInput
             name="username"
             fullWidth
+            placeholder=""
             size="small"
             disabled={loading || !pastXDays}
             value={input.username}
@@ -196,9 +197,7 @@ export default function UsernameSettings() {
     </Box>
   );
   // Handles
-  function handleInput(
-    e: React.ChangeEvent<HTMLTextAreaElement | HTMLInputElement>
-  ) {
+  function handleInput(e: TextInputEvent) {
     const name = e.target.name;
     const data = input;
     switch (name) {
@@ -221,7 +220,7 @@ export default function UsernameSettings() {
     setLastUsername(latestChange);
   }
   function completedData() {
-    toast(t('user.updateAvatarDone'), 'success');
+    toast(t('user.updateUsernameDone'), 'success');
     navigate(routes.userLogout);
   }
   function errorData(err: ErrorObj) {

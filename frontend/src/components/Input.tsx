@@ -21,28 +21,31 @@ export const LumaInput = styled(TextField)({
   '& input, & textarea': {
     zIndex: 1,
     color: theme.palette.primary.contrastText,
+    borderRadius: 8,
   },
   '& input:disabled, & textarea:disabled': {
     cursor: 'not-allowed',
   },
   '& input:-internal-autofill-selected, & input:-webkit-autofill, & textarea:-internal-autofill-selected, & textarea:-webkit-autofill':
     {
-      boxShadow: `0 0 0 50px ${theme.palette.primary.main} inset`,
+      boxShadow: `0 0 0 100rem ${theme.palette.primary.main} inset`,
       textFillColor: theme.palette.primary.contrastText,
       zIndex: 1,
+      borderRadius: 8,
     },
   '& input::-webkit-calendar-picker-indicator': {
     filter: 'invert(1)',
-    // display: 'none',
   },
   '& .MuiOutlinedInput-root': {
     transition: '200ms linear all',
+    borderRadius: 0,
     '& fieldset': {
       ...styles.transition,
       zIndex: 0,
       color: theme.palette.primary.light,
       border: 'none',
       backgroundColor: theme.palette.primary.main,
+      borderRadius: 8,
     },
     '&:hover fieldset': {
       backgroundColor: theme.palette.primary.main,
@@ -50,6 +53,9 @@ export const LumaInput = styled(TextField)({
     '&.Mui-focused fieldset': {
       color: theme.palette.primary.contrastText,
       backgroundColor: theme.palette.primary.main,
+    },
+    '&.Mui-error fieldset': {
+      border: `1px solid ${theme.palette.error.dark}`,
     },
   },
   '& ::-webkit-scrollbar': {

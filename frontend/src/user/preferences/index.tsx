@@ -17,6 +17,7 @@ import UserAvatarSettings from 'user/preferences/UserAvatar';
 import UserBannerSettings from 'user/preferences/UserBanner';
 import UsernameSettings from 'user/preferences/Username';
 import UserProfileSettings from 'user/preferences/UserProfile';
+import UserEmailSettings from './Email';
 
 const { contrastText } = theme.palette.primary;
 const navHighlight = mixColor(theme.palette.primary.main, '#FFF', 0.2);
@@ -184,6 +185,8 @@ export default function UserSettings() {
         return <UserBannerSettings />;
       case 'username':
         return <UsernameSettings />;
+      case 'email':
+        return <UserEmailSettings />;
       default:
         return null;
     }

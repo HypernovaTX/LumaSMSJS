@@ -3,6 +3,7 @@
     "error": "Error",
     "error400": "Request Failure (400)",
     "error404Page": "Page Not Found",
+    "invalidEmail": "Invalid email address!",
     "noError": "No errors found at this moment",
     "noMultiFile": "Multiple files are not allowed!",
     "tooManyRequests": "Too many network requests! Please try again later!",

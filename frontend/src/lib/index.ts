@@ -43,3 +43,6 @@ export function dateToDash(date: string | number | Date) {
 export function universalUnixTime(date: number) {
   return Math.floor(date / 1000);
 }
+
+export const emailRegex =
+  /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;

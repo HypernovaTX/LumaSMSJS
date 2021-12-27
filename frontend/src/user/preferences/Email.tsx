@@ -4,13 +4,18 @@ import { useTranslation } from 'react-i18next';
 import { Box, CircularProgress, Grid } from '@mui/material';
 
 import { useAPI_emailUpdate } from 'api';
-import { LumaButton, LumaDiaglog, LumaInput, LumaText } from 'components';
+import {
+  ErrorLabel,
+  LumaButton,
+  LumaDiaglog,
+  LumaInput,
+  LumaText,
+} from 'components';
 import CF from 'config';
 import { GlobalContext } from 'global/GlobalContext';
-import routes from 'route.config';
-import { ErrorObj } from 'schema';
+import { emailRegex } from 'lib';
+import { ErrorObj, TextInputEvent } from 'schema';
 import { UserContext } from 'user/UserContext';
-// import theme from 'theme/styles';
 
 interface EmailChangeInput {
   email: string;
@@ -22,18 +27,18 @@ const defaultUsernameInput: EmailChangeInput = {
   password: '',
 };
 
-export default function EmailSettings() {
+export default function UserEmailSettings() {
   // Custom hooks
   const { t } = useTranslation();
 
   // Context
   const { loading: userLoading, user } = useContext(UserContext);
-  const { isMobile, isSmallMobile, navigate, toast } =
-    useContext(GlobalContext);
+  const { isMobile, isSmallMobile, toast } = useContext(GlobalContext);
 
   // State
   const [open, setOpen] = useState(false);
   const [input, setInput] = useState(defaultUsernameInput);
+  const [emailError, setEmailError] = useState(false);
 
   // Data
   const { execute: updateEmail, loading: loadingUpdate } = useAPI_emailUpdate({
@@ -66,17 +71,24 @@ export default function EmailSettings() {
         {/* -------------------- Email -------------------- */}
         <Grid container item direction="column">
           <LumaText variant="body2">
-            <b>{t('user.newUsername')}</b>
+            <b>{t('user.newEmail')}</b>
           </LumaText>
           <LumaInput
             name="email"
             fullWidth
             size="small"
+            type="email"
+            placeholder=""
             disabled={loading}
             value={input.email}
             onChange={handleInput}
+            onBlur={handleEmailVerify}
+            error={emailError}
             inputProps={{ maxLength: CF.MAX_128 }}
           />
+          <Box width="100%" mr={2}>
+            <ErrorLabel in={emailError} message={t('error.invalidEmail')} />
+          </Box>
           <Box width="100%" textAlign="right" mr={2} mb={1}>
             <LumaText variant="body2">
               {`${input.email.length ?? 0}/${CF.MAX_128}`}
@@ -102,7 +114,7 @@ export default function EmailSettings() {
         {/* -------------------- Submit/reset buttons -------------------- */}
         <Box mt={1} mb={2} width="100%">
           <LumaButton
-            disabled={loading || noChange}
+            disabled={loading || noChange || emailError}
             color="secondary"
             variant="contained"
             size={isMobile ? 'medium' : 'large'}
@@ -130,14 +142,13 @@ export default function EmailSettings() {
     </Box>
   );
   // Handles
-  function handleInput(
-    e: React.ChangeEvent<HTMLTextAreaElement | HTMLInputElement>
-  ) {
+  function handleInput(e: TextInputEvent) {
     const name = e.target.name;
     const data = input;
     switch (name) {
       case 'email':
         data.email = e.target.value;
+        if (emailError) handleEmailVerify(e);
         break;
       case 'password':
         data.password = e.target.value;
@@ -149,11 +160,15 @@ export default function EmailSettings() {
     console.log(input);
     updateEmail(input);
   }
+  function handleEmailVerify(e: TextInputEvent) {
+    const inputEmail = e.target.value;
+    const result = emailRegex.test(inputEmail);
+    setEmailError(!result);
+  }
 
   // Data hoists
   function completedData() {
-    toast(t('user.updateAvatarDone'), 'success');
-    navigate(routes.userLogout);
+    toast(t('user.updateEmailDone'), 'success');
   }
   function errorData(err: ErrorObj) {
     toast(err.message, 'error');
