@@ -74,126 +74,128 @@ export default function UsernameSettings() {
   // Output
   return (
     <Box mx={4} my={2} width="100%">
-      <Grid container direction="column" alignContent="stretch">
-        {/* -------------------- Current username -------------------- */}
-        <Grid container item direction="column">
-          <Box mb={3}>
-            <LumaText>
-              <b>{t('user.currentUsername')}</b>
-            </LumaText>
-            <LumaText>{user?.username ?? t('main.NA')}</LumaText>
-          </Box>
-        </Grid>
-        {/* -------------------- Last username -------------------- */}
-        <Grid container item direction="column">
-          <Box mb={3}>
-            <LumaText>
-              <b>{t('user.lastUsername')}</b>
-            </LumaText>
-            <LumaText>{lastUsername?.old_username ?? t('main.NA')}</LumaText>
-          </Box>
-        </Grid>
-        {/* -------------------- Last change date -------------------- */}
-        <Grid container item direction="column">
-          <Box mb={3}>
-            <LumaText>
-              <b>{t('user.lastUsernameChange')}</b>
-            </LumaText>
-            <LumaText>
-              {daysSinceLastChange !== undefined
-                ? `${daysSinceLastChange} ${t('main.daysAgo')}`
-                : t('main.NA')}
-            </LumaText>
-          </Box>
-        </Grid>
-        {/* -------------------- Username -------------------- */}
-        <Grid container item direction="column">
-          <LumaText variant="body2">
-            <b>{t('user.newUsername')}</b>
-          </LumaText>
-          <LumaInput
-            name="username"
-            fullWidth
-            placeholder=""
-            size="small"
-            disabled={loading || !pastXDays}
-            value={input.username}
-            onChange={handleInput}
-            inputProps={{ maxLength: CF.MAX_032 }}
-          />
-          <Box width="100%" textAlign="right" mr={2} mb={1}>
+      <form onSubmit={handleFormSubmit}>
+        <Grid container direction="column" alignContent="stretch">
+          {/* -------------------- Current username -------------------- */}
+          <Grid container item direction="column">
+            <Box mb={3}>
+              <LumaText>
+                <b>{t('user.currentUsername')}</b>
+              </LumaText>
+              <LumaText>{user?.username ?? t('main.NA')}</LumaText>
+            </Box>
+          </Grid>
+          {/* -------------------- Last username -------------------- */}
+          <Grid container item direction="column">
+            <Box mb={3}>
+              <LumaText>
+                <b>{t('user.lastUsername')}</b>
+              </LumaText>
+              <LumaText>{lastUsername?.old_username ?? t('main.NA')}</LumaText>
+            </Box>
+          </Grid>
+          {/* -------------------- Last change date -------------------- */}
+          <Grid container item direction="column">
+            <Box mb={3}>
+              <LumaText>
+                <b>{t('user.lastUsernameChange')}</b>
+              </LumaText>
+              <LumaText>
+                {daysSinceLastChange !== undefined
+                  ? `${daysSinceLastChange} ${t('main.daysAgo')}`
+                  : t('main.NA')}
+              </LumaText>
+            </Box>
+          </Grid>
+          {/* -------------------- Username -------------------- */}
+          <Grid container item direction="column">
             <LumaText variant="body2">
-              {`${input.username.length ?? user?.username?.length ?? 0}/${
-                CF.MAX_032
-              }`}
+              <b>{t('user.newUsername')}</b>
             </LumaText>
-          </Box>
-        </Grid>
-        {/* -------------------- Password -------------------- */}
-        <Grid container item direction="column">
-          <LumaText variant="body2">
-            <b>{t('user.password')}</b>
-          </LumaText>
-          <LumaInput
-            name="password"
-            type="password"
-            fullWidth
-            size="small"
-            disabled={loading || !pastXDays}
-            value={input.password}
-            onChange={handleInput}
-          />
-          <Box width="100%" height={1} mb={3} />
-        </Grid>
-        {/* -------------------- NOTICE -------------------- */}
-        <Grid container item direction="column">
-          <Box mb={3}>
-            <LumaText
-              color={
-                pastXDays
-                  ? theme.palette.warning.main
-                  : theme.palette.error.main
-              }
-            >
-              {t(
-                pastXDays
-                  ? 'user.usernameChangeNotice'
-                  : 'user.usernameChangeDayCap',
-                {
-                  days: CF.USERNAME_CHANGE_DAYS,
+            <LumaInput
+              name="username"
+              fullWidth
+              placeholder=""
+              size="small"
+              disabled={loading || !pastXDays}
+              value={input.username}
+              onChange={handleInput}
+              inputProps={{ maxLength: CF.MAX_032 }}
+            />
+            <Box width="100%" textAlign="right" mr={2} mb={1}>
+              <LumaText variant="body2">
+                {`${input.username.length ?? user?.username?.length ?? 0}/${
+                  CF.MAX_032
+                }`}
+              </LumaText>
+            </Box>
+          </Grid>
+          {/* -------------------- Password -------------------- */}
+          <Grid container item direction="column">
+            <LumaText variant="body2">
+              <b>{t('user.password')}</b>
+            </LumaText>
+            <LumaInput
+              name="password"
+              type="password"
+              fullWidth
+              size="small"
+              disabled={loading || !pastXDays}
+              value={input.password}
+              onChange={handleInput}
+            />
+            <Box width="100%" height={1} mb={3} />
+          </Grid>
+          {/* -------------------- NOTICE -------------------- */}
+          <Grid container item direction="column">
+            <Box mb={3}>
+              <LumaText
+                color={
+                  pastXDays
+                    ? theme.palette.warning.main
+                    : theme.palette.error.main
                 }
+              >
+                {t(
+                  pastXDays
+                    ? 'user.usernameChangeNotice'
+                    : 'user.usernameChangeDayCap',
+                  {
+                    days: CF.USERNAME_CHANGE_DAYS,
+                  }
+                )}
+              </LumaText>
+            </Box>
+          </Grid>
+          {/* -------------------- Submit/reset buttons -------------------- */}
+          <Box mt={1} mb={2} width="100%">
+            <LumaButton
+              disabled={loading || noChange || !pastXDays}
+              color="secondary"
+              variant="contained"
+              size={isMobile ? 'medium' : 'large'}
+              type="submit"
+              fullWidth={isSmallMobile}
+              sx={isSmallMobile ? undefined : { px: loading ? 4 : undefined }}
+            >
+              {loading ? (
+                <CircularProgress size={26} color="secondary" />
+              ) : (
+                t('main.applyChanges')
               )}
-            </LumaText>
+            </LumaButton>
           </Box>
-        </Grid>
-        {/* -------------------- Submit/reset buttons -------------------- */}
-        <Box mt={1} mb={2} width="100%">
-          <LumaButton
-            disabled={loading || noChange || !pastXDays}
-            color="secondary"
-            variant="contained"
-            size={isMobile ? 'medium' : 'large'}
-            onClick={() => setOpen(true)}
-            fullWidth={isSmallMobile}
-            sx={isSmallMobile ? undefined : { px: loading ? 4 : undefined }}
-          >
-            {loading ? (
-              <CircularProgress size={26} color="secondary" />
-            ) : (
-              t('main.applyChanges')
-            )}
-          </LumaButton>
-        </Box>
 
-        {/* -------------------- Diaglog -------------------- */}
-        <LumaDiaglog
-          title={t('user.updateYourUsername')}
-          message={`${t('user.diaglogUsernameUpdate')}"${input.username}"?`}
-          open={open}
-          onConfirm={() => updateUname(input)}
-          onClose={() => setOpen(false)}
-        />
-      </Grid>
+          {/* -------------------- Diaglog -------------------- */}
+          <LumaDiaglog
+            title={t('user.updateYourUsername')}
+            message={`${t('user.diaglogUsernameUpdate')}"${input.username}"?`}
+            open={open}
+            onConfirm={() => updateUname(input)}
+            onClose={() => setOpen(false)}
+          />
+        </Grid>
+      </form>
     </Box>
   );
   // Handles
@@ -209,6 +211,18 @@ export default function UsernameSettings() {
         break;
     }
     setInput({ ...data });
+  }
+  function handleFormSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    // Do not make changes under certain circumstances
+    if (noChange) {
+      toast(t('error.noChangesMade'), 'error');
+      return;
+    }
+    if (loading || !pastXDays) {
+      return;
+    }
+    setOpen(true);
   }
 
   // Data hoists

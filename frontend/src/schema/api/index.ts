@@ -1,4 +1,5 @@
 import { AnyObject, ErrorObj } from 'schema';
+export * from './userApiSchema';
 
 export type APIError = {
   error: string;
@@ -36,5 +37,8 @@ export type APIDownloadProp = {
   skip?: boolean;
   body: AnyObject;
 };
+export interface APIPropsNoBody extends Omit<APIPropTemplate, 'body'> {
+  onComplete?: OnComplete<null>;
+}
 export type RequestKinds = typeof requestKinds[number];
 const requestKinds = ['get', 'put', 'patch', 'post', 'delete'] as const;

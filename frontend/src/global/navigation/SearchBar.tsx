@@ -49,7 +49,7 @@ export default function SearchBar(props: SearchBarProps) {
           margin: '0.25rem',
         }}
         name="search"
-        autoComplete="off"
+        autoComplete="chrome-off"
         onFocus={() => setSearchFocused(true)}
         onBlur={() => setSearchFocused(false)}
         disabled={props.disabled}

@@ -4,7 +4,7 @@ import axios from 'axios';
 import CF from 'config';
 import { AnyObject, ErrorObj } from 'schema';
 import { isError } from 'lib';
-import { APIDownloadProp, APIProp, RequestKinds } from 'schema/apiSchema';
+import { APIDownloadProp, APIProp, RequestKinds } from 'schema/api';
 
 // Init
 const host = CF.HOST;

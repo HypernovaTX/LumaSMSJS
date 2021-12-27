@@ -13,46 +13,16 @@ import theme, { styles } from 'theme/styles';
 import routes from 'route.config';
 import { User } from 'schema/userSchema';
 import { UserContext } from 'user/UserContext';
+import { menuOptions, SettingMenuItems } from 'user/preferences/options';
 import UserAvatarSettings from 'user/preferences/UserAvatar';
 import UserBannerSettings from 'user/preferences/UserBanner';
+import UserEmailSettings from './UserEmail';
 import UsernameSettings from 'user/preferences/Username';
+import UserPasswordSettings from 'user/preferences/UserPassword';
 import UserProfileSettings from 'user/preferences/UserProfile';
-import UserEmailSettings from './Email';
 
 const { contrastText } = theme.palette.primary;
 const navHighlight = mixColor(theme.palette.primary.main, '#FFF', 0.2);
-const menuOptions = [
-  {
-    id: 'main',
-    text: 'user.profile',
-  },
-  {
-    id: 'avatar',
-    text: 'user.avatar',
-  },
-  {
-    id: 'banner',
-    text: 'user.banner',
-  },
-  {
-    id: 'username',
-    text: 'user.username',
-  },
-  {
-    id: 'email',
-    text: 'user.email',
-  },
-  {
-    id: 'password',
-    text: 'user.password',
-  },
-
-  {
-    id: 'site',
-    text: 'user.siteSettings',
-  },
-] as const;
-export type SettingMenuItems = typeof menuOptions[number]['id'];
 
 export default function UserSettings() {
   // Custom hooks
@@ -187,6 +157,8 @@ export default function UserSettings() {
         return <UsernameSettings />;
       case 'email':
         return <UserEmailSettings />;
+      case 'password':
+        return <UserPasswordSettings />;
       default:
         return null;
     }
