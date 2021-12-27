@@ -33,6 +33,7 @@ export interface User {
   use_comment_digest?: number;
   last_visit?: number;
   last_activity?: number;
+  last_password?: number;
   last_ip?: string;
   new_password?: number;
   password?: string;

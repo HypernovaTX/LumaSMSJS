@@ -2,6 +2,7 @@
 // USER FUNCTIONS WITH STAFF PERMITS
 // ================================================================================
 import { Request } from 'express';
+import bcrypt from 'bcryptjs';
 
 import { checkLogin, updateUser, validatePermission } from '../lib/userlib';
 import CF from '../../config';
@@ -39,6 +40,12 @@ export async function updateOtherUser(
     invalidStaffUserUpdateKeys.includes(key)
   );
   if (invalidKeys.length) return ERR('userUpdateInvalid');
+
+  // Make sure the password is hashed if it exists
+  if (inputs?.password) {
+    inputs.password = await bcrypt.hash(inputs.password, CF.PASSWORD_SALT);
+    inputs.last_password = Date.now();
+  }
 
   // Resolve
   return await updateUser(uid, inputs);

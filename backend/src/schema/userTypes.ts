@@ -33,6 +33,7 @@ export interface User {
   use_comment_digest?: number;
   last_visit?: number;
   last_activity?: number;
+  last_password?: number;
   last_ip?: string;
   new_password?: number;
   password?: string;
@@ -93,28 +94,21 @@ export interface UsernameChange {
   new_username: string;
   date: number;
 }
-export const invalidUserUpdateKeys = [
-  'uid',
-  'email',
-  'gid',
-  'join_date',
-  'last_active',
-  'last_ip',
-  'last_visit',
-  'password',
-  'registered_ip',
-  'username',
-  'avatar_file',
-  'banner_file',
-];
 export const invalidStaffUserUpdateKeys = [
   'uid',
   'gid',
   'join_date',
   'last_active',
+  'last_password',
   'last_ip',
   'last_visit',
   'registered_ip',
   'avatar_file',
   'banner_file',
+];
+export const invalidUserUpdateKeys = [
+  ...invalidStaffUserUpdateKeys,
+  'email',
+  'password',
+  'username',
 ];

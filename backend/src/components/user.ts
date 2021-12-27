@@ -231,7 +231,14 @@ export async function updatePassword(
 
   // Encrypt the password and resolve
   const hashedNewPassword = await bcrypt.hash(newPassword, CF.PASSWORD_SALT);
-  return await updateUser(uid, { password: hashedNewPassword });
+
+  // Apply last password change
+  const passwordChangeDate = Date.now();
+
+  return await updateUser(uid, {
+    password: hashedNewPassword,
+    last_password: passwordChangeDate,
+  });
 }
 
 export async function updateEmail(
