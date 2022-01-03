@@ -14,7 +14,7 @@ const routes = {
   profileFavorites: '/profile/favorites',
   profileNotifications: '/profile/notifications',
   profileSettings: '/profile/preferences',
-  profileSettingsR: '/profile/preferences/:kind?',
+  profileSettings_R: '/profile/preferences/:kind?',
   profileSubmissions: '/profile/uploads',
   profileSubmit: '/profile/submit',
 
@@ -56,6 +56,8 @@ const routes = {
 
   // Users
   user: '/user',
+  user_R: '/user/:id?',
+  userList: '/userlist',
   userLogin: '/login',
   userLogout: '/logout',
   userRegister: '/register',

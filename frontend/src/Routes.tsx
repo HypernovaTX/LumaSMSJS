@@ -7,6 +7,7 @@ import routes from 'route.config';
 import Login from 'user/Login';
 import Logout from 'user/Logout';
 import UserSettings from 'user/preferences';
+import UserProfile from 'user/UserProfile';
 
 export default function Routes() {
   return (
@@ -17,7 +18,8 @@ export default function Routes() {
       {/* User */}
       <Route exact path={routes.userLogin} component={Login} />
       <Route exact path={routes.userLogout} component={Logout} />
-      <Route path={routes.profileSettingsR} component={UserSettings} />
+      <Route path={routes.profileSettings_R} component={UserSettings} />
+      <Route path={routes.user_R} component={UserProfile} />
       <Route path="*" component={Error404} />
     </Switch>
   );
