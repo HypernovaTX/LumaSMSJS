@@ -368,7 +368,7 @@ export default function Register() {
   }
   function handleCaptchaReset() {
     setCaptcha(false);
-    // @ts-ignore
+    // @ts-ignore - Ref is acting up really weird in React Typescript
     captchaEl?.current?.reset && captchaEl?.current?.reset();
   }
 
