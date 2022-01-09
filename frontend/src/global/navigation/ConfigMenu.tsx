@@ -104,7 +104,7 @@ const menu = [
         icon: <FontAwesomeIcon icon={faUsers} color={iconColor} />,
         divider: true,
         newWindow: false,
-        url: routes.user,
+        url: routes.userList,
       },
       {
         id: 'discord',

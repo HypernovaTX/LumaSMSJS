@@ -42,3 +42,6 @@ export interface APIPropsNoBody extends Omit<APIPropTemplate, 'body'> {
 }
 export type RequestKinds = typeof requestKinds[number];
 const requestKinds = ['get', 'put', 'patch', 'post', 'delete'] as const;
+export interface Count {
+  count: number;
+}

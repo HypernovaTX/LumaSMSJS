@@ -189,6 +189,7 @@
     "updateYourEmail": "Change Your Email",
     "updateYourPassword": "Change Your Password",
     "updateYourUsername": "Change Your Username",
+    "userList": "Users",
     "username": "Username",
     "usernameChangeDayCap": "You can only change your username for at least every {{days}} days.",
     "usernameChangeNotice": "NOTICE: After you've changed your username, please note that you will need to log in again for security purposes. You cannot change your username for the next {{days}} days.",

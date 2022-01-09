@@ -5,6 +5,8 @@ import {
   APIProp,
   APIPropsNoBody,
   APIResponse,
+  Count,
+  GetUserCountProps,
   GetUserListBody,
   GetUserListProps,
   GetUserLoginBody,
@@ -26,6 +28,12 @@ import { PermissionKind, User, UsernameChange } from 'schema/userSchema';
 export function useAPI_userList(p: GetUserListProps) {
   const payload = { ...p, kind: 'put', url: 'user' } as APIProp;
   return useFetch(payload) as APIResponse<User[], GetUserListBody>;
+}
+
+// Count users
+export function useAPI_userCount(p: GetUserCountProps) {
+  const payload = { ...p, kind: 'put', url: 'user/count' } as APIProp;
+  return useFetch(payload) as APIResponse<Count, GetUserListBody>;
 }
 
 // Show a specific user by ID
