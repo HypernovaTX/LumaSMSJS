@@ -34,13 +34,16 @@ export default function UserAvatarSettings() {
     onError: errorData,
   });
 
-  // Memo
+  // Memo / Const
   const loading = useMemo(loadingMemo, [
     userLoading,
     avatarLoading,
     delLoading,
   ]);
   const noChange = useMemo(noChangeMemo, [selectedFile]);
+  const avatar = user?.avatar_file
+    ? `${CF.HOST}${CF.UPLOAD_DIR}/avatar/${user?.avatar_file}`
+    : undefined;
 
   // Output
   return (
@@ -62,22 +65,13 @@ export default function UserAvatarSettings() {
             sx={{ my: 2 }}
           >
             <Grid item>
-              <Avatar
-                src={`${CF.HOST}${CF.UPLOAD_DIR}/avatar/${user?.avatar_file}`}
-                sx={styles.avatarLarge}
-              />
+              <Avatar src={avatar} sx={styles.avatarLarge} />
             </Grid>
             <Grid item>
-              <Avatar
-                src={`${CF.HOST}${CF.UPLOAD_DIR}/avatar/${user?.avatar_file}`}
-                sx={styles.avatarMedium}
-              />
+              <Avatar src={avatar} sx={styles.avatarMedium} />
             </Grid>
             <Grid item>
-              <Avatar
-                src={`${CF.HOST}${CF.UPLOAD_DIR}/avatar/${user?.avatar_file}`}
-                sx={styles.navAvatar}
-              />
+              <Avatar src={avatar} sx={styles.navAvatar} />
             </Grid>
           </Grid>
           {/* Update avatar */}

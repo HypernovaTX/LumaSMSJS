@@ -1,6 +1,6 @@
 import React, { useContext, useEffect, useMemo, useState } from 'react';
 
-import { Box, Container, Skeleton } from '@mui/material';
+import { Box, Container } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 
 import { LumaText } from 'components';
@@ -10,6 +10,7 @@ import { useAPI_userCount, useAPI_userList } from 'api';
 import { UserContext } from 'user/UserContext';
 import { Count, GetUserListBody } from 'schema/api';
 import { User } from 'schema/userSchema';
+import UserListItem from './userListItem';
 
 export default function UserList() {
   // Custom Hooks
@@ -75,6 +76,11 @@ export default function UserList() {
           style={{ backgroundColor: theme.palette.primary.dark }}
         >
           count: {`${userCount}`}
+          {loaded
+            ? userList.map((u, i) => (
+                <UserListItem user={u} loading={loading} key={i} />
+              ))
+            : tempUser.map((u, i) => <UserListItem user={u} key={i} />)}
         </Box>
       </Container>
     </Box>

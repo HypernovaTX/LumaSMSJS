@@ -13,7 +13,7 @@ const CF = {
   SITE_NAME: 'MFGG',
   SOCIAL_DISCORD: 'https://discord.gg/jchgfw5',
   SOCIAL_TWITTER: 'https://twitter.com/OfficialMFGG',
-  UPLOAD_DIR: '/upload/',
+  UPLOAD_DIR: '/upload',
   USERNAME_CHANGE_DAYS: 30,
 };
 export default CF;

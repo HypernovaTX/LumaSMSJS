@@ -51,8 +51,11 @@ export default function NavUserDesktop() {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [open, setOpen] = useState(false);
 
-  // Memo
+  // Memo / Const2
   const username = useMemo(usernameMemo, [t, user?.username]);
+  const avatar = user?.avatar_file
+    ? `${CF.HOST}${CF.UPLOAD_DIR}/avatar/${user?.avatar_file}`
+    : undefined;
 
   // Output
   return (
@@ -90,7 +93,7 @@ export default function NavUserDesktop() {
                   sx={styles.navAvatar}
                   variant="rounded"
                   alt={username}
-                  src={`${CF.HOST}${CF.UPLOAD_DIR}/avatar/${user?.avatar_file}`}
+                  src={avatar}
                 />
               ) : (
                 // If the avatar is loading show the loading icon in place of it
@@ -126,7 +129,7 @@ export default function NavUserDesktop() {
                     <Avatar
                       sx={styles.navAvatarMenu}
                       alt={username}
-                      src={`${CF.HOST}${CF.UPLOAD_DIR}/avatar/${user?.avatar_file}`}
+                      src={avatar}
                       variant="rounded"
                     />
                   </Box>

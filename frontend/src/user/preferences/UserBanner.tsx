@@ -50,13 +50,16 @@ export default function UserBannerSettings() {
     onError: errorData,
   });
 
-  // Memo
+  // Memo / Const
   const loading = useMemo(loadingMemo, [
     bannerLoading,
     delLoading,
     userLoading,
   ]);
   const noChange = useMemo(noChangeMemo, [selectedFile]);
+  const banner = user?.banner_file
+    ? `${CF.HOST}${CF.UPLOAD_DIR}/banner/${user?.banner_file}`
+    : undefined;
 
   // Callbacks
   const updateBannerSize = useCallback(bannerSizeCallback, [isSmallMobile]);
@@ -93,7 +96,7 @@ export default function UserBannerSettings() {
             <Grid item xs={12}>
               {user?.banner_file ? (
                 <img
-                  src={`${CF.HOST}${CF.UPLOAD_DIR}/banner/${user?.banner_file}`}
+                  src={banner}
                   alt="banner"
                   style={{ ...bannerSize, objectFit: 'cover' }}
                 />
