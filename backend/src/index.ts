@@ -53,6 +53,7 @@ directorySetup();
 
 // ==================== Routes ====================
 // NOTE: ALL REQUESTS (besides file uploads) MUST BE application/x-www-form-urlencoded!
+app.use('/upload', express.static('./upload'));
 app.use('/file', fileRouter);
 app.use('/user', userRouter);
 app.use('/submission', submissionRouter);
