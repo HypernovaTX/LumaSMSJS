@@ -14,6 +14,7 @@ import {
   GetUsernameHistoryProps,
   GetUserPermitProps,
   GetUserProps,
+  GetUserRegisterProps,
   GetUserVerifyProps,
   UpdateEmailProps,
   UpdatePasswordProps,
@@ -61,6 +62,12 @@ export function useAPI_permissions(p: GetUserPermitProps) {
 export function useAPI_userLogin(p: GetUserLoginProps) {
   const payload = { ...p, kind: 'put', url: 'user/login' } as APIProp;
   return useSend(payload) as APIResponse<User, GetUserLoginBody>;
+}
+
+// Register
+export function useAPI_userRegister(p: GetUserRegisterProps) {
+  const payload = { ...p, kind: 'post', url: 'user' } as APIProp;
+  return useSend(payload) as APINoResponse<{}>;
 }
 
 // Log out

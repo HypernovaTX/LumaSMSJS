@@ -7,6 +7,7 @@ import routes from 'route.config';
 import Login from 'user/Login';
 import Logout from 'user/Logout';
 import UserSettings from 'user/preferences';
+import Register from 'user/Register';
 import UserProfile from 'user/UserProfile';
 import UserList from 'user/userList';
 
@@ -19,6 +20,7 @@ export default function Routes() {
       {/* User */}
       <Route exact path={routes.userLogin} component={Login} />
       <Route exact path={routes.userLogout} component={Logout} />
+      <Route exact path={routes.userRegister} component={Register} />
       <Route path={routes.profileSettings_R} component={UserSettings} />
       <Route path={routes.user_R} component={UserProfile} />
       <Route path={routes.userList} component={UserList} />

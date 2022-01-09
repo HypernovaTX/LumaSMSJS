@@ -45,6 +45,17 @@ export interface GetUserLoginProps extends APIPropTemplate {
   onComplete?: OnComplete<User>;
 }
 
+// Register
+export interface GetUserRegisterBody {
+  username: string;
+  email: string;
+  password: string;
+}
+export interface GetUserRegisterProps extends APIPropTemplate {
+  body: GetUserRegisterBody;
+  onComplete?: OnComplete<null>;
+}
+
 // Update user
 export interface UpdateUserBody {
   data: string;

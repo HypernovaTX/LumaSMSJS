@@ -11,8 +11,6 @@ const CF = {
   MAX_SMALLSIZE: 540,
   MAX_TINYSIZE: 320,
   SITE_NAME: 'MFGG',
-  SOCIAL_DISCORD: 'https://discord.gg/jchgfw5',
-  SOCIAL_TWITTER: 'https://twitter.com/OfficialMFGG',
   UPLOAD_DIR: '/upload',
   USERNAME_CHANGE_DAYS: 30,
 };
