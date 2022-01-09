@@ -24,13 +24,13 @@ import { styles } from 'theme/styles';
 import { PasswordStrength } from 'user/preferences/PasswordStrength';
 import { UserContext } from 'user/UserContext';
 import routes from 'route.config';
+import { User } from 'schema/userSchema';
 
 interface UserRegister {
   username: string;
   email: string;
   password: string;
   verify: string;
-  remember?: boolean;
 }
 
 interface RegisterError {
@@ -38,6 +38,7 @@ interface RegisterError {
   email: boolean;
   password: boolean;
   verify: boolean;
+  agree: boolean;
 }
 
 const defaultForm: UserRegister = {
@@ -52,6 +53,7 @@ const defaultError: RegisterError = {
   email: false,
   password: false,
   verify: false,
+  agree: false,
 };
 
 export default function Register() {
@@ -61,17 +63,32 @@ export default function Register() {
 
   // Context
   const { loadUser: reloadUser, user } = useContext(UserContext);
-  const { isMobile, navigate, toast } = useContext(GlobalContext);
+  const { isMobile, navigate, nativateToPrevious, toast } =
+    useContext(GlobalContext);
 
   // States
   const [registerForm, setRegisterForm] = useState<UserRegister>(defaultForm);
   const [error, setError] = useState<RegisterError>(defaultError);
   const [passwordOk, setPasswordOk] = useState(false);
+  const [agree, setAgree] = useState(false);
 
   // Data
   const { execute: register, loading: registerLoading } = useAPI_userRegister({
     body: registerForm,
-    onComplete: () => {},
+    onComplete: () => {
+      login({
+        username: registerForm.username,
+        password: registerForm.password,
+      });
+    },
+    onError: (err) => {
+      toast(err.message, 'error');
+    },
+  });
+  const { execute: login, loading: loginLoading } = useAPI_userLogin({
+    skip: true,
+    body: { username: registerForm.username, password: registerForm.password },
+    onComplete: loginComplete,
     onError: (err) => {
       toast(err.message, 'error');
     },
@@ -88,6 +105,10 @@ export default function Register() {
     registerForm.username,
     registerForm.verify,
   ]);
+  const loading = useMemo(
+    () => registerLoading || loginLoading,
+    [registerLoading, loginLoading]
+  );
 
   // Effect
   useEffect(returnToHomeEffect, [navigate, user]);
@@ -117,7 +138,7 @@ export default function Register() {
         {/* Username input */}
         <Box my={1} width="100%">
           <LumaInput
-            disabled={registerLoading}
+            disabled={loading}
             fullWidth
             error={error.username}
             label={t('user.username')}
@@ -134,7 +155,7 @@ export default function Register() {
         {/* Email input */}
         <Box my={1} width="100%">
           <LumaInput
-            disabled={registerLoading}
+            disabled={loading}
             fullWidth
             error={error.email}
             label={t('user.email')}
@@ -153,7 +174,7 @@ export default function Register() {
           <PasswordStrength
             name="password"
             error={error.password}
-            loading={registerLoading}
+            loading={loading}
             value={registerForm.password}
             onChange={handleInputChange}
             onBlur={handlePasswordVerify}
@@ -164,7 +185,7 @@ export default function Register() {
         {/* Password Verify input */}
         <Box my={1} width="100%">
           <LumaInput
-            disabled={registerLoading}
+            disabled={loading}
             fullWidth
             label={t('user.verifyPassword')}
             name="verify"
@@ -179,35 +200,41 @@ export default function Register() {
             <ErrorLabel in={error.verify} message={t('error.passwordMatch')} />
           </Box>
         </Box>
-        {/* Remember Me */}
+        {/* Agree */}
         <Box my={0} width="100%">
           <FormGroup>
             <FormControlLabel
               control={
                 <LumaCheckbox
-                  disabled={registerLoading}
+                  disabled={loading}
                   name="remember"
                   onChange={handleCheckbox}
-                  value={!!registerForm.remember}
+                  value={agree}
                   size={isMobile ? 'small' : 'medium'}
                 />
               }
-              label={`${t('user.remember')}`}
+              label={`${t('user.agree')}`}
             />
           </FormGroup>
+          <Box width="100%" mr={2}>
+            <ErrorLabel
+              in={error.agree}
+              message={t('error.agreeRegistration')}
+            />
+          </Box>
         </Box>
         {/* Register button */}
         <Box my={2} width="100%">
           <LumaButton
-            disabled={registerLoading || !verified}
+            disabled={loading || !verified}
             color="secondary"
             variant="contained"
             fullWidth
             size={isMobile ? 'medium' : 'large'}
-            startIcon={registerLoading ? undefined : <PersonAdd />}
+            startIcon={loading ? undefined : <PersonAdd />}
             onClick={handleRegisterButton}
           >
-            {registerLoading ? (
+            {loading ? (
               <CircularProgress size={26} color="secondary" />
             ) : (
               t('user.register')
@@ -217,14 +244,9 @@ export default function Register() {
         {/* Bottom texts */}
         <Box my={isMobile ? 0 : 1} width="100%">
           <Box>
-            {t('user.dontHaveAccount')}{' '}
-            <A disabled={registerLoading} url="#">
-              {t('user.signup')}
-            </A>
-          </Box>
-          <Box>
-            <A disabled={registerLoading} url="#">
-              {t('user.forget')}
+            {t('user.alreadyHaveAccount')}{' '}
+            <A disabled={loading} url={routes.userLogin}>
+              {t('user.login')}
             </A>
           </Box>
         </Box>
@@ -256,14 +278,33 @@ export default function Register() {
     setRegisterForm({ ...form });
   }
   function handleCheckbox(e: React.ChangeEvent<HTMLInputElement>) {
-    let form = registerForm;
-    if (e.target.name === 'remember') {
-      form = { ...registerForm, remember: e.target.checked };
+    if (e.target.checked) {
+      setError({ ...error, agree: !e.target.checked });
     }
-    setRegisterForm(form);
+    setAgree(e.target.checked);
   }
   function handleRegisterButton() {
     if (registerLoading) return;
+    if (!registerForm.username) {
+      setError({ ...error, username: true });
+      return;
+    }
+    if (!emailRegex.test(registerForm.email)) {
+      setError({ ...error, email: true });
+      return;
+    }
+    if (!passwordOk || !registerForm.password) {
+      setError({ ...error, password: false });
+      return;
+    }
+    if (registerForm.password !== registerForm.verify) {
+      setError({ ...error, verify: false });
+      return;
+    }
+    if (!agree) {
+      setError({ ...error, agree: true });
+      return;
+    }
     register();
   }
   function handleUsernameVerify(e: TextInputEvent) {
@@ -287,6 +328,15 @@ export default function Register() {
     const match = e.target.value;
     const result = match === registerForm.password;
     setError({ ...error, verify: !result });
+  }
+
+  // Data hoists
+  function loginComplete(data: User) {
+    if (reloadUser) reloadUser();
+    if (data?.username) {
+      toast(t('main.welcome', { username: data.username }), 'info');
+    }
+    nativateToPrevious();
   }
 
   // Memo hoists

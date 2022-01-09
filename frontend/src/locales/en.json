@@ -1,6 +1,7 @@
 {
   "error": {
-    "blankInput": "Input is left blank!",
+    "agreeRegistration": "You must agree to the site rules and policy in order to register your account!",
+    "blankInput": "Input cannot be blank!",
     "error": "Error",
     "error400": "Request Failure (400)",
     "error404Page": "Page Not Found",
@@ -48,6 +49,7 @@
     "siteNameLong": "Mario Fan Games Galaxy",
     "unknown": "unknown",
     "unspecified": "Unspecified",
+    "welcome": "Welcome, {{username}}!",
     "welcomeBack": "Welcome back, {{username}}!"
   },
   "nav": {
@@ -100,6 +102,8 @@
     "settings": "Preferences"
   },
   "user": {
+    "agree": "I agree to the site rules and policy",
+    "alreadyHaveAccount": "Already have an account?",
     "avatar": "Avatar",
     "banner": "Banner",
     "bio": "Bio",
