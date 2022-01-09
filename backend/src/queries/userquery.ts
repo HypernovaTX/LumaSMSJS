@@ -21,7 +21,7 @@ export default class UserQuery {
   // READ METHODS
   async listUsers(
     page: number,
-    count: number = 25,
+    count: number,
     column: string = '',
     asc: boolean = true,
     filter: [string, string][] = []
