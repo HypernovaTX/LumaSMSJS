@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { Avatar, Box, CircularProgress, Grid } from '@mui/material';
 
 import { FileUploader, LumaButton, LumaDiaglog, LumaText } from 'components';
+import CF from 'config';
 import { GlobalContext } from 'global/GlobalContext';
 import { UserContext } from 'user/UserContext';
 import { styles } from 'theme/styles';
@@ -15,7 +16,7 @@ export default function UserAvatarSettings() {
   const { t } = useTranslation();
 
   // Context
-  const { avatar, loading: userLoading, loadUser } = useContext(UserContext);
+  const { loading: userLoading, loadUser, user } = useContext(UserContext);
   const { isMobile, isSmallMobile, toast } = useContext(GlobalContext);
 
   // State
@@ -61,13 +62,22 @@ export default function UserAvatarSettings() {
             sx={{ my: 2 }}
           >
             <Grid item>
-              <Avatar src={avatar} sx={styles.avatarLarge} />
+              <Avatar
+                src={`${CF.HOST}${CF.UPLOAD_DIR}/avatar/${user?.avatar_file}`}
+                sx={styles.avatarLarge}
+              />
             </Grid>
             <Grid item>
-              <Avatar src={avatar} sx={styles.avatarMedium} />
+              <Avatar
+                src={`${CF.HOST}${CF.UPLOAD_DIR}/avatar/${user?.avatar_file}`}
+                sx={styles.avatarMedium}
+              />
             </Grid>
             <Grid item>
-              <Avatar src={avatar} sx={styles.navAvatar} />
+              <Avatar
+                src={`${CF.HOST}${CF.UPLOAD_DIR}/avatar/${user?.avatar_file}`}
+                sx={styles.navAvatar}
+              />
             </Grid>
           </Grid>
           {/* Update avatar */}
@@ -88,7 +98,7 @@ export default function UserAvatarSettings() {
             <b>{t('user.clearAvatar')}</b>
           </LumaText>
           <LumaButton
-            disabled={loading || !avatar || open}
+            disabled={loading || !user?.avatar_file || open}
             color="error"
             variant="contained"
             size="small"

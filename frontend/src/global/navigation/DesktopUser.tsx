@@ -24,6 +24,7 @@ import SubmitButtonDesktop from 'global/navigation/DesktopSubmitButton';
 import theme, { styles } from 'theme/styles';
 import routes from 'route.config';
 import { UserContext } from 'user/UserContext';
+import CF from 'config';
 
 const anchorOrigin: PopoverOrigin = {
   vertical: 'bottom',
@@ -43,7 +44,7 @@ export default function NavUserDesktop() {
   const userMenu = useUserOptions();
 
   // Context
-  const { avatar, checkPermit, user, loading, login } = useContext(UserContext);
+  const { checkPermit, user, loading, login } = useContext(UserContext);
   const { navigate } = useContext(GlobalContext);
 
   // State
@@ -89,7 +90,7 @@ export default function NavUserDesktop() {
                   sx={styles.navAvatar}
                   variant="rounded"
                   alt={username}
-                  src={avatar}
+                  src={`${CF.HOST}${CF.UPLOAD_DIR}/avatar/${user?.avatar_file}`}
                 />
               ) : (
                 // If the avatar is loading show the loading icon in place of it
@@ -125,7 +126,7 @@ export default function NavUserDesktop() {
                     <Avatar
                       sx={styles.navAvatarMenu}
                       alt={username}
-                      src={avatar}
+                      src={`${CF.HOST}${CF.UPLOAD_DIR}/avatar/${user?.avatar_file}`}
                       variant="rounded"
                     />
                   </Box>

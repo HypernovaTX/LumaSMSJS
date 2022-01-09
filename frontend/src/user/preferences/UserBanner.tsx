@@ -11,6 +11,7 @@ import { useTranslation } from 'react-i18next';
 import { Box, CircularProgress, Grid } from '@mui/material';
 
 import { FileUploader, LumaButton, LumaDiaglog, LumaText } from 'components';
+import CF from 'config';
 import { GlobalContext } from 'global/GlobalContext';
 import { UserContext } from 'user/UserContext';
 import { useAPI_userBanner, useAPI_userDeleteBanner } from 'api';
@@ -27,7 +28,7 @@ export default function UserBannerSettings() {
   const { t } = useTranslation();
 
   // Context
-  const { banner, loading: userLoading, loadUser } = useContext(UserContext);
+  const { loading: userLoading, loadUser, user } = useContext(UserContext);
   const { isMobile, isSmallMobile, toast } = useContext(GlobalContext);
 
   // State
@@ -64,8 +65,7 @@ export default function UserBannerSettings() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(initEffect, []);
   useEffect(bannerSizeEffect, [
-    banner,
-    bannerBox?.current?.clientWidth,
+    bannerBox.current?.clientWidth,
     isSmallMobile,
     updateBannerSize,
   ]);
@@ -91,9 +91,9 @@ export default function UserBannerSettings() {
             sx={{ my: 2 }}
           >
             <Grid item xs={12}>
-              {banner ? (
+              {user?.banner_file ? (
                 <img
-                  src={banner}
+                  src={`${CF.HOST}${CF.UPLOAD_DIR}/banner/${user?.banner_file}`}
                   alt="banner"
                   style={{ ...bannerSize, objectFit: 'cover' }}
                 />
@@ -129,7 +129,7 @@ export default function UserBannerSettings() {
             <b>{t('user.clearBanner')}</b>
           </LumaText>
           <LumaButton
-            disabled={loading || !banner || open}
+            disabled={loading || !user?.banner_file || open}
             color="error"
             variant="contained"
             size="small"

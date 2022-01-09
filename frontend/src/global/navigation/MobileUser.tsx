@@ -23,6 +23,7 @@ import {
 } from '@mui/icons-material';
 
 import { A, LumaButton, LumaDivider, LumaDrawer, LumaMenu } from 'components';
+import CF from 'config';
 import theme, { styles } from 'theme/styles';
 import { UserContext } from 'user/UserContext';
 import useUserOptions from 'global/navigation/ConfigUser';
@@ -46,7 +47,7 @@ export default function NavUserMobile() {
   const userMenu = useUserOptions();
 
   // Context
-  const { avatar, checkPermit, user, loading, login } = useContext(UserContext);
+  const { checkPermit, user, loading, login } = useContext(UserContext);
 
   // State
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
@@ -69,7 +70,7 @@ export default function NavUserMobile() {
                   sx={styles.navAvatarMobile}
                   variant="rounded"
                   alt={username}
-                  src={avatar}
+                  src={`${CF.HOST}${CF.UPLOAD_DIR}/avatar/${user?.avatar_file}`}
                 />
               ) : (
                 // If the avatar is loading show the loading icon in place of it
@@ -105,7 +106,7 @@ export default function NavUserMobile() {
                     <Avatar
                       sx={styles.navAvatarMenuMobile}
                       alt={username}
-                      src={avatar}
+                      src={`${CF.HOST}${CF.UPLOAD_DIR}/avatar/${user?.avatar_file}`}
                       variant="rounded"
                     />
                   </Box>
