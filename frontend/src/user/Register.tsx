@@ -1,5 +1,5 @@
-import React, { useContext, useEffect, useMemo, useState } from 'react';
-import { useTranslation } from 'react-i18next';
+import React, { useContext, useEffect, useMemo, useRef, useState } from 'react';
+
 import {
   Box,
   CircularProgress,
@@ -7,6 +7,8 @@ import {
   FormGroup,
 } from '@mui/material';
 import { PersonAdd } from '@mui/icons-material';
+import ReCAPTCHA from 'react-google-recaptcha';
+import { useTranslation } from 'react-i18next';
 
 import { useAPI_userLogin, useAPI_userRegister } from 'api';
 import {
@@ -17,6 +19,7 @@ import {
   LumaInput,
   LumaText,
 } from 'components';
+import CF from 'config';
 import { GlobalContext } from 'global/GlobalContext';
 import { emailRegex, useSetTitle } from 'lib';
 import { TextInputEvent } from 'schema';
@@ -39,6 +42,7 @@ interface RegisterError {
   password: boolean;
   verify: boolean;
   agree: boolean;
+  captcha: boolean;
 }
 
 const defaultForm: UserRegister = {
@@ -54,12 +58,16 @@ const defaultError: RegisterError = {
   password: false,
   verify: false,
   agree: false,
+  captcha: false,
 };
 
 export default function Register() {
   // Custom hooks
   const { t } = useTranslation();
   useSetTitle(t('title.register'));
+
+  // Ref
+  const captchaEl = useRef<ReCAPTCHA>() as React.LegacyRef<ReCAPTCHA>;
 
   // Context
   const { loadUser: reloadUser, user } = useContext(UserContext);
@@ -71,6 +79,7 @@ export default function Register() {
   const [error, setError] = useState<RegisterError>(defaultError);
   const [passwordOk, setPasswordOk] = useState(false);
   const [agree, setAgree] = useState(false);
+  const [captcha, setCaptcha] = useState(false);
 
   // Data
   const { execute: register, loading: registerLoading } = useAPI_userRegister({
@@ -82,6 +91,7 @@ export default function Register() {
       });
     },
     onError: (err) => {
+      handleCaptchaReset();
       toast(err.message, 'error');
     },
   });
@@ -90,6 +100,7 @@ export default function Register() {
     body: { username: registerForm.username, password: registerForm.password },
     onComplete: loginComplete,
     onError: (err) => {
+      handleCaptchaReset();
       toast(err.message, 'error');
     },
   });
@@ -200,6 +211,19 @@ export default function Register() {
             <ErrorLabel in={error.verify} message={t('error.passwordMatch')} />
           </Box>
         </Box>
+        {/* Recaptcha */}
+        <Box my={1} width="100%">
+          <ReCAPTCHA
+            theme="dark"
+            sitekey={CF.RECAPTCHA_KEY}
+            onChange={handleCaptchaComplete}
+            onExpired={() => setCaptcha(false)}
+            ref={captchaEl}
+          />
+          <Box width="100%" mr={2}>
+            <ErrorLabel in={error.captcha} message={t('error.recaptcha')} />
+          </Box>
+        </Box>
         {/* Agree */}
         <Box my={0} width="100%">
           <FormGroup>
@@ -287,22 +311,31 @@ export default function Register() {
     if (registerLoading) return;
     if (!registerForm.username) {
       setError({ ...error, username: true });
+      handleCaptchaReset();
       return;
     }
     if (!emailRegex.test(registerForm.email)) {
       setError({ ...error, email: true });
+      handleCaptchaReset();
       return;
     }
     if (!passwordOk || !registerForm.password) {
       setError({ ...error, password: false });
+      handleCaptchaReset();
       return;
     }
     if (registerForm.password !== registerForm.verify) {
       setError({ ...error, verify: false });
+      handleCaptchaReset();
       return;
     }
     if (!agree) {
       setError({ ...error, agree: true });
+      handleCaptchaReset();
+      return;
+    }
+    if (!captcha) {
+      setError({ ...error, captcha: true });
       return;
     }
     register();
@@ -328,6 +361,15 @@ export default function Register() {
     const match = e.target.value;
     const result = match === registerForm.password;
     setError({ ...error, verify: !result });
+  }
+  function handleCaptchaComplete() {
+    setCaptcha(true);
+    setError({ ...error, captcha: false });
+  }
+  function handleCaptchaReset() {
+    setCaptcha(false);
+    // @ts-ignore
+    captchaEl?.current?.reset && captchaEl?.current?.reset();
   }
 
   // Data hoists

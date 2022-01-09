@@ -11,6 +11,7 @@
     "noError": "No errors found at this moment",
     "noMultiFile": "Multiple files are not allowed!",
     "passwordMatch": "Password does not match!",
+    "recaptcha": "Please complete the reCaptcha form!",
     "tooManyRequests": "Too many network requests! Please try again later!",
     "unknown": "An unknown error as occured!"
   },
