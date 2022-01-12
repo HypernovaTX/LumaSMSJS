@@ -9,7 +9,7 @@ import {
   faMoon,
   faQuestionCircle,
   faTrophy,
-  faUsers,
+  // faUsers,
 } from '@fortawesome/free-solid-svg-icons';
 import { faDiscord, faTwitter } from '@fortawesome/free-brands-svg-icons';
 
@@ -99,13 +99,13 @@ const menu = [
         newWindow: false,
         url: routes.forum,
       },
-      {
-        id: 'users',
-        icon: <FontAwesomeIcon icon={faUsers} color={iconColor} />,
-        divider: true,
-        newWindow: false,
-        url: routes.user,
-      },
+      // {
+      //   id: 'users',
+      //   icon: <FontAwesomeIcon icon={faUsers} color={iconColor} />,
+      //   divider: true,
+      //   newWindow: false,
+      //   url: routes.userList,
+      // },
       {
         id: 'discord',
         icon: <FontAwesomeIcon icon={faDiscord} color={iconColor} />,

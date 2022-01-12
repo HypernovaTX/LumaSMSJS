@@ -23,6 +23,7 @@ import {
 } from '@mui/icons-material';
 
 import { A, LumaButton, LumaDivider, LumaDrawer, LumaMenu } from 'components';
+import CF from 'config';
 import theme, { styles } from 'theme/styles';
 import { UserContext } from 'user/UserContext';
 import useUserOptions from 'global/navigation/ConfigUser';
@@ -46,14 +47,17 @@ export default function NavUserMobile() {
   const userMenu = useUserOptions();
 
   // Context
-  const { avatar, checkPermit, user, loading, login } = useContext(UserContext);
+  const { checkPermit, user, loading, login } = useContext(UserContext);
 
   // State
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [open, setOpen] = useState(false);
 
-  // Memo
+  // Memo / Const2
   const username = useMemo(usernameMemo, [t, user?.username]);
+  const avatar = user?.avatar_file
+    ? `${CF.HOST}${CF.UPLOAD_DIR}/avatar/${user?.avatar_file}`
+    : undefined;
 
   // Output
   return (

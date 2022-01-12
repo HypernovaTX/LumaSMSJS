@@ -5,6 +5,8 @@ import {
   APIProp,
   APIPropsNoBody,
   APIResponse,
+  Count,
+  GetUserCountProps,
   GetUserListBody,
   GetUserListProps,
   GetUserLoginBody,
@@ -12,6 +14,7 @@ import {
   GetUsernameHistoryProps,
   GetUserPermitProps,
   GetUserProps,
+  GetUserRegisterProps,
   GetUserVerifyProps,
   UpdateEmailProps,
   UpdatePasswordProps,
@@ -26,6 +29,12 @@ import { PermissionKind, User, UsernameChange } from 'schema/userSchema';
 export function useAPI_userList(p: GetUserListProps) {
   const payload = { ...p, kind: 'put', url: 'user' } as APIProp;
   return useFetch(payload) as APIResponse<User[], GetUserListBody>;
+}
+
+// Count users
+export function useAPI_userCount(p: GetUserCountProps) {
+  const payload = { ...p, kind: 'put', url: 'user/count' } as APIProp;
+  return useFetch(payload) as APIResponse<Count, GetUserListBody>;
 }
 
 // Show a specific user by ID
@@ -53,6 +62,12 @@ export function useAPI_permissions(p: GetUserPermitProps) {
 export function useAPI_userLogin(p: GetUserLoginProps) {
   const payload = { ...p, kind: 'put', url: 'user/login' } as APIProp;
   return useSend(payload) as APIResponse<User, GetUserLoginBody>;
+}
+
+// Register
+export function useAPI_userRegister(p: GetUserRegisterProps) {
+  const payload = { ...p, kind: 'post', url: 'user' } as APIProp;
+  return useSend(payload) as APINoResponse<{}>;
 }
 
 // Log out

@@ -24,6 +24,7 @@ import SubmitButtonDesktop from 'global/navigation/DesktopSubmitButton';
 import theme, { styles } from 'theme/styles';
 import routes from 'route.config';
 import { UserContext } from 'user/UserContext';
+import CF from 'config';
 
 const anchorOrigin: PopoverOrigin = {
   vertical: 'bottom',
@@ -43,15 +44,18 @@ export default function NavUserDesktop() {
   const userMenu = useUserOptions();
 
   // Context
-  const { avatar, checkPermit, user, loading, login } = useContext(UserContext);
+  const { checkPermit, user, loading, login } = useContext(UserContext);
   const { navigate } = useContext(GlobalContext);
 
   // State
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [open, setOpen] = useState(false);
 
-  // Memo
+  // Memo / Const2
   const username = useMemo(usernameMemo, [t, user?.username]);
+  const avatar = user?.avatar_file
+    ? `${CF.HOST}${CF.UPLOAD_DIR}/avatar/${user?.avatar_file}`
+    : undefined;
 
   // Output
   return (

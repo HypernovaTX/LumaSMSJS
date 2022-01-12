@@ -21,7 +21,7 @@ import UserEmailSettings from './UserEmail';
 import UsernameSettings from 'user/preferences/Username';
 import UserPasswordSettings from 'user/preferences/UserPassword';
 import UserProfileSettings from 'user/preferences/UserProfile';
-import UserSocialMedia from './UserSocial';
+import UserSocialMedia from 'user/preferences/UserSocial';
 
 const { contrastText } = theme.palette.primary;
 const navHighlight = mixColor(theme.palette.primary.main, '#FFF', 0.2);

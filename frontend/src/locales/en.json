@@ -1,5 +1,7 @@
 {
   "error": {
+    "agreeRegistration": "You must agree to the site rules and policy in order to register your account!",
+    "blankInput": "Input cannot be blank!",
     "error": "Error",
     "error400": "Request Failure (400)",
     "error404Page": "Page Not Found",
@@ -8,6 +10,8 @@
     "noChangesMade": "You have not made any changes!",
     "noError": "No errors found at this moment",
     "noMultiFile": "Multiple files are not allowed!",
+    "passwordMatch": "Password does not match!",
+    "recaptcha": "Please complete the reCaptcha form!",
     "tooManyRequests": "Too many network requests! Please try again later!",
     "unknown": "An unknown error as occured!"
   },
@@ -46,6 +50,7 @@
     "siteNameLong": "Mario Fan Games Galaxy",
     "unknown": "unknown",
     "unspecified": "Unspecified",
+    "welcome": "Welcome, {{username}}!",
     "welcomeBack": "Welcome back, {{username}}!"
   },
   "nav": {
@@ -91,12 +96,15 @@
   },
   "title": {
     "error": "Error",
+    "register": "Register",
     "login": "Sign In",
     "logoff": "Signing Out",
     "testPage": "Placeholder Page",
     "settings": "Preferences"
   },
   "user": {
+    "agree": "I agree to the site rules and policy",
+    "alreadyHaveAccount": "Already have an account?",
     "avatar": "Avatar",
     "banner": "Banner",
     "bio": "Bio",
@@ -189,6 +197,7 @@
     "updateYourEmail": "Change Your Email",
     "updateYourPassword": "Change Your Password",
     "updateYourUsername": "Change Your Username",
+    "userList": "Users",
     "username": "Username",
     "usernameChangeDayCap": "You can only change your username for at least every {{days}} days.",
     "usernameChangeNotice": "NOTICE: After you've changed your username, please note that you will need to log in again for security purposes. You cannot change your username for the next {{days}} days.",

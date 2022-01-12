@@ -1,4 +1,4 @@
-import { APIPropTemplate, OnComplete } from 'schema/api';
+import { APIPropTemplate, Count, OnComplete } from 'schema/api';
 import { PermissionKind, User, UsernameChange } from 'schema/userSchema';
 
 // Get user
@@ -16,7 +16,12 @@ export interface GetUserListBody {
 }
 export interface GetUserListProps extends APIPropTemplate {
   body: GetUserListBody;
-  onComplete?: OnComplete<User>;
+  onComplete?: OnComplete<User[]>;
+}
+// User counts
+export interface GetUserCountProps extends APIPropTemplate {
+  body: GetUserListBody;
+  onComplete?: OnComplete<Count>;
 }
 
 // Verify user login
@@ -38,6 +43,17 @@ export interface GetUserLoginBody {
 export interface GetUserLoginProps extends APIPropTemplate {
   body: GetUserLoginBody;
   onComplete?: OnComplete<User>;
+}
+
+// Register
+export interface GetUserRegisterBody {
+  username: string;
+  email: string;
+  password: string;
+}
+export interface GetUserRegisterProps extends APIPropTemplate {
+  body: GetUserRegisterBody;
+  onComplete?: OnComplete<null>;
 }
 
 // Update user

@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useContext, useState } from 'react';
 
 import { Cancel, CheckCircle } from '@mui/icons-material';
 import { Box, Grid } from '@mui/material';
@@ -8,13 +8,17 @@ import { LumaInput, LumaText } from 'components';
 import { TextInputEvent } from 'schema';
 import theme, { quiteDark, styles } from 'theme/styles';
 import { passwordRegex } from 'lib';
+import { GlobalContext } from 'global/GlobalContext';
 
 interface PasswordStrengthProps {
   loading: boolean;
   name: string;
+  error?: boolean;
   onChange: (e: TextInputEvent) => void;
+  onBlur?: (e: TextInputEvent) => void;
   setCriteria: (p: boolean) => void;
   value: string;
+  register?: boolean;
 }
 interface PasswordValidation {
   length: boolean;
@@ -41,18 +45,12 @@ export function PasswordStrength(props: PasswordStrengthProps) {
   // Custom hooks
   const { t } = useTranslation();
 
+  // Context
+  const { isMobile } = useContext(GlobalContext);
+
   // State
   const [validator, setValidator] = useState(defaultPasswordValidation);
-
-  // Memo
-  const criteria = useMemo(criteriaMemo, [
-    props,
-    validator.length,
-    validator.lower,
-    validator.number,
-    validator.special,
-    validator.upper,
-  ]);
+  const [criteria, setCriteria] = useState(false);
 
   // Output
   return (
@@ -119,11 +117,14 @@ export function PasswordStrength(props: PasswordStrengthProps) {
         name={props.name}
         type="password"
         fullWidth
-        size="small"
+        size={props?.register ? (isMobile ? 'small' : 'medium') : 'small'}
         autoComplete="new-password"
         disabled={props.loading}
+        error={props.error}
         value={props.value}
+        label={props?.register && t('user.password')}
         onChange={handleInputChange}
+        onBlur={props.onBlur}
       />
       <Box borderRadius={1} mt="4px">
         <Grid container>
@@ -189,17 +190,8 @@ export function PasswordStrength(props: PasswordStrengthProps) {
       special,
       strong,
     });
-  }
-
-  // Memo Hoist
-  function criteriaMemo() {
-    const result =
-      validator.length &&
-      validator.lower &&
-      validator.upper &&
-      validator.number &&
-      validator.special;
-    props.setCriteria(result);
-    return result;
+    const criteria = length && lower && upper && number && special;
+    setCriteria(criteria);
+    props.setCriteria(criteria);
   }
 }

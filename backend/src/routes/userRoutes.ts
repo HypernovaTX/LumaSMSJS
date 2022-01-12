@@ -46,6 +46,7 @@ import {
 } from '../lib/globallib';
 import { httpStatus } from '../lib/result';
 import { User, UserPermissionFull } from '../schema/userTypes';
+import { isError } from '../lib/error';
 
 // Prepare route and file handling
 export const userRouter = express.Router();
@@ -113,10 +114,11 @@ userRouter.put('/', rateLimits.general, async (req, res) => {
   const count = parseInt(req.body?.count) || 25;
   const colSort = `${req.body?.column ?? ''}`;
   const asc = req.body?.dsc ? false : true; // dsc - string (true if undefined)
+  const getFilter = req.body?.filter || '{}';
   let filter = []; // filter - { columnName: value }[]
 
-  if (isStringJSON(req.body?.filter)) {
-    filter = JSON.parse(req.body?.filter);
+  if (isStringJSON(getFilter)) {
+    filter = JSON.parse(getFilter);
   } else if (req.body?.filter) {
     invalidJsonResponse(res);
     return;
@@ -125,6 +127,33 @@ userRouter.put('/', rateLimits.general, async (req, res) => {
 
   httpStatus(res, result);
   res.send(result);
+});
+
+// PUT "/count" - number of users (with param for filter)
+// BODY: ?filter
+userRouter.put('/count', rateLimits.general, async (req, res) => {
+  const page = 0;
+  const count = 0;
+  const colSort = '';
+  const asc = true;
+  const getFilter = req.body?.filter || '{}';
+  let filter = []; // filter - { columnName: value }[]
+
+  if (isStringJSON(getFilter)) {
+    filter = JSON.parse(getFilter);
+  } else if (req.body?.filter) {
+    invalidJsonResponse(res);
+    return;
+  }
+  const result = await listUsers(page, count, colSort, asc, filter);
+
+  httpStatus(res, result);
+  if (isError(result)) res.send(result);
+  else {
+    res.send({
+      count: (result as User[]).length,
+    });
+  }
 });
 
 // PUT "/find" - Find user by username query

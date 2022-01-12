@@ -9,9 +9,18 @@ import {
 import LoginIcon from '@mui/icons-material/Login';
 
 import { useAPI_userLogin } from 'api';
-import { A, LumaButton, LumaCheckbox, LumaInput, LumaText } from 'components';
+import {
+  A,
+  ErrorLabel,
+  LumaButton,
+  LumaCheckbox,
+  LumaInput,
+  LumaText,
+} from 'components';
 import { GlobalContext } from 'global/GlobalContext';
 import { useSetTitle } from 'lib';
+import routes from 'route.config';
+import { TextInputEvent } from 'schema';
 import { styles } from 'theme/styles';
 import { UserContext } from 'user/UserContext';
 
@@ -32,11 +41,14 @@ export default function Login() {
   useSetTitle(t('title.login'));
 
   // Context
-  const { loadUser: reloadUser } = useContext(UserContext);
-  const { isMobile, nativateToPrevious, toast } = useContext(GlobalContext);
+  const { loadUser: reloadUser, user } = useContext(UserContext);
+  const { isMobile, nativateToPrevious, navigate, toast } =
+    useContext(GlobalContext);
 
   // States
   const [loginForm, setLoginForm] = useState<UserLogin>(defaultForm);
+  const [emptyUser, setEmptyUser] = useState(false);
+  const [emptyPassword, setEmptyPassword] = useState(false);
 
   // Data
   const { execute: login, loading: loginLoading } = useAPI_userLogin({
@@ -54,8 +66,7 @@ export default function Login() {
   });
 
   // Effect
-  // NOTE - Add auto "go back" when user is already logged in
-  useEffect(() => {}, []);
+  useEffect(returnToHomeEffect, [navigate, user]);
 
   // Output
   return (
@@ -86,10 +97,15 @@ export default function Login() {
             fullWidth
             label={t('user.username')}
             name="username"
+            error={emptyUser}
             onChange={handleInputChange}
+            onBlur={handleInputBlur}
             value={loginForm.username}
             size={isMobile ? 'small' : 'medium'}
           />
+          <Box width="100%" mr={2}>
+            <ErrorLabel in={emptyUser} message={t('error.blankInput')} />
+          </Box>
         </Box>
         <Box my={1} width="100%">
           <LumaInput
@@ -99,9 +115,14 @@ export default function Login() {
             name="password"
             type="password"
             onChange={handleInputChange}
+            onBlur={handleInputBlur}
             value={loginForm.password}
+            error={emptyPassword}
             size={isMobile ? 'small' : 'medium'}
           />
+          <Box width="100%" mr={2}>
+            <ErrorLabel in={emptyPassword} message={t('error.blankInput')} />
+          </Box>
         </Box>
         {/* Remember Me */}
         <Box my={0} width="100%">
@@ -123,7 +144,7 @@ export default function Login() {
         {/* Sign In button */}
         <Box my={2} width="100%">
           <LumaButton
-            disabled={loginLoading}
+            disabled={loginLoading || emptyUser || emptyPassword}
             color="secondary"
             variant="contained"
             fullWidth
@@ -142,7 +163,7 @@ export default function Login() {
         <Box my={isMobile ? 0 : 1} width="100%">
           <Box>
             {t('user.dontHaveAccount')}{' '}
-            <A disabled={loginLoading} url="#">
+            <A disabled={loginLoading} url={routes.userRegister}>
               {t('user.signup')}
             </A>
           </Box>
@@ -157,12 +178,34 @@ export default function Login() {
   );
 
   // Handles
-  function handleInputChange(e: React.ChangeEvent<HTMLInputElement>) {
+  function handleInputChange(e: TextInputEvent) {
     let form = loginForm;
     if (e.target.name === 'username') {
+      if (emptyUser && e.target.value) {
+        setEmptyUser(false);
+      }
       form = { ...loginForm, username: e.target.value };
     }
     if (e.target.name === 'password') {
+      if (emptyPassword && e.target.value) {
+        setEmptyPassword(false);
+      }
+      form = { ...loginForm, password: e.target.value };
+    }
+    setLoginForm(form);
+  }
+  function handleInputBlur(e: TextInputEvent) {
+    let form = loginForm;
+    if (e.target.name === 'username') {
+      if (!e.target.value) {
+        setEmptyUser(true);
+      }
+      form = { ...loginForm, username: e.target.value };
+    }
+    if (e.target.name === 'password') {
+      if (!e.target.value) {
+        setEmptyPassword(true);
+      }
       form = { ...loginForm, password: e.target.value };
     }
     setLoginForm(form);
@@ -178,6 +221,21 @@ export default function Login() {
 
   function handleLoginButton() {
     if (loginLoading) return;
+    if (!loginForm.username) {
+      setEmptyUser(true);
+      return;
+    }
+    if (!loginForm.password) {
+      setEmptyPassword(true);
+      return;
+    }
     login();
+  }
+
+  // Effect hoists
+  function returnToHomeEffect() {
+    if (user) {
+      navigate(routes._index);
+    }
   }
 }

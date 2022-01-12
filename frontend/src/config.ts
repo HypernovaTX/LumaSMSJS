@@ -10,9 +10,9 @@ const CF = {
   MAX_MOBILESIZE: 1024,
   MAX_SMALLSIZE: 540,
   MAX_TINYSIZE: 320,
+  RECAPTCHA_KEY: '6LeDagAeAAAAAIjeFaQ7BtQCsdgSdq9ewY3DhFVe',
   SITE_NAME: 'MFGG',
-  SOCIAL_DISCORD: 'https://discord.gg/jchgfw5',
-  SOCIAL_TWITTER: 'https://twitter.com/OfficialMFGG',
+  UPLOAD_DIR: '/upload',
   USERNAME_CHANGE_DAYS: 30,
 };
 export default CF;
